@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CoinFlowLogo } from "@/components/icons/logo";
+import { AppLogo } from "@/components/icons/logo";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -42,7 +42,7 @@ export function LoginForm() {
     <Card className="w-full max-w-md border-border shadow-lg">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4">
-          <CoinFlowLogo className="h-12 w-12" />
+          <AppLogo className="h-12 w-12" />
         </div>
         <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
         <CardDescription>Enter your credentials to access your account.</CardDescription>

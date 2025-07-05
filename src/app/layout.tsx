@@ -3,7 +3,7 @@ import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
-  title: 'CoinFlow',
+  title: 'Baltom Exchange',
   description: 'A peer-to-peer cryptocurrency exchange.',
 }
 

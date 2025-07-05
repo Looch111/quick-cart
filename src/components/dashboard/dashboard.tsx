@@ -37,7 +37,7 @@ import {
   Download,
   Upload,
 } from "lucide-react";
-import { CoinFlowLogo } from "@/components/icons/logo";
+import { AppLogo } from "@/components/icons/logo";
 import { BtcIcon } from "@/components/icons/btc-icon";
 import { EthIcon } from "@/components/icons/eth-icon";
 
@@ -113,9 +113,9 @@ export default function Dashboard() {
       <Sidebar>
         <SidebarHeader>
           <div className="flex h-16 items-center px-4">
-            <CoinFlowLogo className="h-8 w-8" />
+            <AppLogo className="h-8 w-8" />
             <span className="ml-3 font-headline text-xl font-bold group-data-[collapsible=icon]:hidden">
-              CoinFlow
+              Baltom Exchange
             </span>
           </div>
         </SidebarHeader>

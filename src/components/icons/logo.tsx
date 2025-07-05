@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react';
 
-export const CoinFlowLogo = (props: SVGProps<SVGSVGElement>) => (
+export const AppLogo = (props: SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
