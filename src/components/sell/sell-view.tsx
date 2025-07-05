@@ -20,7 +20,7 @@ export default function SellView() {
           </TabsTrigger>
           <TabsTrigger value="telegram-stars">
              <TelegramIcon className="mr-2 h-4 w-4" />
-            Sell Telegram Stars
+            Buy Telegram Stars
           </TabsTrigger>
         </TabsList>
         <TabsContent value="gift-cards">
@@ -65,8 +65,8 @@ export default function SellView() {
         <TabsContent value="telegram-stars">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="font-headline">Sell Telegram Stars</CardTitle>
-              <CardDescription>Convert your Telegram Stars to cash.</CardDescription>
+              <CardTitle className="font-headline">Buy Telegram Stars</CardTitle>
+              <CardDescription>Purchase Telegram Stars to use on Telegram.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <div className="space-y-2">
@@ -79,11 +79,11 @@ export default function SellView() {
               </div>
               <div className="pt-2 text-sm text-muted-foreground">
                 <p>Current Rate: <span className="font-bold text-primary">$0.15 per star</span></p>
-                <p>Estimated Payout: <span className="font-bold text-primary">$75.00</span></p>
+                <p>Estimated Cost: <span className="font-bold text-primary">$75.00</span></p>
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">Sell Stars</Button>
+              <Button className="w-full">Buy Stars</Button>
             </CardFooter>
           </Card>
         </TabsContent>
