@@ -11,7 +11,7 @@ import { TelegramIcon } from '@/components/icons/telegram-icon';
 
 export default function SellView() {
   return (
-    <main className="flex-1 space-y-6 p-4 lg:p-6">
+    <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
       <Tabs defaultValue="gift-cards" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="gift-cards">

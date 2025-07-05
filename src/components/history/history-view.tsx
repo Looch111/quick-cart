@@ -15,7 +15,7 @@ const transactions = [
 
 export default function HistoryView() {
     return (
-        <main className="flex-1 space-y-6 p-4 lg:p-6">
+        <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="font-headline">Full Transaction History</CardTitle>

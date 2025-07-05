@@ -41,23 +41,12 @@ const chartData = [
   { month: "Jun", price: 214 },
 ];
 
-const chartConfig = {
+const chartConfig: ChartConfig = {
   price: {
     label: "Price",
     color: "hsl(var(--primary))",
   },
-} satisfies ChartConfig;
-
-
-function AssetSelectItem({ asset }: { asset: {icon: React.ElementType, name: string, symbol: string} }) {
-    const Icon = asset.icon;
-    return (
-      <div className="flex items-center gap-2">
-        <Icon className="w-6 h-6" />
-        <span>{asset.name} ({asset.symbol})</span>
-      </div>
-    );
-}
+};
 
 export default function SwapView() {
   const [fromCurrency, setFromCurrency] = useState('BTC');
@@ -97,7 +86,7 @@ export default function SwapView() {
 
 
   return (
-    <main className="flex-1 space-y-6 p-4 lg:p-6">
+    <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <Card className="shadow-lg">
@@ -147,7 +136,7 @@ export default function SwapView() {
                    <Select value={toCurrency} onValueChange={setToCurrency}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select asset" />
-                    </SelectTrigger>
+                    </Trigger>
                     <SelectContent>
                       {assets.map(asset => (
                         <SelectItem key={asset.symbol} value={asset.symbol}>
