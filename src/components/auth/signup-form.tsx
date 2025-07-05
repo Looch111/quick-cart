@@ -14,22 +14,31 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AppLogo } from "@/components/icons/logo";
 import { useRouter } from "next/navigation";
+import React from "react";
+import { Eye, EyeOff } from "lucide-react";
+
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
 });
 
 export function SignupForm() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -39,17 +48,9 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="w-full max-w-md border-border shadow-lg">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4">
-          <AppLogo className="h-12 w-12" />
-        </div>
-        <CardTitle className="font-headline text-2xl">Baltom Exchange</CardTitle>
-        <CardDescription>Start your crypto journey with Baltom Exchange today.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
             <FormField
               control={form.control}
               name="email"
@@ -70,24 +71,58 @@ export function SignupForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                     <div className="relative">
+                        <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                        <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOff /> : <Eye />}
+                        </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full !mt-8">
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                     <div className="relative">
+                        <Input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                         <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                            {showConfirmPassword ? <EyeOff /> : <Eye />}
+                        </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full">
               Sign Up
             </Button>
           </form>
         </Form>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-4 text-center text-sm">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link href="/login" className="underline">
             Sign In
           </Link>
-        </p>
-      </CardContent>
-    </Card>
+        </div>
+    </>
   );
 }
