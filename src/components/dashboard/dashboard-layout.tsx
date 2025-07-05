@@ -1,20 +1,7 @@
+
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarInset,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,22 +12,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Wallet,
-  ArrowRightLeft,
-  History,
-  Settings,
-  Bell,
-} from "lucide-react";
+import { Bell } from "lucide-react";
 import { AppLogo } from "@/components/icons/logo";
+import BottomNavBar from "./bottom-nav-bar";
 
 function DashboardHeader({ pageTitle }: { pageTitle: string }) {
-  const { isMobile } = useSidebar();
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 lg:px-6">
-      <div className="flex items-center gap-4">
-        {isMobile && <SidebarTrigger />}
-        <h1 className="font-headline text-xl font-semibold">{pageTitle}</h1>
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6">
+      <div className="flex items-center gap-3">
+        <AppLogo className="h-8 w-8" />
+        <h1 className="hidden font-headline text-xl font-semibold sm:block">{pageTitle}</h1>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" className="rounded-full">
@@ -88,62 +69,23 @@ function UserNav() {
 }
 
 export default function DashboardLayout({ children, pageTitle }: { children: React.ReactNode, pageTitle: string }) {
-  const pathname = usePathname();
-
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="flex h-16 items-center px-4">
-            <AppLogo className="h-8 w-8" />
-            <span className="ml-3 font-headline text-xl font-bold group-data-[collapsible=icon]:hidden">
-              Baltom Exchange
-            </span>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <Link href="/" asChild>
-                <SidebarMenuButton isActive={pathname === '/'}>
-                  <Wallet />
-                  Wallet
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <Link href="/swap" asChild>
-                <SidebarMenuButton isActive={pathname === '/swap'}>
-                  <ArrowRightLeft />
-                  Trade
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <Link href="/history" asChild>
-                <SidebarMenuButton isActive={pathname === '/history'}>
-                  <History />
-                  History
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <Settings />
-                Settings
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <DashboardHeader pageTitle={pageTitle} />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6">
+        <div className="flex items-center gap-3">
+          <AppLogo className="h-8 w-8" />
+          <h1 className="hidden font-headline text-xl font-semibold sm:block">{pageTitle}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Bell className="h-5 w-5" />
+            <span className="sr-only">Notifications</span>
+          </Button>
+          <UserNav />
+        </div>
+      </header>
+      <main className="flex-1 pb-20">{children}</main>
+      <BottomNavBar />
+    </div>
   );
 }
