@@ -3,7 +3,7 @@ import WalletView from "@/components/dashboard/wallet-view";
 
 export default function Home() {
   return (
-    <DashboardLayout pageTitle="Wallet">
+    <DashboardLayout>
       <WalletView />
     </DashboardLayout>
   );

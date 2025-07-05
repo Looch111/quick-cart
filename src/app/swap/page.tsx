@@ -3,7 +3,7 @@ import SwapView from "@/components/swap/swap-view";
 
 export default function SwapPage() {
   return (
-    <DashboardLayout pageTitle="Swap">
+    <DashboardLayout>
       <SwapView />
     </DashboardLayout>
   );

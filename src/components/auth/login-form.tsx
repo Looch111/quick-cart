@@ -44,7 +44,7 @@ export function LoginForm() {
         <div className="mx-auto mb-4">
           <AppLogo className="h-12 w-12" />
         </div>
-        <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
+        <CardTitle className="font-headline text-2xl">Baltom Exchange</CardTitle>
         <CardDescription>Enter your credentials to access your account.</CardDescription>
       </CardHeader>
       <CardContent>

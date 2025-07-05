@@ -16,24 +16,6 @@ import { Bell } from "lucide-react";
 import { AppLogo } from "@/components/icons/logo";
 import BottomNavBar from "./bottom-nav-bar";
 
-function DashboardHeader({ pageTitle }: { pageTitle: string }) {
-  return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6">
-      <div className="flex items-center gap-3">
-        <AppLogo className="h-8 w-8" />
-        <h1 className="hidden font-headline text-xl font-semibold sm:block">{pageTitle}</h1>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
-        </Button>
-        <UserNav />
-      </div>
-    </header>
-  );
-}
-
 function UserNav() {
   return (
     <DropdownMenu>
@@ -68,13 +50,13 @@ function UserNav() {
   );
 }
 
-export default function DashboardLayout({ children, pageTitle }: { children: React.ReactNode, pageTitle: string }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6">
         <div className="flex items-center gap-3">
           <AppLogo className="h-8 w-8" />
-          <h1 className="hidden font-headline text-xl font-semibold sm:block">{pageTitle}</h1>
+          <h1 className="font-headline text-xl font-semibold">Baltom Exchange</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="rounded-full">

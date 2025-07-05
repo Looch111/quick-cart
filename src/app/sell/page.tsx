@@ -3,7 +3,7 @@ import SellView from "@/components/sell/sell-view";
 
 export default function SellPage() {
   return (
-    <DashboardLayout pageTitle="Sell">
+    <DashboardLayout>
       <SellView />
     </DashboardLayout>
   );

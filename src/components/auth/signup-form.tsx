@@ -44,7 +44,7 @@ export function SignupForm() {
         <div className="mx-auto mb-4">
           <AppLogo className="h-12 w-12" />
         </div>
-        <CardTitle className="font-headline text-2xl">Create an Account</CardTitle>
+        <CardTitle className="font-headline text-2xl">Baltom Exchange</CardTitle>
         <CardDescription>Start your crypto journey with Baltom Exchange today.</CardDescription>
       </CardHeader>
       <CardContent>
