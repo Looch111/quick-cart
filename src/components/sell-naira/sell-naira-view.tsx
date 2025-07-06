@@ -12,6 +12,8 @@ import { EthIcon } from '@/components/icons/eth-icon';
 import { UsdcIcon } from '@/components/icons/usdc-icon';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { sellCryptoForNaira } from '@/app/actions/sell-actions';
 
 const assets = [
   { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC', priceUsd: 65000 },
@@ -23,9 +25,11 @@ const NGN_RATE = 1450; // Dummy rate: 1 USD = 1450 NGN
 
 export default function SellNairaView() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedAssetSymbol, setSelectedAssetSymbol] = useState('BTC');
   const [amount, setAmount] = useState('');
   const [nairaAmount, setNairaAmount] = useState('');
+  const [isSelling, setIsSelling] = useState(false);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -50,11 +54,39 @@ export default function SellNairaView() {
     }
   }
 
-  const handleSell = () => {
-    toast({
-      title: "Sale Submitted",
-      description: "Your request to sell crypto for Naira is being processed.",
-    });
+  const handleSell = async () => {
+    if (!user) {
+      toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+      return;
+    }
+    const cryptoAmountNum = parseFloat(amount);
+
+    if (isNaN(cryptoAmountNum) || cryptoAmountNum <= 0) {
+      toast({ title: "Error", description: "Please enter a valid amount.", variant: "destructive" });
+      return;
+    }
+
+    setIsSelling(true);
+    try {
+      const result = await sellCryptoForNaira({
+        userId: user.uid,
+        assetSymbol: selectedAssetSymbol,
+        cryptoAmount: cryptoAmountNum,
+        nairaAmount: nairaAmount,
+      });
+
+      if (result.success) {
+        toast({ title: "Success", description: result.message });
+        setAmount('');
+        setNairaAmount('');
+      } else {
+        toast({ title: "Error", description: result.message, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+    } finally {
+      setIsSelling(false);
+    }
   };
 
   return (
@@ -68,12 +100,12 @@ export default function SellNairaView() {
            <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Payouts will be sent to the bank account specified in your <a href="/settings" className="font-bold underline hover:text-primary">Settings</a>.
+              Payouts will be sent to the bank account specified in your <a href="/settings" className="font-bold underline hover:text-primary">Settings</a>. This is a simulation.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
             <Label htmlFor="crypto-asset">You Sell</Label>
-            <Select value={selectedAssetSymbol} onValueChange={handleAssetChange}>
+            <Select value={selectedAssetSymbol} onValueChange={handleAssetChange} disabled={isSelling}>
               <SelectTrigger id="crypto-asset">
                 <SelectValue placeholder="Select an asset" />
               </SelectTrigger>
@@ -91,7 +123,7 @@ export default function SellNairaView() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="crypto-amount">Amount</Label>
-            <Input id="crypto-amount" placeholder="0.00" type="number" value={amount} onChange={handleAmountChange} />
+            <Input id="crypto-amount" placeholder="0.00" type="number" value={amount} onChange={handleAmountChange} disabled={isSelling} />
           </div>
           <div className="h-16 flex items-center justify-center rounded-lg bg-muted text-center p-2">
             {nairaAmount ? (
@@ -105,7 +137,9 @@ export default function SellNairaView() {
            </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" onClick={handleSell}>Sell for Naira</Button>
+          <Button className="w-full" onClick={handleSell} disabled={isSelling}>
+            {isSelling ? 'Processing...' : 'Sell for Naira'}
+          </Button>
         </CardFooter>
       </Card>
     </main>

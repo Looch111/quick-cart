@@ -12,6 +12,8 @@ import { EthIcon } from '@/components/icons/eth-icon';
 import { UsdcIcon } from '@/components/icons/usdc-icon';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { buyCryptoWithNaira } from '@/app/actions/buy-actions';
 
 const assets = [
   { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC', priceUsd: 65000 },
@@ -23,9 +25,11 @@ const NGN_RATE = 1450; // Dummy rate: 1 USD = 1450 NGN
 
 export default function BuyNairaView() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedAssetSymbol, setSelectedAssetSymbol] = useState('BTC');
   const [nairaAmount, setNairaAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
+  const [isBuying, setIsBuying] = useState(false);
 
   const handleNairaAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -50,11 +54,42 @@ export default function BuyNairaView() {
     }
   }
 
-  const handleBuy = () => {
-    toast({
-      title: "Purchase Submitted",
-      description: "Your request to buy crypto with Naira is being processed.",
-    });
+  const handleBuy = async () => {
+    if (!user) {
+      toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+      return;
+    }
+    const nairaAmountNum = parseFloat(nairaAmount);
+    const cryptoAmountNum = parseFloat(cryptoAmount);
+    const selectedAsset = assets.find(a => a.symbol === selectedAssetSymbol);
+
+    if (!selectedAsset || isNaN(nairaAmountNum) || nairaAmountNum <= 0) {
+      toast({ title: "Error", description: "Please enter a valid amount.", variant: "destructive" });
+      return;
+    }
+
+    setIsBuying(true);
+    try {
+      const result = await buyCryptoWithNaira({
+        userId: user.uid,
+        assetSymbol: selectedAsset.symbol,
+        assetName: selectedAsset.name,
+        cryptoAmount: cryptoAmountNum,
+        nairaAmount: nairaAmountNum,
+      });
+
+      if (result.success) {
+        toast({ title: "Success", description: result.message });
+        setNairaAmount('');
+        setCryptoAmount('');
+      } else {
+        toast({ title: "Error", description: result.message, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+    } finally {
+      setIsBuying(false);
+    }
   };
 
   return (
@@ -68,16 +103,16 @@ export default function BuyNairaView() {
            <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              After submission, you will be provided with bank details to complete the transfer.
+              This is a simulation. No real money will be transferred. Purchased crypto will be added to your wallet.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
             <Label htmlFor="naira-amount">You Spend</Label>
-            <Input id="naira-amount" placeholder="e.g., 100,000 NGN" type="number" value={nairaAmount} onChange={handleNairaAmountChange} />
+            <Input id="naira-amount" placeholder="e.g., 100,000 NGN" type="number" value={nairaAmount} onChange={handleNairaAmountChange} disabled={isBuying} />
           </div>
            <div className="space-y-2">
             <Label htmlFor="crypto-asset">You Get</Label>
-            <Select value={selectedAssetSymbol} onValueChange={handleAssetChange}>
+            <Select value={selectedAssetSymbol} onValueChange={handleAssetChange} disabled={isBuying}>
               <SelectTrigger id="crypto-asset">
                 <SelectValue placeholder="Select an asset" />
               </SelectTrigger>
@@ -105,7 +140,9 @@ export default function BuyNairaView() {
            </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" onClick={handleBuy}>Buy with Naira</Button>
+          <Button className="w-full" onClick={handleBuy} disabled={isBuying}>
+            {isBuying ? "Processing..." : "Buy with Naira"}
+          </Button>
         </CardFooter>
       </Card>
     </main>
