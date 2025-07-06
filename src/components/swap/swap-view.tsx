@@ -68,6 +68,7 @@ export default function SwapView() {
     const amount = e.target.value;
     setFromAmount(amount);
     if (amount && !isNaN(parseFloat(amount))) {
+      // A simplistic conversion rate for demonstration
       setToAmount((parseFloat(amount) * 15.3).toFixed(5));
     } else {
       setToAmount('');
@@ -78,12 +79,12 @@ export default function SwapView() {
     const amount = e.target.value;
     setToAmount(amount);
     if (amount && !isNaN(parseFloat(amount))) {
+      // A simplistic conversion rate for demonstration
       setFromAmount((parseFloat(amount) / 15.3).toFixed(5));
     } else {
       setFromAmount('');
     }
   };
-
 
   return (
     <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
