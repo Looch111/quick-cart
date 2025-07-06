@@ -67,9 +67,9 @@ export default function SwapView() {
   const handleFromAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = e.target.value;
     setFromAmount(amount);
+    const rate = 15.3;
     if (amount && !isNaN(parseFloat(amount))) {
-      // A simplistic conversion rate for demonstration
-      setToAmount((parseFloat(amount) * 15.3).toFixed(5));
+      setToAmount((parseFloat(amount) * rate).toFixed(5));
     } else {
       setToAmount('');
     }
@@ -78,9 +78,9 @@ export default function SwapView() {
   const handleToAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = e.target.value;
     setToAmount(amount);
+    const rate = 15.3;
     if (amount && !isNaN(parseFloat(amount))) {
-      // A simplistic conversion rate for demonstration
-      setFromAmount((parseFloat(amount) / 15.3).toFixed(5));
+      setFromAmount((parseFloat(amount) / rate).toFixed(5));
     } else {
       setFromAmount('');
     }
@@ -137,7 +137,7 @@ export default function SwapView() {
                    <Select value={toCurrency} onValueChange={setToCurrency}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select asset" />
-                    </Trigger>
+                    </SelectTrigger>
                     <SelectContent>
                       {assets.map(asset => (
                         <SelectItem key={asset.symbol} value={asset.symbol}>
