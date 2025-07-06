@@ -26,6 +26,8 @@ import { UsdcIcon } from '@/components/icons/usdc-icon';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { swapAssets } from '@/app/actions/swap-actions';
 
 const assets = [
   { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC' },
@@ -51,10 +53,12 @@ const chartConfig: ChartConfig = {
 
 export default function SwapView() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [fromCurrency, setFromCurrency] = useState('BTC');
   const [toCurrency, setToCurrency] = useState('ETH');
   const [fromAmount, setFromAmount] = useState('');
   const [toAmount, setToAmount] = useState('');
+  const [isSwapping, setIsSwapping] = useState(false);
 
   const handleSwapCurrencies = () => {
     const tempCurrency = fromCurrency;
@@ -88,19 +92,52 @@ export default function SwapView() {
     }
   };
 
-  const handleSwap = () => {
-    if (!fromAmount || !toAmount) {
-        toast({
-            title: "Error",
-            description: "Please enter an amount to swap.",
-            variant: "destructive",
-        });
+  const handleSwap = async () => {
+    if (!user) {
+        toast({ title: "Error", description: "You must be logged in to swap.", variant: "destructive" });
         return;
     }
-    toast({
-        title: "Swap Successful",
-        description: `You have successfully swapped ${fromAmount} ${fromCurrency} for ${toAmount} ${toCurrency}.`,
-    });
+    const fromAmountNum = parseFloat(fromAmount);
+    const toAmountNum = parseFloat(toAmount);
+
+    if (isNaN(fromAmountNum) || fromAmountNum <= 0 || isNaN(toAmountNum) || toAmountNum <=0) {
+        toast({ title: "Error", description: "Please enter a valid amount to swap.", variant: "destructive" });
+        return;
+    }
+    
+    setIsSwapping(true);
+    try {
+        const result = await swapAssets({
+            userId: user.uid,
+            fromCurrency,
+            toCurrency,
+            fromAmount: fromAmountNum,
+            toAmount: toAmountNum
+        });
+
+        if (result.success) {
+            toast({
+                title: "Swap Successful",
+                description: result.message,
+            });
+            setFromAmount('');
+            setToAmount('');
+        } else {
+            toast({
+                title: "Swap Failed",
+                description: result.message,
+                variant: "destructive",
+            });
+        }
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "An unexpected error occurred during the swap.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsSwapping(false);
+    }
   };
 
   return (
@@ -122,8 +159,9 @@ export default function SwapView() {
                     type="number"
                     value={fromAmount}
                     onChange={handleFromAmountChange} 
+                    disabled={isSwapping}
                   />
-                  <Select value={fromCurrency} onValueChange={setFromCurrency}>
+                  <Select value={fromCurrency} onValueChange={setFromCurrency} disabled={isSwapping}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select asset" />
                     </SelectTrigger>
@@ -142,7 +180,7 @@ export default function SwapView() {
               </div>
 
               <div className="flex justify-center items-center my-[-8px]">
-                <Button variant="ghost" size="icon" onClick={handleSwapCurrencies} className="h-10 w-10 border rounded-full">
+                <Button variant="ghost" size="icon" onClick={handleSwapCurrencies} className="h-10 w-10 border rounded-full" disabled={isSwapping}>
                   <ArrowRightLeft className="h-5 w-5 text-muted-foreground" />
                 </Button>
               </div>
@@ -150,8 +188,8 @@ export default function SwapView() {
               <div className="space-y-2">
                 <Label htmlFor="to-amount">You receive</Label>
                 <div className="flex gap-2">
-                  <Input id="to-amount" placeholder="0.0" type="number" value={toAmount} onChange={handleToAmountChange} />
-                   <Select value={toCurrency} onValueChange={setToCurrency}>
+                  <Input id="to-amount" placeholder="0.0" type="number" value={toAmount} onChange={handleToAmountChange} disabled={isSwapping} />
+                   <Select value={toCurrency} onValueChange={setToCurrency} disabled={isSwapping}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select asset" />
                     </SelectTrigger>
@@ -175,7 +213,9 @@ export default function SwapView() {
 
             </CardContent>
             <CardFooter>
-              <Button className="w-full" onClick={handleSwap}>Swap</Button>
+              <Button className="w-full" onClick={handleSwap} disabled={isSwapping}>
+                {isSwapping ? 'Swapping...' : 'Swap'}
+              </Button>
             </CardFooter>
           </Card>
         </div>
