@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { BtcIcon } from '@/components/icons/btc-icon';
 import { EthIcon } from '@/components/icons/eth-icon';
 import { UsdcIcon } from '@/components/icons/usdc-icon';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 const assets = [
   { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC', priceUsd: 65000 },
@@ -62,9 +64,15 @@ export default function SellNairaView() {
           <CardTitle className="font-headline">Sell Crypto for Naira</CardTitle>
           <CardDescription>Get Naira directly to your bank account.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+           <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Payouts will be sent to the bank account specified in your <a href="/settings" className="font-bold underline hover:text-primary">Settings</a>.
+            </AlertDescription>
+          </Alert>
           <div className="space-y-2">
-            <Label htmlFor="crypto-asset">Crypto to Sell</Label>
+            <Label htmlFor="crypto-asset">You Sell</Label>
             <Select value={selectedAssetSymbol} onValueChange={handleAssetChange}>
               <SelectTrigger id="crypto-asset">
                 <SelectValue placeholder="Select an asset" />
@@ -82,27 +90,19 @@ export default function SellNairaView() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="crypto-amount">Amount to Sell</Label>
+            <Label htmlFor="crypto-amount">Amount</Label>
             <Input id="crypto-amount" placeholder="0.00" type="number" value={amount} onChange={handleAmountChange} />
           </div>
-          {nairaAmount && (
-            <div className="pt-2 text-sm text-muted-foreground">
-              <p>You will receive approximately: <span className="font-bold text-primary">{nairaAmount}</span></p>
-            </div>
-          )}
-          <div className="space-y-2 pt-4">
-            <h3 className="text-lg font-medium font-headline">Bank Details</h3>
-            <Label htmlFor="bank-name">Bank Name</Label>
-            <Input id="bank-name" placeholder="e.g., Guaranty Trust Bank" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="account-number">Account Number</Label>
-            <Input id="account-number" placeholder="0123456789" />
-          </div>
-           <div className="space-y-2">
-            <Label htmlFor="account-name">Account Name</Label>
-            <Input id="account-name" placeholder="John Doe" />
-          </div>
+          <div className="h-16 flex items-center justify-center rounded-lg bg-muted text-center p-2">
+            {nairaAmount ? (
+                <div>
+                  <p className="text-sm text-muted-foreground">You will receive approximately</p>
+                  <p className="font-bold text-primary text-2xl">{nairaAmount}</p>
+                </div>
+            ) : (
+                <p className="text-muted-foreground">Enter an amount to see the conversion</p>
+            )}
+           </div>
         </CardContent>
         <CardFooter>
           <Button className="w-full" onClick={handleSell}>Sell for Naira</Button>
