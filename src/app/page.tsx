@@ -59,20 +59,20 @@ export default function Home() {
             </TabsTrigger>
           </TabsList>
         </div>
+        <Carousel setApi={setApi} className="w-full">
+          <CarouselContent>
+            <CarouselItem>
+              <WalletView />
+            </CarouselItem>
+            <CarouselItem>
+              <BuyNairaView />
+            </CarouselItem>
+            <CarouselItem>
+              <SellNairaView />
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
       </Tabs>
-      <Carousel setApi={setApi} className="w-full">
-        <CarouselContent>
-          <CarouselItem>
-            <WalletView />
-          </CarouselItem>
-          <CarouselItem>
-            <BuyNairaView />
-          </CarouselItem>
-          <CarouselItem>
-            <SellNairaView />
-          </CarouselItem>
-        </CarouselContent>
-      </Carousel>
     </DashboardLayout>
   );
 }
