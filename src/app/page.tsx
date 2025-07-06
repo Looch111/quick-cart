@@ -10,8 +10,8 @@ import BuyNairaView from "@/components/buy-naira/buy-naira-view";
 export default function Home() {
   return (
     <DashboardLayout>
-      <Tabs defaultValue="wallet" className="w-full pt-4">
-        <div className="px-4 lg:px-6">
+      <Tabs defaultValue="wallet" className="w-full">
+        <div className="sticky top-16 z-10 bg-background px-4 py-4 lg:px-6">
            <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="wallet">
               <Wallet className="mr-2 h-4 w-4" />
