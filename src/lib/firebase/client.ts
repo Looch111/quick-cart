@@ -6,7 +6,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCLejMhKOe7Er5wYP6rUzAYImhsDXGicro",
   authDomain: "telegram-61148.firebaseapp.com",
   projectId: "telegram-61148",
-  storageBucket: "telegram-61148.appspot.com",
+  storageBucket: "telegram-61148.firebasestorage.app",
   messagingSenderId: "816250998320",
   appId: "1:816250998320:web:992535a5c0c016e4dd67f5"
 };
