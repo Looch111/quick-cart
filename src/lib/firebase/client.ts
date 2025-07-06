@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyCLejMhKOe7Er5wYP6rUzAYImhsDXGicro",
+  authDomain: "telegram-61148.firebaseapp.com",
+  projectId: "telegram-61148",
+  storageBucket: "telegram-61148.appspot.com",
+  messagingSenderId: "816250998320",
+  appId: "1:816250998320:web:992535a5c0c016e4dd67f5"
 };
 
 // Initialize Firebase
