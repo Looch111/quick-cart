@@ -2,33 +2,64 @@
 
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase/client';
+import { auth, db } from '@/lib/firebase/client';
+import { doc, onSnapshot, type DocumentData } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type AuthContextType = {
   user: User | null;
+  profile: DocumentData | null;
   loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  profile: null,
   loading: true,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<DocumentData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      if (!user) {
+        setProfile(null);
+        setLoading(false);
+      }
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
 
-  if (loading) {
+  useEffect(() => {
+    let unsubscribeProfile: (() => void) | undefined;
+    
+    if (user) {
+        setLoading(true);
+        const userDocRef = doc(db, 'users', user.uid);
+        unsubscribeProfile = onSnapshot(userDocRef, (doc) => {
+            if (doc.exists()) {
+                setProfile(doc.data());
+            } else {
+                setProfile(null);
+            }
+            setLoading(false);
+        });
+    }
+
+    return () => {
+        if (unsubscribeProfile) {
+            unsubscribeProfile();
+        }
+    };
+}, [user]);
+
+
+  if (loading && !user && !profile) {
      return (
         <div className="flex min-h-screen flex-col">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6">
@@ -57,7 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, profile, loading }}>
       {children}
     </AuthContext.Provider>
   );
