@@ -104,7 +104,7 @@ export default function SwapView() {
   }
 
   return (
-    <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
+    <main className="flex-1 space-y-6 p-4 lg:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <Card className="shadow-lg">
