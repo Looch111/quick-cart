@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +24,9 @@ import { BtcIcon } from "../icons/btc-icon";
 import { EthIcon } from "../icons/eth-icon";
 import { UsdcIcon } from "../icons/usdc-icon";
 import { useToast } from "@/hooks/use-toast";
-import { Upload } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { depositCrypto } from "@/app/actions/deposit-actions";
 
 const assets = [
   { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC' },
@@ -33,16 +36,51 @@ const assets = [
 
 export function DepositDialog() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  
+  const [selectedAssetSymbol, setSelectedAssetSymbol] = useState(assets[0].symbol);
+  const [amount, setAmount] = useState('');
+  const [isDepositing, setIsDepositing] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const handleDeposit = () => {
-    toast({
-      title: "Deposit Initiated",
-      description: "Your deposit is being processed and will reflect in your balance shortly.",
-    });
+  const handleDeposit = async () => {
+    if (!user) {
+      toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+      return;
+    }
+    const depositAmount = parseFloat(amount);
+    const selectedAsset = assets.find(a => a.symbol === selectedAssetSymbol);
+
+    if (!selectedAsset || isNaN(depositAmount) || depositAmount <= 0) {
+      toast({ title: "Error", description: "Please enter a valid amount.", variant: "destructive" });
+      return;
+    }
+
+    setIsDepositing(true);
+    try {
+      const result = await depositCrypto({
+        userId: user.uid,
+        assetSymbol: selectedAsset.symbol,
+        assetName: selectedAsset.name,
+        amount: depositAmount,
+      });
+
+      if (result.success) {
+        toast({ title: "Success", description: result.message });
+        setAmount('');
+        setOpen(false);
+      } else {
+        toast({ title: "Error", description: result.message, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+    } finally {
+      setIsDepositing(false);
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Upload className="mr-2 h-4 w-4" /> Deposit
@@ -52,7 +90,7 @@ export function DepositDialog() {
         <DialogHeader>
           <DialogTitle>Deposit Crypto</DialogTitle>
           <DialogDescription>
-            Select an asset and generate a deposit address.
+            Select an asset and amount to deposit into your wallet. This is a simulation.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -60,7 +98,7 @@ export function DepositDialog() {
             <Label htmlFor="asset" className="text-right">
               Asset
             </Label>
-            <Select>
+            <Select value={selectedAssetSymbol} onValueChange={setSelectedAssetSymbol} disabled={isDepositing}>
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select an asset" />
               </SelectTrigger>
@@ -77,23 +115,24 @@ export function DepositDialog() {
             </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-             <Label htmlFor="address" className="text-right">
-              Address
+             <Label htmlFor="amount" className="text-right">
+              Amount
             </Label>
              <Input
-              id="address"
-              defaultValue="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
-              readOnly
+              id="amount"
+              type="number"
+              placeholder="0.00"
               className="col-span-3"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              disabled={isDepositing}
             />
           </div>
-           <p className="text-center text-sm text-muted-foreground pt-2">
-            Only send BTC to this address. Sending any other asset will result in permanent loss.
-          </p>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={handleDeposit}>
-            Done
+          <Button type="button" onClick={handleDeposit} disabled={isDepositing}>
+            {isDepositing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isDepositing ? 'Depositing...' : 'Submit Deposit'}
           </Button>
         </DialogFooter>
       </DialogContent>
