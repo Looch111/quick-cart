@@ -151,7 +151,7 @@ export default function SwapView() {
                 <Label htmlFor="to-amount">You receive</Label>
                 <div className="flex gap-2">
                   <Input id="to-amount" placeholder="0.0" type="number" value={toAmount} onChange={handleToAmountChange} />
-                   <Select value={toCurrency} onValue-change={setToCurrency}>
+                   <Select value={toCurrency} onValueChange={setToCurrency}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select asset" />
                     </Trigger>
