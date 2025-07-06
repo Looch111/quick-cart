@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wallet, ArrowRightLeft, History, Landmark } from "lucide-react";
+import { Wallet, ArrowRightLeft, History, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Wallet", icon: Wallet },
   { href: "/swap", label: "Trade", icon: ArrowRightLeft },
-  { href: "/sell-naira", label: "Sell Naira", icon: Landmark },
+  { href: "/sell", label: "Sell", icon: Gift },
   { href: "/history", label: "History", icon: History },
 ];
 
