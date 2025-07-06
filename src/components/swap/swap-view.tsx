@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowRightLeft } from 'lucide-react';
+import { ArrowRightLeft, Loader2 } from 'lucide-react';
 import { BtcIcon } from '@/components/icons/btc-icon';
 import { EthIcon } from '@/components/icons/eth-icon';
 import { UsdcIcon } from '@/components/icons/usdc-icon';
@@ -28,6 +28,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { swapAssets } from '@/app/actions/swap-actions';
+import { getPrices } from '@/app/actions/pricing-actions';
 
 const assets = [
   { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC' },
@@ -59,22 +60,44 @@ export default function SwapView() {
   const [fromAmount, setFromAmount] = useState('');
   const [toAmount, setToAmount] = useState('');
   const [isSwapping, setIsSwapping] = useState(false);
+  const [rate, setRate] = useState<number | null>(null);
+  const [isFetchingRate, setIsFetchingRate] = useState(false);
 
-  const handleSwapCurrencies = () => {
-    const tempCurrency = fromCurrency;
-    setFromCurrency(toCurrency);
-    setToCurrency(tempCurrency);
 
-    const tempAmount = fromAmount;
-    setFromAmount(toAmount);
-    setToAmount(tempAmount);
-  };
+  const fetchRate = useCallback(async () => {
+    if (fromCurrency === toCurrency) {
+      setRate(1);
+      return;
+    }
+    setIsFetchingRate(true);
+    setRate(null);
+    try {
+      const prices = await getPrices([fromCurrency, toCurrency]);
+      const fromPrice = prices.find(p => p.symbol === fromCurrency)?.priceUsd;
+      const toPrice = prices.find(p => p.symbol === toCurrency)?.priceUsd;
 
+      if (fromPrice && toPrice && toPrice > 0) {
+        setRate(fromPrice / toPrice);
+      } else {
+        setRate(null);
+      }
+    } catch (error) {
+      console.error("Failed to fetch rate:", error);
+      setRate(null);
+      toast({ title: "Error", description: "Could not fetch conversion rate.", variant: "destructive" });
+    } finally {
+      setIsFetchingRate(false);
+    }
+  }, [fromCurrency, toCurrency, toast]);
+
+  useEffect(() => {
+    fetchRate();
+  }, [fetchRate]);
+  
   const handleFromAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = e.target.value;
     setFromAmount(amount);
-    const rate = 15.3;
-    if (amount && !isNaN(parseFloat(amount))) {
+    if (amount && !isNaN(parseFloat(amount)) && rate) {
       setToAmount((parseFloat(amount) * rate).toFixed(5));
     } else {
       setToAmount('');
@@ -84,12 +107,21 @@ export default function SwapView() {
   const handleToAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = e.target.value;
     setToAmount(amount);
-    const rate = 15.3;
-    if (amount && !isNaN(parseFloat(amount))) {
+    if (amount && !isNaN(parseFloat(amount)) && rate) {
       setFromAmount((parseFloat(amount) / rate).toFixed(5));
     } else {
       setFromAmount('');
     }
+  };
+  
+  const handleSwapCurrencies = () => {
+    const tempCurrency = fromCurrency;
+    setFromCurrency(toCurrency);
+    setToCurrency(tempCurrency);
+
+    const tempAmount = fromAmount;
+    setFromAmount(toAmount);
+    setToAmount(tempAmount);
   };
 
   const handleSwap = async () => {
@@ -159,7 +191,7 @@ export default function SwapView() {
                     type="number"
                     value={fromAmount}
                     onChange={handleFromAmountChange} 
-                    disabled={isSwapping}
+                    disabled={isSwapping || isFetchingRate}
                   />
                   <Select value={fromCurrency} onValueChange={setFromCurrency} disabled={isSwapping}>
                     <SelectTrigger className="w-[180px]">
@@ -188,7 +220,7 @@ export default function SwapView() {
               <div className="space-y-2">
                 <Label htmlFor="to-amount">You receive</Label>
                 <div className="flex gap-2">
-                  <Input id="to-amount" placeholder="0.0" type="number" value={toAmount} onChange={handleToAmountChange} disabled={isSwapping} />
+                  <Input id="to-amount" placeholder="0.0" type="number" value={toAmount} onChange={handleToAmountChange} disabled={isSwapping || isFetchingRate} />
                    <Select value={toCurrency} onValueChange={setToCurrency} disabled={isSwapping}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select asset" />
@@ -207,13 +239,19 @@ export default function SwapView() {
                 </div>
               </div>
               
-              <div className="text-sm text-muted-foreground pt-2">
-                1 {fromCurrency} ≈ 15.3 {toCurrency}
+              <div className="text-sm text-muted-foreground pt-2 h-5">
+                {isFetchingRate 
+                    ? <span className="flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Fetching rate...</span> 
+                    : rate 
+                        ? `1 ${fromCurrency} ≈ ${rate.toFixed(5)} ${toCurrency}` 
+                        : 'Rate unavailable'
+                }
               </div>
 
             </CardContent>
             <CardFooter>
-              <Button className="w-full" onClick={handleSwap} disabled={isSwapping}>
+              <Button className="w-full" onClick={handleSwap} disabled={isSwapping || isFetchingRate || !rate}>
+                 {isSwapping && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSwapping ? 'Swapping...' : 'Swap'}
               </Button>
             </CardFooter>
