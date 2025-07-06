@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,14 +11,22 @@ import { BtcIcon } from '@/components/icons/btc-icon';
 import { EthIcon } from '@/components/icons/eth-icon';
 import { UsdcIcon } from '@/components/icons/usdc-icon';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { sellCryptoForNaira } from '@/app/actions/sell-actions';
+import { getPrices } from '@/app/actions/pricing-actions';
+import type { AssetPrice } from '@/services/market-data-service';
 
-const assets = [
-  { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC', priceUsd: 65000 },
-  { icon: EthIcon, name: 'Ethereum', symbol: 'ETH', priceUsd: 3500 },
-  { icon: UsdcIcon, name: 'USD Coin', symbol: 'USDC', priceUsd: 1 },
+const assetIcons: { [key: string]: React.ElementType } = {
+  BTC: BtcIcon,
+  ETH: EthIcon,
+  USDC: UsdcIcon,
+};
+
+const assetList = [
+  { name: 'Bitcoin', symbol: 'BTC' },
+  { name: 'Ethereum', symbol: 'ETH' },
+  { name: 'USD Coin', symbol: 'USDC' },
 ];
 
 const NGN_RATE = 1450; // Dummy rate: 1 USD = 1450 NGN
@@ -30,28 +38,46 @@ export default function SellNairaView() {
   const [amount, setAmount] = useState('');
   const [nairaAmount, setNairaAmount] = useState('');
   const [isSelling, setIsSelling] = useState(false);
+  const [prices, setPrices] = useState<AssetPrice[]>([]);
+  const [isLoadingPrices, setIsLoadingPrices] = useState(true);
+
+  const fetchAssetPrices = useCallback(async () => {
+    setIsLoadingPrices(true);
+    try {
+      const symbols = assetList.map(a => a.symbol);
+      const fetchedPrices = await getPrices(symbols);
+      setPrices(fetchedPrices);
+    } catch (error) {
+      toast({ title: "Error", description: "Could not load asset prices.", variant: "destructive" });
+    } finally {
+      setIsLoadingPrices(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchAssetPrices();
+  }, [fetchAssetPrices]);
+
+  const updateNairaAmount = useCallback((cryptoValue: string, assetSymbol: string) => {
+    const selectedAssetPrice = prices.find(p => p.symbol === assetSymbol)?.priceUsd;
+    if (cryptoValue && !isNaN(parseFloat(cryptoValue)) && selectedAssetPrice) {
+      const calculatedNaira = parseFloat(cryptoValue) * selectedAssetPrice * NGN_RATE;
+      setNairaAmount(calculatedNaira.toLocaleString('en-NG', { style: 'currency', currency: 'NGN' }));
+    } else {
+      setNairaAmount('');
+    }
+  }, [prices]);
+
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setAmount(value);
-    const selectedAsset = assets.find(a => a.symbol === selectedAssetSymbol);
-    if (value && !isNaN(parseFloat(value)) && selectedAsset) {
-      const calculatedNaira = parseFloat(value) * selectedAsset.priceUsd * NGN_RATE;
-      setNairaAmount(calculatedNaira.toLocaleString('en-NG', { style: 'currency', currency: 'NGN' }));
-    } else {
-      setNairaAmount('');
-    }
+    updateNairaAmount(value, selectedAssetSymbol);
   };
 
   const handleAssetChange = (symbol: string) => {
     setSelectedAssetSymbol(symbol);
-    const selectedAsset = assets.find(a => a.symbol === symbol);
-     if (amount && !isNaN(parseFloat(amount)) && selectedAsset) {
-      const calculatedNaira = parseFloat(amount) * selectedAsset.priceUsd * NGN_RATE;
-      setNairaAmount(calculatedNaira.toLocaleString('en-NG', { style: 'currency', currency: 'NGN' }));
-    } else {
-      setNairaAmount('');
-    }
+    updateNairaAmount(amount, symbol);
   }
 
   const handleSell = async () => {
@@ -105,28 +131,36 @@ export default function SellNairaView() {
           </Alert>
           <div className="space-y-2">
             <Label htmlFor="crypto-asset">You Sell</Label>
-            <Select value={selectedAssetSymbol} onValueChange={handleAssetChange} disabled={isSelling}>
+            <Select value={selectedAssetSymbol} onValueChange={handleAssetChange} disabled={isSelling || isLoadingPrices}>
               <SelectTrigger id="crypto-asset">
                 <SelectValue placeholder="Select an asset" />
               </SelectTrigger>
               <SelectContent>
-                {assets.map(asset => (
-                  <SelectItem key={asset.symbol} value={asset.symbol}>
-                    <div className="flex items-center gap-2">
-                      <asset.icon className="w-5 h-5" />
-                      <span>{asset.name} ({asset.symbol})</span>
-                    </div>
-                  </SelectItem>
-                ))}
+                {assetList.map(asset => {
+                  const Icon = assetIcons[asset.symbol];
+                  return (
+                    <SelectItem key={asset.symbol} value={asset.symbol}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-5 h-5" />
+                        <span>{asset.name} ({asset.symbol})</span>
+                      </div>
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="crypto-amount">Amount</Label>
-            <Input id="crypto-amount" placeholder="0.00" type="number" value={amount} onChange={handleAmountChange} disabled={isSelling} />
+            <Input id="crypto-amount" placeholder="0.00" type="number" value={amount} onChange={handleAmountChange} disabled={isSelling || isLoadingPrices} />
           </div>
           <div className="h-16 flex items-center justify-center rounded-lg bg-muted text-center p-2">
-            {nairaAmount ? (
+            {isLoadingPrices ? (
+                <div className="flex items-center text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <span>Loading prices...</span>
+                </div>
+            ) : nairaAmount ? (
                 <div>
                   <p className="text-sm text-muted-foreground">You will receive approximately</p>
                   <p className="font-bold text-primary text-2xl">{nairaAmount}</p>
@@ -137,7 +171,8 @@ export default function SellNairaView() {
            </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" onClick={handleSell} disabled={isSelling}>
+          <Button className="w-full" onClick={handleSell} disabled={isSelling || isLoadingPrices || !amount}>
+            {isSelling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {isSelling ? 'Processing...' : 'Sell for Naira'}
           </Button>
         </CardFooter>
