@@ -128,7 +128,7 @@ export default function SwapView() {
                       <SelectValue placeholder="Select asset" />
                     </SelectTrigger>
                     <SelectContent>
-                      {assets.map(asset => (
+                      {assets.map((asset) => (
                         <SelectItem key={asset.symbol} value={asset.symbol}>
                            <div className="flex items-center gap-2">
                             <asset.icon className="w-5 h-5" />
@@ -156,7 +156,7 @@ export default function SwapView() {
                       <SelectValue placeholder="Select asset" />
                     </Trigger>
                     <SelectContent>
-                      {assets.map(asset => (
+                      {assets.map((asset) => (
                         <SelectItem key={asset.symbol} value={asset.symbol}>
                           <div className="flex items-center gap-2">
                             <asset.icon className="w-5 h-5" />
