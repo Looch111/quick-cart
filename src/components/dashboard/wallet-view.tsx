@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,24 +10,94 @@ import { EthIcon } from "@/components/icons/eth-icon";
 import { UsdcIcon } from "@/components/icons/usdc-icon";
 import { DepositDialog } from "../modals/deposit-dialog";
 import { WithdrawDialog } from "../modals/withdraw-dialog";
+import { useAuth } from "@/hooks/use-auth";
+import { db } from "@/lib/firebase/client";
+import { collection, query, onSnapshot, doc, getDoc } from "firebase/firestore";
+import { Skeleton } from "../ui/skeleton";
 
-const initialAssets = [
-  { icon: BtcIcon, name: "Bitcoin", symbol: "BTC", balance: "2.543", value: "165,342.78" },
-  { icon: EthIcon, name: "Ethereum", symbol: "ETH", balance: "42.81", value: "148,871.20" },
-  { icon: UsdcIcon, name: "USD Coin", symbol: "USDC", balance: "10,000.00", value: "10,000.00" },
-  { icon: () => <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary text-lg">A</div>, name: "Cool Ape NFT", symbol: "#2345", balance: "1", value: "2,400.00" },
-];
-
-const initialTransactions = [
-  { id: "txn_1", type: "Deposit", status: "Completed", date: "2024-05-20", amount: "+0.5 BTC" },
-  { id: "txn_2", type: "Withdrawal", status: "Pending", date: "2024-05-19", amount: "-10.2 ETH" },
-  { id: "txn_3", type: "Swap", status: "Failed", date: "2024-05-18", amount: "BTC > ETH" },
-  { id: "txn_4", type: "Deposit", status: "Completed", date: "2024-05-17", amount: "+15.0 ETH" },
-];
+const iconMap: { [key: string]: React.ElementType } = {
+  BTC: BtcIcon,
+  ETH: EthIcon,
+  USDC: UsdcIcon,
+  default: () => <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary text-lg">A</div>
+};
 
 export default function WalletView() {
-  const [assets, setAssets] = useState(initialAssets);
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const { user } = useAuth();
+  const [assets, setAssets] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [totalBalance, setTotalBalance] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    const fetchTotalBalance = async () => {
+      const userDocRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        setTotalBalance(docSnap.data().totalBalance);
+      }
+    };
+    
+    fetchTotalBalance();
+
+    const assetsQuery = query(collection(db, `users/${user.uid}/assets`));
+    const assetsUnsubscribe = onSnapshot(assetsQuery, (querySnapshot) => {
+      const assetsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAssets(assetsData);
+      if(loading) setLoading(false);
+    });
+
+    const transactionsQuery = query(collection(db, `users/${user.uid}/transactions`));
+    const transactionsUnsubscribe = onSnapshot(transactionsQuery, (querySnapshot) => {
+      const transactionsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTransactions(transactionsData);
+    });
+
+    return () => {
+      assetsUnsubscribe();
+      transactionsUnsubscribe();
+    };
+  }, [user]);
+
+  if (loading) {
+    return (
+      <main className="flex-1 space-y-6 p-4 lg:p-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-48 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-4 w-32 mt-2" />
+          </CardContent>
+        </Card>
+        <Skeleton className="h-10 w-full" />
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+  
+  if (!user) {
+    return (
+       <main className="flex-1 space-y-6 p-4 lg:p-6">
+        <p>Please log in to view your wallet.</p>
+       </main>
+    )
+  }
 
   return (
     <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
@@ -40,7 +110,7 @@ export default function WalletView() {
           <span className="text-sm text-muted-foreground">USD</span>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold font-headline">$326,613.98</div>
+          <div className="text-4xl font-bold font-headline">${totalBalance || '0.00'}</div>
           <p className="text-xs text-muted-foreground">+2.1% from last month</p>
           <div className="mt-6 flex space-x-4">
             <DepositDialog />
@@ -69,21 +139,24 @@ export default function WalletView() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assets.map((asset) => (
-                    <TableRow key={asset.symbol}>
-                      <TableCell>
-                        <div className="flex items-center gap-4">
-                          <asset.icon className="h-8 w-8" />
-                          <div>
-                            <div className="font-medium">{asset.name}</div>
-                            <div className="text-sm text-muted-foreground">{asset.symbol}</div>
+                  {assets.map((asset) => {
+                    const IconComponent = iconMap[asset.id] || iconMap.default;
+                    return (
+                      <TableRow key={asset.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-4">
+                            <IconComponent className="h-8 w-8" />
+                            <div>
+                              <div className="font-medium">{asset.name}</div>
+                              <div className="text-sm text-muted-foreground">{asset.id}</div>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono">{asset.balance}</TableCell>
-                      <TableCell className="hidden sm:table-cell text-right font-mono">${asset.value}</TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">{asset.balance}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-right font-mono">${asset.value}</TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </CardContent>
