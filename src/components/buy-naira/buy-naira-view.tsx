@@ -13,9 +13,9 @@ import { UsdcIcon } from '@/components/icons/usdc-icon';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { buyCryptoWithNaira } from '@/app/actions/buy-actions';
 import { getPrices } from '@/app/actions/pricing-actions';
 import type { AssetPrice } from '@/services/market-data-service';
+import { buyCrypto } from '@/ai/flows/buy-crypto-flow';
 
 const assetIcons: { [key: string]: React.ElementType } = {
   BTC: BtcIcon,
@@ -85,7 +85,6 @@ export default function BuyNairaView() {
       return;
     }
     const nairaAmountNum = parseFloat(nairaAmount);
-    const cryptoAmountNum = parseFloat(cryptoAmount);
     const selectedAsset = assetList.find(a => a.symbol === selectedAssetSymbol);
 
     if (!selectedAsset || isNaN(nairaAmountNum) || nairaAmountNum <= 0) {
@@ -95,11 +94,10 @@ export default function BuyNairaView() {
 
     setIsBuying(true);
     try {
-      const result = await buyCryptoWithNaira({
+      const result = await buyCrypto({
         userId: user.uid,
         assetSymbol: selectedAsset.symbol,
         assetName: selectedAsset.name,
-        cryptoAmount: cryptoAmountNum,
         nairaAmount: nairaAmountNum,
       });
 
