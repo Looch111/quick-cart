@@ -25,6 +25,7 @@ import { EthIcon } from '@/components/icons/eth-icon';
 import { UsdcIcon } from '@/components/icons/usdc-icon';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
+import { useToast } from '@/hooks/use-toast';
 
 const assets = [
   { icon: BtcIcon, name: 'Bitcoin', symbol: 'BTC' },
@@ -49,6 +50,7 @@ const chartConfig: ChartConfig = {
 };
 
 export default function SwapView() {
+  const { toast } = useToast();
   const [fromCurrency, setFromCurrency] = useState('BTC');
   const [toCurrency, setToCurrency] = useState('ETH');
   const [fromAmount, setFromAmount] = useState('');
@@ -85,6 +87,21 @@ export default function SwapView() {
       setFromAmount('');
     }
   };
+
+  const handleSwap = () => {
+    if (!fromAmount || !toAmount) {
+        toast({
+            title: "Error",
+            description: "Please enter an amount to swap.",
+            variant: "destructive",
+        });
+        return;
+    }
+    toast({
+        title: "Swap Successful",
+        description: `You have successfully swapped ${fromAmount} ${fromCurrency} for ${toAmount} ${toCurrency}.`,
+    });
+  }
 
   return (
     <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
@@ -134,10 +151,10 @@ export default function SwapView() {
                 <Label htmlFor="to-amount">You receive</Label>
                 <div className="flex gap-2">
                   <Input id="to-amount" placeholder="0.0" type="number" value={toAmount} onChange={handleToAmountChange} />
-                   <Select value={toCurrency} onValueChange={setToCurrency}>
+                   <Select value={toCurrency} onValue-change={setToCurrency}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select asset" />
-                    </SelectTrigger>
+                    </Trigger>
                     <SelectContent>
                       {assets.map(asset => (
                         <SelectItem key={asset.symbol} value={asset.symbol}>
@@ -158,7 +175,7 @@ export default function SwapView() {
 
             </CardContent>
             <CardFooter>
-              <Button className="w-full">Swap</Button>
+              <Button className="w-full" onClick={handleSwap}>Swap</Button>
             </CardFooter>
           </Card>
         </div>

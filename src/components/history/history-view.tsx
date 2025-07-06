@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-const transactions = [
+const initialTransactions = [
     { id: "txn_1", type: "Deposit", status: "Completed", date: "2024-05-20", amount: "+0.5 BTC", details: "From external wallet" },
     { id: "txn_2", type: "Withdrawal", status: "Pending", date: "2024-05-19", amount: "-10.2 ETH", details: "To Binance" },
     { id: "txn_3", type: "Swap", status: "Failed", date: "2024-05-18", amount: "1 BTC > 15 ETH", details: "Insufficient funds" },
@@ -14,6 +15,7 @@ const transactions = [
 ];
 
 export default function HistoryView() {
+    const [transactions, setTransactions] = useState(initialTransactions);
     return (
         <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
             <Card className="shadow-lg">

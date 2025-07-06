@@ -8,8 +8,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Gift } from 'lucide-react';
 import { TelegramIcon } from '@/components/icons/telegram-icon';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SellView() {
+  const { toast } = useToast();
+
+  const handleSellGiftCard = () => {
+    toast({
+      title: "Success",
+      description: "Your gift card has been submitted for verification.",
+    });
+  };
+
+  const handleBuyStars = () => {
+    toast({
+      title: "Purchase Successful",
+      description: "Telegram Stars have been sent to your account.",
+    });
+  };
+
   return (
     <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
       <Tabs defaultValue="gift-cards" className="w-full">
@@ -58,7 +75,7 @@ export default function SellView() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">Sell Gift Card</Button>
+              <Button className="w-full" onClick={handleSellGiftCard}>Sell Gift Card</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -83,7 +100,7 @@ export default function SellView() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">Buy Stars</Button>
+              <Button className="w-full" onClick={handleBuyStars}>Buy Stars</Button>
             </CardFooter>
           </Card>
         </TabsContent>

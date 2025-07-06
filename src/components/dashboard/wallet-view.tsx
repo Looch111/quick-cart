@@ -1,23 +1,24 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Download, Upload } from "lucide-react";
 import { BtcIcon } from "@/components/icons/btc-icon";
 import { EthIcon } from "@/components/icons/eth-icon";
 import { UsdcIcon } from "@/components/icons/usdc-icon";
+import { DepositDialog } from "../modals/deposit-dialog";
+import { WithdrawDialog } from "../modals/withdraw-dialog";
 
-const assets = [
+const initialAssets = [
   { icon: BtcIcon, name: "Bitcoin", symbol: "BTC", balance: "2.543", value: "165,342.78" },
   { icon: EthIcon, name: "Ethereum", symbol: "ETH", balance: "42.81", value: "148,871.20" },
   { icon: UsdcIcon, name: "USD Coin", symbol: "USDC", balance: "10,000.00", value: "10,000.00" },
   { icon: () => <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary text-lg">A</div>, name: "Cool Ape NFT", symbol: "#2345", balance: "1", value: "2,400.00" },
 ];
 
-const transactions = [
+const initialTransactions = [
   { id: "txn_1", type: "Deposit", status: "Completed", date: "2024-05-20", amount: "+0.5 BTC" },
   { id: "txn_2", type: "Withdrawal", status: "Pending", date: "2024-05-19", amount: "-10.2 ETH" },
   { id: "txn_3", type: "Swap", status: "Failed", date: "2024-05-18", amount: "BTC > ETH" },
@@ -25,6 +26,9 @@ const transactions = [
 ];
 
 export default function WalletView() {
+  const [assets, setAssets] = useState(initialAssets);
+  const [transactions, setTransactions] = useState(initialTransactions);
+
   return (
     <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
       <Card className="shadow-lg">
@@ -39,12 +43,8 @@ export default function WalletView() {
           <div className="text-4xl font-bold font-headline">$326,613.98</div>
           <p className="text-xs text-muted-foreground">+2.1% from last month</p>
           <div className="mt-6 flex space-x-4">
-            <Button>
-              <Upload className="mr-2 h-4 w-4" /> Deposit
-            </Button>
-            <Button variant="secondary">
-              <Download className="mr-2 h-4 w-4" /> Withdraw
-            </Button>
+            <DepositDialog />
+            <WithdrawDialog />
           </div>
         </CardContent>
       </Card>
