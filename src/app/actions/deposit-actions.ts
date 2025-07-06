@@ -35,9 +35,9 @@ export async function getDepositAddress(input: { userId: string; assetSymbol: st
 
 
 /**
- * NOTE: This function would NOT be called by the user interface.
- * In a real application, this logic would be triggered by a secure webhook from a
+ * NOTE: This function would typically be called by a secure webhook from a
  * wallet infrastructure service after a deposit is confirmed on the blockchain.
+ * We are also using it for manual admin credits.
  */
 export async function creditUserAccount(input: {
   userId: string;
@@ -55,7 +55,8 @@ export async function creditUserAccount(input: {
   const validation = depositSchema.safeParse(input);
   if (!validation.success) {
     console.error("Invalid creditUserAccount input", validation.error);
-    return { success: false, message: 'Invalid input for crediting account.' };
+    const errorMessages = validation.error.errors.map(e => e.message).join(' ');
+    return { success: false, message: `Invalid input: ${errorMessages}` };
   }
 
   const { userId, assetSymbol, assetName, amount } = validation.data;
@@ -74,7 +75,7 @@ export async function creditUserAccount(input: {
         transaction.set(assetRef, {
           balance: newBalance.toString(),
           name: assetName,
-          value: "0"
+          value: "0" // Placeholder, should be updated based on new total value
         });
       }
 
