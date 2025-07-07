@@ -59,6 +59,7 @@ export function SignupForm() {
         email: user.email,
         createdAt: new Date(),
         totalBalance: "326613.98", // Initial total balance
+        nairaBalance: "50000", // Initial Naira balance
       });
       
       // Batch write initial assets and transactions

@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/lib/firebase/client';
-import { doc, runTransaction, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, runTransaction, collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { z } from 'zod';
 import { generateNewDepositAddress } from '@/services/wallet-service';
 
@@ -30,6 +30,52 @@ export async function getDepositAddress(input: { userId: string; assetSymbol: st
   } catch (error: any) {
     console.error('Failed to get deposit address:', error);
     return { success: false, address: null, message: error.message || 'An unexpected error occurred.' };
+  }
+}
+
+const depositNairaSchema = z.object({
+  userId: z.string().min(1),
+  amount: z.number().positive("Amount must be positive."),
+});
+
+/**
+ * Simulates a Naira deposit from a payment gateway like Flutterwave.
+ * In a real app, this would be triggered by a webhook after a successful payment.
+ */
+export async function depositNaira(input: { userId: string, amount: number }) {
+  const validation = depositNairaSchema.safeParse(input);
+  if (!validation.success) {
+    return { success: false, message: 'Invalid input.' };
+  }
+  const { userId, amount } = validation.data;
+  
+  try {
+    await runTransaction(db, async (transaction) => {
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await transaction.get(userRef);
+
+      if (!userDoc.exists()) {
+        throw new Error("User document not found.");
+      }
+
+      const currentBalance = parseFloat(userDoc.data().nairaBalance || '0');
+      const newBalance = currentBalance + amount;
+      
+      transaction.update(userRef, { nairaBalance: newBalance.toString() });
+
+      const transactionsCollectionRef = collection(db, `users/${userId}/transactions`);
+      transaction.set(doc(transactionsCollectionRef), {
+        type: 'Deposit',
+        status: 'Completed',
+        date: new Date().toISOString().split('T')[0],
+        amount: `+₦${amount.toLocaleString()}`,
+        timestamp: serverTimestamp(),
+      });
+    });
+     return { success: true, message: `Successfully deposited ₦${amount.toLocaleString()}` };
+  } catch (error: any) {
+    console.error("Naira deposit transaction failed: ", error);
+    return { success: false, message: error.message || 'An unexpected error occurred.' };
   }
 }
 

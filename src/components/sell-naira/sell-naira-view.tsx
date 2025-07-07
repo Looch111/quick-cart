@@ -37,6 +37,7 @@ export default function SellNairaView() {
   const [selectedAssetSymbol, setSelectedAssetSymbol] = useState('BTC');
   const [amount, setAmount] = useState('');
   const [nairaAmount, setNairaAmount] = useState('');
+  const [nairaAmountNumber, setNairaAmountNumber] = useState(0);
   const [isSelling, setIsSelling] = useState(false);
   const [prices, setPrices] = useState<AssetPrice[]>([]);
   const [isLoadingPrices, setIsLoadingPrices] = useState(true);
@@ -63,8 +64,10 @@ export default function SellNairaView() {
     if (cryptoValue && !isNaN(parseFloat(cryptoValue)) && selectedAssetPrice) {
       const calculatedNaira = parseFloat(cryptoValue) * selectedAssetPrice * NGN_RATE;
       setNairaAmount(calculatedNaira.toLocaleString('en-NG', { style: 'currency', currency: 'NGN' }));
+      setNairaAmountNumber(calculatedNaira);
     } else {
       setNairaAmount('');
+      setNairaAmountNumber(0);
     }
   }, [prices]);
 
@@ -98,7 +101,7 @@ export default function SellNairaView() {
         userId: user.uid,
         assetSymbol: selectedAssetSymbol,
         cryptoAmount: cryptoAmountNum,
-        nairaAmount: nairaAmount,
+        nairaAmount: nairaAmountNumber,
       });
 
       if (result.success) {
@@ -120,13 +123,13 @@ export default function SellNairaView() {
       <Card className="shadow-lg max-w-lg mx-auto">
         <CardHeader>
           <CardTitle className="font-headline">Sell Crypto for Naira</CardTitle>
-          <CardDescription>Get Naira directly to your bank account.</CardDescription>
+          <CardDescription>Your Naira wallet will be credited instantly.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
            <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Payouts will be sent to the bank account specified in your <a href="/settings" className="font-bold underline hover:text-primary">Settings</a>. This is a simulation.
+              The credited amount can be withdrawn to your bank account by an admin. This is a manual process for now.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">

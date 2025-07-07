@@ -12,7 +12,7 @@ import { DepositDialog } from "../modals/deposit-dialog";
 import { WithdrawDialog } from "../modals/withdraw-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase/client";
-import { collection, query, onSnapshot, doc, getDoc } from "firebase/firestore";
+import { collection, query, onSnapshot, doc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 
 const iconMap: { [key: string]: React.ElementType } = {
@@ -23,10 +23,9 @@ const iconMap: { [key: string]: React.ElementType } = {
 };
 
 export default function WalletView() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [assets, setAssets] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [totalBalance, setTotalBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,22 +36,12 @@ export default function WalletView() {
 
     setLoading(true);
 
-    const fetchTotalBalance = async () => {
-      const userDocRef = doc(db, "users", user.uid);
-      const docSnap = await getDoc(userDocRef);
-      if (docSnap.exists()) {
-        setTotalBalance(docSnap.data().totalBalance);
-      }
-    };
-    
-    fetchTotalBalance();
-
     const assetsQuery = query(collection(db, `users/${user.uid}/assets`));
     const assetsUnsubscribe = onSnapshot(assetsQuery, (querySnapshot) => {
       const assetsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAssets(assetsData);
       if(loading) setLoading(false);
-    });
+    }, () => setLoading(false));
 
     const transactionsQuery = query(collection(db, `users/${user.uid}/transactions`));
     const transactionsUnsubscribe = onSnapshot(transactionsQuery, (querySnapshot) => {
@@ -65,6 +54,9 @@ export default function WalletView() {
       transactionsUnsubscribe();
     };
   }, [user]);
+
+  const nairaBalance = profile?.nairaBalance ? parseFloat(profile.nairaBalance) : 0;
+  const totalBalance = profile?.totalBalance || '0.00';
 
   if (loading) {
     return (
@@ -101,26 +93,43 @@ export default function WalletView() {
 
   return (
     <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
-      <Card className="shadow-lg">
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle className="font-headline text-sm font-medium">Total Balance</CardTitle>
-            <CardDescription>All your assets combined</CardDescription>
-          </div>
-          <span className="text-sm text-muted-foreground">USD</span>
-        </CardHeader>
-        <CardContent>
-          <div className="text-4xl font-bold font-headline">${totalBalance || '0.00'}</div>
-          <p className="text-xs text-muted-foreground">+2.1% from last month</p>
-          <div className="mt-6 flex space-x-4">
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="shadow-lg">
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+            <div>
+                <CardTitle className="font-headline text-sm font-medium">Total Crypto Value</CardTitle>
+                <CardDescription>All your crypto assets combined</CardDescription>
+            </div>
+            <span className="text-sm text-muted-foreground">USD</span>
+            </CardHeader>
+            <CardContent>
+            <div className="text-4xl font-bold font-headline">${totalBalance}</div>
+            <p className="text-xs text-muted-foreground">+2.1% from last month</p>
+            </CardContent>
+        </Card>
+        <Card className="shadow-lg">
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+            <div>
+                <CardTitle className="font-headline text-sm font-medium">Naira Wallet</CardTitle>
+                <CardDescription>Your available cash balance</CardDescription>
+            </div>
+            <span className="text-sm text-muted-foreground">NGN</span>
+            </CardHeader>
+            <CardContent>
+            <div className="text-4xl font-bold font-headline">₦{nairaBalance.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Ready to spend</p>
+            </CardContent>
+        </Card>
+      </div>
+
+       <div className="flex space-x-4">
             <DepositDialog />
             <WithdrawDialog />
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+
       <Tabs defaultValue="assets" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="assets">Assets</TabsTrigger>
+          <TabsTrigger value="assets">Crypto Assets</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
         </TabsList>
         <TabsContent value="assets">

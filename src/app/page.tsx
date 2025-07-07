@@ -6,10 +6,10 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/com
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import WalletView from "@/components/dashboard/wallet-view";
 import SellNairaView from "@/components/sell-naira/sell-naira-view";
-import { Landmark, Wallet, ShoppingCart } from "lucide-react";
-import BuyNairaView from "@/components/buy-naira/buy-naira-view";
+import { Landmark, Wallet, Banknote } from "lucide-react";
+import DepositNairaView from "@/components/deposit-naira/deposit-naira-view";
 
-const TABS = ["wallet", "buy-naira", "sell-naira"];
+const TABS = ["wallet", "deposit-naira", "sell-naira"];
 
 export default function Home() {
   const [api, setApi] = useState<CarouselApi>();
@@ -49,13 +49,13 @@ export default function Home() {
               <Wallet className="mr-2 h-4 w-4" />
               My Wallet
             </TabsTrigger>
-            <TabsTrigger value="buy-naira">
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Buy
+            <TabsTrigger value="deposit-naira">
+              <Banknote className="mr-2 h-4 w-4" />
+              Deposit Naira
             </TabsTrigger>
             <TabsTrigger value="sell-naira">
               <Landmark className="mr-2 h-4 w-4" />
-              Sell
+              Sell for Naira
             </TabsTrigger>
           </TabsList>
         </div>
@@ -65,7 +65,7 @@ export default function Home() {
               <WalletView />
             </CarouselItem>
             <CarouselItem>
-              <BuyNairaView />
+              <DepositNairaView />
             </CarouselItem>
             <CarouselItem>
               <SellNairaView />

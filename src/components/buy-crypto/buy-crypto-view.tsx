@@ -11,7 +11,7 @@ import { BtcIcon } from '@/components/icons/btc-icon';
 import { EthIcon } from '@/components/icons/eth-icon';
 import { UsdcIcon } from '@/components/icons/usdc-icon';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, Loader2 } from 'lucide-react';
+import { Info, Loader2, Wallet } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { getPrices } from '@/app/actions/pricing-actions';
 import type { AssetPrice } from '@/services/market-data-service';
@@ -31,15 +31,17 @@ const assetList = [
 
 const NGN_RATE = 1450; // Dummy rate: 1 USD = 1450 NGN
 
-export default function BuyNairaView() {
+export default function BuyCryptoView() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [selectedAssetSymbol, setSelectedAssetSymbol] = useState('BTC');
   const [nairaAmount, setNairaAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [isBuying, setIsBuying] = useState(false);
   const [prices, setPrices] = useState<AssetPrice[]>([]);
   const [isLoadingPrices, setIsLoadingPrices] = useState(true);
+
+  const nairaBalance = profile?.nairaBalance ? parseFloat(profile.nairaBalance) : 0;
 
   const fetchAssetPrices = useCallback(async () => {
     setIsLoadingPrices(true);
@@ -92,6 +94,11 @@ export default function BuyNairaView() {
       return;
     }
 
+     if (nairaAmountNum > nairaBalance) {
+      toast({ title: "Error", description: "Insufficient Naira balance.", variant: "destructive" });
+      return;
+    }
+
     setIsBuying(true);
     try {
       const result = await buyCrypto({
@@ -119,19 +126,19 @@ export default function BuyNairaView() {
     <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
       <Card className="shadow-lg max-w-lg mx-auto">
         <CardHeader>
-          <CardTitle className="font-headline">Buy Crypto with Naira</CardTitle>
-          <CardDescription>Fund your wallet easily with a bank transfer.</CardDescription>
+          <CardTitle className="font-headline">Buy Crypto</CardTitle>
+          <CardDescription>Use your Naira balance to buy crypto instantly.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-           <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              This is a simulation. No real money will be transferred. Purchased crypto will be added to your wallet.
+           <Alert variant="default" className="bg-primary/10 border-primary/20">
+            <Wallet className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-primary">
+              Available to spend: <span className="font-bold">₦{nairaBalance.toLocaleString()}</span>
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
-            <Label htmlFor="naira-amount">You Spend</Label>
-            <Input id="naira-amount" placeholder="e.g., 100,000 NGN" type="number" value={nairaAmount} onChange={handleNairaAmountChange} disabled={isBuying || isLoadingPrices} />
+            <Label htmlFor="naira-amount">You Spend (NGN)</Label>
+            <Input id="naira-amount" placeholder="e.g., 50,000" type="number" value={nairaAmount} onChange={handleNairaAmountChange} disabled={isBuying || isLoadingPrices} />
           </div>
            <div className="space-y-2">
             <Label htmlFor="crypto-asset">You Get</Label>
@@ -173,7 +180,7 @@ export default function BuyNairaView() {
         <CardFooter>
           <Button className="w-full" onClick={handleBuy} disabled={isBuying || isLoadingPrices || !nairaAmount}>
             {isBuying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {isBuying ? "Processing..." : "Buy with Naira"}
+            {isBuying ? "Processing..." : "Buy Now"}
           </Button>
         </CardFooter>
       </Card>
