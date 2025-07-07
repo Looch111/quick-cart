@@ -8,12 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { BtcIcon } from "@/components/icons/btc-icon";
 import { EthIcon } from "@/components/icons/eth-icon";
 import { UsdcIcon } from "@/components/icons/usdc-icon";
-import { DepositDialog } from "../modals/deposit-dialog";
-import { WithdrawDialog } from "../modals/withdraw-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase/client";
 import { collection, query, onSnapshot, doc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
+import { Button } from "../ui/button";
+import { PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 const iconMap: { [key: string]: React.ElementType } = {
   BTC: BtcIcon,
@@ -113,7 +114,12 @@ export default function WalletView() {
                 <CardTitle className="font-headline text-sm font-medium">Naira Wallet</CardTitle>
                 <CardDescription>Your available cash balance</CardDescription>
             </div>
-            <span className="text-sm text-muted-foreground">NGN</span>
+             <Button asChild variant="outline" size="sm">
+                <Link href="/deposit-naira">
+                    <PlusCircle className="mr-2 h-4 w-4"/>
+                    Deposit
+                </Link>
+             </Button>
             </CardHeader>
             <CardContent>
             <div className="text-4xl font-bold font-headline">₦{nairaBalance.toLocaleString()}</div>
@@ -121,11 +127,6 @@ export default function WalletView() {
             </CardContent>
         </Card>
       </div>
-
-       <div className="flex space-x-4">
-            <DepositDialog />
-            <WithdrawDialog />
-        </div>
 
       <Tabs defaultValue="assets" className="w-full">
         <TabsList className="grid w-full grid-cols-2">

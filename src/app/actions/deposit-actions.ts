@@ -3,35 +3,6 @@
 import { db } from '@/lib/firebase/client';
 import { doc, runTransaction, collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { z } from 'zod';
-import { generateNewDepositAddress } from '@/services/wallet-service';
-
-const getAddressSchema = z.object({
-  userId: z.string().min(1),
-  assetSymbol: z.string().min(1),
-});
-
-/**
- * A server action to get a deposit address for a user.
- * This simulates the first step of a real deposit flow.
- * @param input The user ID and asset symbol.
- * @returns An object with the deposit address or an error message.
- */
-export async function getDepositAddress(input: { userId: string; assetSymbol: string; }) {
-  const validation = getAddressSchema.safeParse(input);
-  if (!validation.success) {
-    return { success: false, address: null, message: 'Invalid input.' };
-  }
-
-  const { userId, assetSymbol } = validation.data;
-
-  try {
-    const address = await generateNewDepositAddress(userId, assetSymbol);
-    return { success: true, address: address, message: 'Address generated successfully.' };
-  } catch (error: any) {
-    console.error('Failed to get deposit address:', error);
-    return { success: false, address: null, message: error.message || 'An unexpected error occurred.' };
-  }
-}
 
 const depositNairaSchema = z.object({
   userId: z.string().min(1),
