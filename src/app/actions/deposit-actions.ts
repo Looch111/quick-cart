@@ -75,7 +75,7 @@ export async function depositNaira(input: { userId: string, amount: number }) {
       });
     });
      return { success: true, message: `Successfully deposited ₦${amount.toLocaleString()}` };
-  } catch (error: any)
+  } catch (error: any) {
     console.error("Naira deposit transaction failed: ", error);
     return { success: false, message: error.message || 'An unexpected error occurred.' };
   }
