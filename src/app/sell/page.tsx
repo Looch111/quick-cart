@@ -1,10 +1,10 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import SellView from "@/components/sell/sell-view";
+import SellNairaView from "@/components/sell-naira/sell-naira-view";
 
 export default function SellPage() {
   return (
     <DashboardLayout>
-      <SellView />
+      <SellNairaView />
     </DashboardLayout>
   );
 }
