@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { BtcIcon } from "@/components/icons/btc-icon";
 import { EthIcon } from "@/components/icons/eth-icon";
 import { UsdcIcon } from "@/components/icons/usdc-icon";
@@ -12,9 +13,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase/client";
 import { collection, query, onSnapshot, doc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
-import { Button } from "../ui/button";
-import { PlusCircle } from "lucide-react";
-import Link from "next/link";
+import { DepositDialog } from "../modals/deposit-dialog";
+import { WithdrawDialog } from "../modals/withdraw-dialog";
 
 const iconMap: { [key: string]: React.ElementType } = {
   BTC: BtcIcon,
@@ -56,7 +56,6 @@ export default function WalletView() {
     };
   }, [user]);
 
-  const nairaBalance = profile?.nairaBalance ? parseFloat(profile.nairaBalance) : 0;
   const totalBalance = profile?.totalBalance || '0.00';
 
   if (loading) {
@@ -93,53 +92,31 @@ export default function WalletView() {
   }
 
   return (
-    <main className="flex-1 space-y-6 p-4 lg:p-6 animate-in fade-in-up-4 duration-500">
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-lg">
-            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-            <div>
-                <CardTitle className="font-headline text-sm font-medium">Total Crypto Value</CardTitle>
-                <CardDescription>All your crypto assets combined</CardDescription>
-            </div>
-            <span className="text-sm text-muted-foreground">USD</span>
-            </CardHeader>
-            <CardContent>
-            <div className="text-4xl font-bold font-headline">${totalBalance}</div>
-            <p className="text-xs text-muted-foreground">+2.1% from last month</p>
-            </CardContent>
-        </Card>
-        <Card className="shadow-lg">
-            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-            <div>
-                <CardTitle className="font-headline text-sm font-medium">Naira Wallet</CardTitle>
-                <CardDescription>Your available cash balance</CardDescription>
-            </div>
-             <Button asChild variant="outline" size="sm">
-                <Link href="/deposit-naira">
-                    <PlusCircle className="mr-2 h-4 w-4"/>
-                    Deposit
-                </Link>
-             </Button>
-            </CardHeader>
-            <CardContent>
-            <div className="text-4xl font-bold font-headline">₦{nairaBalance.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Ready to spend</p>
-            </CardContent>
-        </Card>
+    <main className="flex-1 space-y-6 animate-in fade-in-up-4 duration-500">
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline">Total Balance</CardTitle>
+          <CardDescription>The combined value of all your assets.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-4xl font-bold font-headline">${totalBalance}</div>
+          <p className="text-xs text-muted-foreground">+2.1% from last month</p>
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-2">
+        <DepositDialog />
+        <WithdrawDialog />
       </div>
 
       <Tabs defaultValue="assets" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="assets">Crypto Assets</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="assets">Your Assets</TabsTrigger>
+          <TabsTrigger value="transactions">Transaction History</TabsTrigger>
         </TabsList>
         <TabsContent value="assets">
           <Card>
-            <CardHeader>
-              <CardTitle className="font-headline">Your Assets</CardTitle>
-              <CardDescription>An overview of your cryptocurrency holdings.</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -174,11 +151,7 @@ export default function WalletView() {
         </TabsContent>
         <TabsContent value="transactions">
           <Card>
-            <CardHeader>
-              <CardTitle className="font-headline">Transaction History</CardTitle>
-              <CardDescription>Your recent deposits, withdrawals, and trades.</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <Table>
                 <TableHeader>
                   <TableRow>
