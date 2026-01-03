@@ -15,7 +15,7 @@ export const AppContextProvider = (props) => {
     const currency = process.env.NEXT_PUBLIC_CURRENCY
     const router = useRouter()
 
-    const [products, setProducts] = useState([])
+    const [products, setProducts] = useState(productsDummyData)
     const [userData, setUserData] = useState(null)
     const [cartItems, setCartItems] = useState({})
     const [wishlistItems, setWishlistItems] = useState({});
@@ -48,6 +48,15 @@ export const AppContextProvider = (props) => {
     const updateBanner = (updatedBanner) => {
         setBanners(banners.map(b => (b.id === updatedBanner.id ? updatedBanner : b)));
         toast.success("Banner updated successfully!");
+    }
+
+    const updateProduct = (updatedProduct) => {
+        setProducts(products.map(p => (p._id === updatedProduct._id ? updatedProduct : p)));
+        toast.success("Product updated successfully!");
+    }
+
+    const deleteProduct = (productId) => {
+        setProducts(products.filter(p => p._id !== productId));
     }
 
     const fetchProductData = async () => {
@@ -141,7 +150,7 @@ export const AppContextProvider = (props) => {
     }
 
     useEffect(() => {
-        fetchProductData()
+        // fetchProductData() // Data is now initialized directly
     }, [])
 
     useEffect(() => {
@@ -151,7 +160,7 @@ export const AppContextProvider = (props) => {
     const value = {
         currency, router,
         userData, fetchUserData, setUserData,
-        products, fetchProductData,
+        products, fetchProductData, setProducts, updateProduct, deleteProduct,
         cartItems, setCartItems,
         addToCart, updateCartQuantity,
         getCartCount, getCartAmount,
