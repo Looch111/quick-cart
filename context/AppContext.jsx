@@ -1,3 +1,4 @@
+
 'use client'
 import { assets, productsDummyData, userDummyData, addressDummyData, orderDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
@@ -130,6 +131,14 @@ export const AppContextProvider = (props) => {
         const storedOrders = localStorage.getItem('allOrders');
         setAllOrders(storedOrders ? JSON.parse(storedOrders) : orderDummyData);
     }
+
+    const fetchUserOrders = async () => {
+        if (!isBrowser || !userData) return { success: false, orders: [] };
+        const storedOrders = localStorage.getItem('allOrders');
+        const allOrders = storedOrders ? JSON.parse(storedOrders) : orderDummyData;
+        const userOrders = allOrders.filter(order => order.userId === userData._id);
+        return { success: true, orders: userOrders };
+    };
     
     const placeOrder = async (address, paymentMethod, totalAmount) => {
         const newOrder = {
@@ -141,7 +150,7 @@ export const AppContextProvider = (props) => {
             })),
             amount: totalAmount,
             address: address,
-            status: "Order Placed",
+            status: "Processing",
             date: Date.now(),
             paymentMethod: paymentMethod,
         };
@@ -324,7 +333,7 @@ export const AppContextProvider = (props) => {
         showLogin, setShowLogin,
         banners, addBanner, deleteBanner, updateBanner,
         userAddresses, addAddress, fetchUserAddresses,
-        allOrders, fetchAllOrders, placeOrder,
+        allOrders, fetchAllOrders, placeOrder, fetchUserOrders,
         walletBalance, fundWallet, walletTransactions,
     }
 

@@ -1,91 +1,132 @@
+
 'use client';
 import React, { useEffect, useState } from "react";
-import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
+import { Truck } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const MyOrders = () => {
-    const { currency, userData, setShowLogin, router } = useAppContext();
+    const { currency, fetchUserOrders, userData } = useAppContext();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
-        if (!userData) {
-            router.push('/');
-            setShowLogin(true);
-            return;
-        }
-
         const fetchOrders = async () => {
-            // In a real app, you would fetch orders for the logged-in user
-            // We are using a method from context that simulates this
-            const userOrders = await Promise.resolve(JSON.parse(localStorage.getItem('allOrders')) || []);
-            setOrders(userOrders.filter(order => order.userId === userData._id));
-            setLoading(false);
+            if (userData?._id) {
+                const response = await fetchUserOrders();
+                if (response.success) {
+                    setOrders(response.orders.sort((a, b) => new Date(b.date) - new Date(a.date)));
+                }
+                setLoading(false);
+            }
         };
 
-        fetchOrders();
-    }, [userData, router, setShowLogin]);
+        if (userData === null) {
+            setLoading(false);
+        }
 
-    if (!userData) {
-        return <Loading />;
+        if (userData) {
+            fetchOrders();
+        }
+    }, [userData, fetchUserOrders]);
+
+    const getStatusClass = (status) => {
+        switch (status) {
+            case 'Delivered': return 'bg-green-100 text-green-800';
+            case 'Shipped': return 'bg-blue-100 text-blue-800';
+            case 'Processing': return 'bg-yellow-100 text-yellow-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    if (loading) {
+        return (
+            <>
+                <Navbar />
+                <Loading />
+                <Footer />
+            </>
+        );
     }
-
+    
     return (
         <>
             <Navbar />
-            <div className="flex flex-col justify-between px-6 md:px-16 lg:px-32 py-6 min-h-screen pt-28">
-                <div className="space-y-5">
-                    <h2 className="text-lg font-medium mt-6">My Orders</h2>
-                    {loading ? <Loading /> : (
-                        orders.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                                <p className="text-lg text-gray-500">You have no orders yet.</p>
-                                <button onClick={() => router.push('/all-products')} className="mt-4 px-6 py-2 bg-orange-600 text-white rounded-md">Shop Now</button>
-                            </div>
-                        ) : (
-                            <div className="max-w-5xl border-t border-gray-300 text-sm">
-                                {orders.map((order, index) => (
-                                    <div key={index} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b border-gray-300">
-                                        <div className="flex-1 flex gap-5 max-w-80">
-                                            <Image
-                                                className="w-16 h-16 object-cover"
-                                                src={assets.box_icon}
-                                                alt="box_icon"
-                                            />
-                                            <p className="flex flex-col gap-3">
-                                                <span className="font-medium text-base">
-                                                    {order.items.map((item) => `${item.product.name} x ${item.quantity}`).join(", ")}
-                                                </span>
-                                                <span>Items: {order.items.reduce((sum, item) => sum + item.quantity, 0)}</span>
-                                            </p>
+            <div className="bg-gray-50/50 min-h-[calc(100vh-200px)]">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">My Orders</h1>
+                        <p className="text-gray-500">{orders.length} {orders.length === 1 ? 'Order' : 'Orders'}</p>
+                    </div>
+
+                    {!userData ? (
+                         <div className="text-center py-20 bg-white rounded-lg shadow-sm">
+                            <p className="text-gray-600">Please log in to see your orders.</p>
+                         </div>
+                    ) : orders.length === 0 ? (
+                        <div className="text-center py-20 bg-white rounded-lg shadow-sm">
+                            <p className="text-gray-600">You haven't placed any orders yet.</p>
+                            <button onClick={() => router.push('/all-products')} className="mt-4 text-orange-600 hover:underline">
+                                Start Shopping
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {orders.map((order) => (
+                                <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                                        <div className="flex flex-wrap gap-x-6 gap-y-2">
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase">Order Placed</p>
+                                                <p className="text-sm font-medium text-gray-800">{new Date(order.date).toLocaleDateString()}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase">Total</p>
+                                                <p className="text-sm font-medium text-gray-800">{currency}{order.amount.toFixed(2)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase">Order ID</p>
+                                                <p className="text-sm font-medium text-gray-600">#{order._id.slice(-8)}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p>
-                                                <span className="font-medium">{order.address.fullName}</span>
-                                                <br />
-                                                <span>{order.address.area}</span>
-                                                <br />
-                                                <span>{`${order.address.city}, ${order.address.state}`}</span>
-                                                <br />
-                                                <span>{order.address.phoneNumber}</span>
-                                            </p>
-                                        </div>
-                                        <p className="font-medium my-auto">{currency}{order.amount.toFixed(2)}</p>
-                                        <div>
-                                            <p className="flex flex-col">
-                                                <span>Method: {order.paymentMethod === 'wallet' ? 'Wallet' : 'COD'}</span>
-                                                <span>Date: {new Date(order.date).toLocaleDateString()}</span>
-                                                <span className="text-green-600 font-medium">{order.status}</span>
-                                            </p>
+                                        <div className="mt-2 sm:mt-0">
+                                            <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClass(order.status)}`}>
+                                                {order.status}
+                                            </span>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        )
+                                    <div className="p-4 sm:p-6 space-y-4">
+                                        {order.items.map((item, itemIndex) => (
+                                            <div key={itemIndex} className="flex items-start gap-4">
+                                                <Image
+                                                    src={item.product.image[0]}
+                                                    alt={item.product.name}
+                                                    width={80}
+                                                    height={80}
+                                                    className="w-20 h-20 object-contain rounded-md border bg-gray-50"
+                                                />
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold text-gray-800">{item.product.name}</p>
+                                                    <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                                    <p className="text-sm font-medium text-gray-700">{currency}{item.product.offerPrice.toFixed(2)}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
+                                        <button className="flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700">
+                                            <Truck size={16} />
+                                            Track Order
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
