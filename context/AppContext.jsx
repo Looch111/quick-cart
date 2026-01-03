@@ -45,6 +45,11 @@ export const AppContextProvider = (props) => {
         toast.success("Banner deleted.");
     }
 
+    const updateBanner = (updatedBanner) => {
+        setBanners(banners.map(b => (b.id === updatedBanner.id ? updatedBanner : b)));
+        toast.success("Banner updated successfully!");
+    }
+
     const fetchProductData = async () => {
         setProducts(productsDummyData)
     }
@@ -154,7 +159,7 @@ export const AppContextProvider = (props) => {
         getWishlistCount,
         handleLogout,
         showLogin, setShowLogin,
-        banners, addBanner, deleteBanner,
+        banners, addBanner, deleteBanner, updateBanner,
     }
 
     return (
