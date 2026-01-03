@@ -4,15 +4,19 @@ import React, { useEffect, useState } from "react";
 
 const OrderSummary = () => {
 
-  const { currency, router, getCartCount, getCartAmount } = useAppContext()
+  const { currency, router, getCartCount, getCartAmount, userAddresses, fetchUserAddresses } = useAppContext()
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const [userAddresses, setUserAddresses] = useState([]);
+  useEffect(() => {
+    if(userAddresses.length > 0) {
+      setSelectedAddress(userAddresses[0]);
+    }
+  }, [userAddresses])
 
-  const fetchUserAddresses = async () => {
-    setUserAddresses(addressDummyData);
-  }
+  useEffect(() => {
+    fetchUserAddresses();
+  }, [])
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
@@ -22,10 +26,6 @@ const OrderSummary = () => {
   const createOrder = async () => {
 
   }
-
-  useEffect(() => {
-    fetchUserAddresses();
-  }, [])
 
   return (
     <div className="w-full md:w-96 bg-gray-500/5 p-5">

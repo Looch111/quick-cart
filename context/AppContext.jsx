@@ -1,5 +1,5 @@
 'use client'
-import { assets, productsDummyData, userDummyData } from "@/assets/assets";
+import { assets, productsDummyData, userDummyData, addressDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -25,6 +25,14 @@ export const AppContextProvider = (props) => {
         { id: 'slide2', title: 'Experience Gaming Like Never Before', image: assets.header_playstation_image.src, link: '/all-products', status: 'active', buttonText: 'Shop now', linkText: 'Explore Deals' },
         { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: assets.header_macbook_image.src, link: '/all-products', status: 'active', buttonText: 'Order now', linkText: 'Learn More' },
     ]);
+    const [userAddresses, setUserAddresses] = useState([]);
+
+    const addAddress = (newAddress) => {
+        const addressToAdd = { ...newAddress, _id: `addr_${Date.now()}`};
+        setUserAddresses([...userAddresses, addressToAdd]);
+        toast.success("Address added successfully!");
+        router.back(); // Go back to the previous page
+    }
 
     const addBanner = (newBanner) => {
         const newBannerData = {
@@ -67,6 +75,11 @@ export const AppContextProvider = (props) => {
         // Here you would fetch user data if logged in
         // For now, we'll leave it null initially
         // setUserData(userDummyData) 
+    }
+
+     const fetchUserAddresses = async () => {
+        // In a real app, this would fetch from a DB
+        setUserAddresses(addressDummyData);
     }
 
     const addToCart = (itemId) => {
@@ -141,6 +154,7 @@ export const AppContextProvider = (props) => {
     
     const handleLogin = () => {
         setUserData(userDummyData);
+        fetchUserAddresses();
         setShowLogin(false);
         toast.success(`Welcome back, ${userDummyData.name}!`);
     }
@@ -151,6 +165,7 @@ export const AppContextProvider = (props) => {
         setUserData(null);
         setCartItems({});
         setWishlistItems({});
+        setUserAddresses([]);
         toast.success("Logged out successfully");
         router.push('/');
     }
@@ -175,6 +190,7 @@ export const AppContextProvider = (props) => {
         handleLogin, handleLogout,
         showLogin, setShowLogin,
         banners, addBanner, deleteBanner, updateBanner,
+        userAddresses, addAddress, fetchUserAddresses
     }
 
     return (

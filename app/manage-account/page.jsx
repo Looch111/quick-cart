@@ -4,10 +4,11 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { User, Mail, Key, Save } from 'lucide-react';
+import { User, Mail, Key, Save, PlusCircle, Home, Phone } from 'lucide-react';
+import Link from 'next/link';
 
 const ManageAccount = () => {
-    const { userData, setUserData, setShowLogin } = useAppContext();
+    const { userData, setUserData, setShowLogin, userAddresses, fetchUserAddresses, router } = useAppContext();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,10 +18,12 @@ const ManageAccount = () => {
         if (userData) {
             setName(userData.name);
             setEmail(userData.email);
+            fetchUserAddresses();
         } else {
-            setShowLogin(true);
+           router.push('/');
+           setShowLogin(true);
         }
-    }, [userData, setShowLogin]);
+    }, [userData, setShowLogin, fetchUserAddresses, router]);
 
     const handleSaveChanges = (e) => {
         e.preventDefault();
@@ -50,99 +53,128 @@ const ManageAccount = () => {
         <>
             <Navbar />
             <div className="flex flex-col items-center justify-center px-6 md:px-16 lg:px-32 min-h-screen pt-28 pb-16">
-                <div className="w-full max-w-2xl">
+                <div className="w-full max-w-4xl">
                     <div className="flex flex-col items-start mb-10">
                         <h1 className="text-3xl font-bold text-gray-800">Manage Account</h1>
-                        <p className="text-gray-500 mt-1">Update your profile and account details.</p>
+                        <p className="text-gray-500 mt-1">Update your profile, account details, and addresses.</p>
                     </div>
 
-                    <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
-                        <form onSubmit={handleSaveChanges} className="space-y-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <span className="text-3xl font-medium text-gray-600">{name?.[0]}</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-semibold text-gray-900">{name}</h2>
-                                    <p className="text-sm text-gray-500">{email}</p>
-                                </div>
-                            </div>
-                            
-                            <hr />
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <User className="w-5 h-5 text-gray-400" />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 bg-white p-8 rounded-lg shadow-md border border-gray-200">
+                            <form onSubmit={handleSaveChanges} className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <span className="text-3xl font-medium text-gray-600">{name?.[0]}</span>
                                     </div>
-                                    <input
-                                        type="text"
-                                        className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Mail className="w-5 h-5 text-gray-400" />
+                                    <div>
+                                        <h2 className="text-2xl font-semibold text-gray-900">{name}</h2>
+                                        <p className="text-sm text-gray-500">{email}</p>
                                     </div>
-                                    <input
-                                        type="email"
-                                        className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md bg-gray-50"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        disabled
-                                    />
                                 </div>
-                            </div>
+                                
+                                <hr />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                                     <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Key className="w-5 h-5 text-gray-400" />
+                                            <User className="w-5 h-5 text-gray-400" />
                                         </div>
                                         <input
-                                            type="password"
-                                            placeholder="Leave blank to keep current"
+                                            type="text"
                                             className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            required
                                         />
                                     </div>
                                 </div>
+
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                                     <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                    <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Key className="w-5 h-5 text-gray-400" />
+                                            <Mail className="w-5 h-5 text-gray-400" />
                                         </div>
                                         <input
-                                            type="password"
-                                            placeholder="Confirm new password"
-                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            type="email"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md bg-gray-50"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            disabled
                                         />
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="flex justify-end pt-4">
-                                <button type="submit" className="inline-flex items-center gap-2 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
-                                    <Save className="w-4 h-4" />
-                                    Save Changes
-                                </button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Key className="w-5 h-5 text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                placeholder="Leave blank to keep current"
+                                                className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Key className="w-5 h-5 text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                placeholder="Confirm new password"
+                                                className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end pt-4">
+                                    <button type="submit" className="inline-flex items-center gap-2 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+                                        <Save className="w-4 h-4" />
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                         <div className="lg:col-span-1">
+                            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Shipping Addresses</h3>
+                                <div className="space-y-4">
+                                    {userAddresses.length > 0 ? userAddresses.map(addr => (
+                                        <div key={addr._id} className="border-b pb-4">
+                                            <p className="font-semibold">{addr.fullName}</p>
+                                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                                                <Home className="w-4 h-4 text-gray-400" />
+                                                <span>{`${addr.area}, ${addr.city}, ${addr.state} ${addr.pincode}`}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                                                <Phone className="w-4 h-4 text-gray-400" />
+                                                <span>{addr.phoneNumber}</span>
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <p className="text-sm text-gray-500">No saved addresses.</p>
+                                    )}
+                                </div>
+                                <Link href="/add-address" className="mt-6 w-full inline-flex items-center justify-center gap-2 py-2 px-4 border border-dashed border-gray-400 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    <PlusCircle className="w-4 h-4" />
+                                    Add New Address
+                                </Link>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
