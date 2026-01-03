@@ -154,11 +154,13 @@ export const AppContextProvider = (props) => {
     }
 
     const updateCartQuantity = (itemId, quantity) => {
+        if (quantity <= 0) {
+            toast.success("Item removed from cart");
+        }
         setCartItems(prev => {
             const newCart = { ...prev };
             if (quantity <= 0) {
                 delete newCart[itemId];
-                toast.success("Item removed from cart");
             } else {
                 newCart[itemId] = quantity;
             }
@@ -191,21 +193,21 @@ export const AppContextProvider = (props) => {
     }
 
     const toggleWishlist = (productId) => {
-        setWishlistItems(prev => {
-            const newWishlist = { ...prev };
-            const isWishlisted = !!newWishlist[productId];
-            if (isWishlisted) {
-                delete newWishlist[productId];
-                toast.success("Removed from wishlist");
-            } else {
-                newWishlist[productId] = true;
-                toast.success("Added to wishlist");
-            }
-            if (isBrowser) {
-                localStorage.setItem('wishlistItems', JSON.stringify(newWishlist));
-            }
-            return newWishlist;
-        });
+        const isWishlisted = !!wishlistItems[productId];
+        
+        const newWishlist = { ...wishlistItems };
+        if (isWishlisted) {
+            delete newWishlist[productId];
+            toast.success("Removed from wishlist");
+        } else {
+            newWishlist[productId] = true;
+            toast.success("Added to wishlist");
+        }
+
+        setWishlistItems(newWishlist);
+        if (isBrowser) {
+            localStorage.setItem('wishlistItems', JSON.stringify(newWishlist));
+        }
     }
 
     const getWishlistCount = () => {
