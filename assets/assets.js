@@ -17,6 +17,7 @@ import arrow_right_icon_colored from "./arrow_right_icon_colored.svg";
 import my_location_image from "./my_location_image.svg";
 import arrow_icon_white from "./arrow_icon_white.svg";
 import heart_icon from "./heart_icon.svg";
+import heart_icon_red from "./heart_icon_red.svg";
 import star_icon from "./star_icon.svg";
 import redirect_icon from "./redirect_icon.svg";
 import star_dull_icon from "./star_dull_icon.svg";
@@ -67,6 +68,7 @@ export const assets = {
   my_location_image,
   arrow_icon_white,
   heart_icon,
+  heart_icon_red,
   star_icon,
   redirect_icon,
   star_dull_icon,
@@ -426,3 +428,5 @@ export const addressDummyData = [
     "__v": 0
   }
 ]
+
+  
