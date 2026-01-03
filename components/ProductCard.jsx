@@ -76,7 +76,7 @@ const ProductCard = ({ product }) => {
     return (
         <div
             onClick={() => { router.push('/product/' + product._id); scrollTo(0, 0) }}
-            className="flex flex-col items-start gap-0.5 w-full cursor-pointer group"
+            className="flex flex-col w-full cursor-pointer group h-full"
         >
             <div className="relative bg-gray-500/10 rounded-lg w-full h-44 md:h-52 flex items-center justify-center p-2 overflow-hidden">
                 <Image
@@ -101,46 +101,50 @@ const ProductCard = ({ product }) => {
                 {isFlashSale && <CountdownTimer endDate={product.flashSaleEndDate} />}
             </div>
 
-            <p className="md:text-base font-medium pt-2 w-full truncate">{product.name}</p>
-            <p className="w-full text-xs text-gray-500/70 max-sm:hidden truncate">{product.description}</p>
-            <div className="flex items-center gap-2">
-                <p className="text-xs">{4.5}</p>
-                <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                        <Image
-                            key={index}
-                            className="h-3 w-3"
-                            src={
-                                index < Math.floor(4)
-                                    ? assets.star_icon
-                                    : assets.star_dull_icon
-                            }
-                            alt="star_icon"
-                        />
-                    ))}
+            <div className='flex flex-col justify-between flex-grow mt-2'>
+                <div>
+                    <p className="md:text-base font-medium w-full truncate">{product.name}</p>
+                    <p className="w-full text-xs text-gray-500/70 max-sm:hidden truncate">{product.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs">{4.5}</p>
+                        <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, index) => (
+                                <Image
+                                    key={index}
+                                    className="h-3 w-3"
+                                    src={
+                                        index < Math.floor(4)
+                                            ? assets.star_icon
+                                            : assets.star_dull_icon
+                                    }
+                                    alt="star_icon"
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div className="flex items-end justify-between w-full mt-1">
-                <div className="flex items-end gap-2">
-                    <p className="text-base font-medium text-orange-600">{currency}{product.offerPrice}</p>
-                    {product.price > product.offerPrice && <p className="text-sm line-through text-gray-400">{currency}{product.price}</p>}
-                </div>
-                <div className="flex items-center gap-2">
-                    <button 
-                        onClick={handleAddToCartClick} 
-                        disabled={isOutOfStock}
-                        className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 text-lg border border-gray-500/20 disabled:cursor-not-allowed disabled:bg-gray-200"
-                    >
-                        +
-                    </button>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); if(!isOutOfStock) { addToCart(product._id); router.push('/cart')} }}
-                        disabled={isOutOfStock}
-                        className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition disabled:cursor-not-allowed disabled:bg-gray-200"
-                    >
-                        Buy now
-                    </button>
+                <div className="flex items-end justify-between w-full mt-2">
+                    <div className="flex items-end gap-2">
+                        <p className="text-base font-medium text-orange-600">{currency}{product.offerPrice}</p>
+                        {product.price > product.offerPrice && <p className="text-sm line-through text-gray-400">{currency}{product.price}</p>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={handleAddToCartClick} 
+                            disabled={isOutOfStock}
+                            className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 text-lg border border-gray-500/20 disabled:cursor-not-allowed disabled:bg-gray-200"
+                        >
+                            +
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); if(!isOutOfStock) { addToCart(product._id); router.push('/cart')} }}
+                            disabled={isOutOfStock}
+                            className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition disabled:cursor-not-allowed disabled:bg-gray-200"
+                        >
+                            Buy now
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,5 +152,3 @@ const ProductCard = ({ product }) => {
 }
 
 export default ProductCard
-
-    
