@@ -7,6 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  updateProfile,
   type User,
 } from 'firebase/auth';
 import { useAuth as useFirebaseAuth } from '../provider';
@@ -49,7 +50,9 @@ export function useAuth() {
 
     const signUpWithEmail = async (email, password) => {
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            // You can optionally update the user's profile here
+            // await updateProfile(userCredential.user, { displayName: "New User" });
             toast.success('Account created successfully!');
         } catch (error) {
             console.error("Error signing up: ", error);
