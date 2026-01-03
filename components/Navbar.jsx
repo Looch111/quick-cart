@@ -99,6 +99,14 @@ const Navbar = () => {
                                     <span>Manage account</span>
                                 </Link>
                             </li>
+                            {isSeller && (
+                                <li>
+                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <Wallet className="w-5 h-5 text-gray-600" />
+                                        <span>My Wallet</span>
+                                    </Link>
+                                </li>
+                            )}
                              <li>
                                 <Link href="/" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <HomeIcon />
@@ -123,14 +131,6 @@ const Navbar = () => {
                                     <span>My Orders</span>
                                 </Link>
                             </li>
-                            {isSeller && (
-                                <li>
-                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <Wallet className="w-5 h-5 text-gray-600" />
-                                        <span>My Wallet</span>
-                                    </Link>
-                                </li>
-                            )}
                             <div className="h-px bg-gray-200 my-2"></div>
                             <li>
                                 <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -188,6 +188,14 @@ const Navbar = () => {
                                     <span>Manage account</span>
                                 </Link>
                             </li>
+                            {isSeller && (
+                                <li>
+                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <Wallet className="w-5 h-5 text-gray-600" />
+                                        <span>My Wallet</span>
+                                    </Link>
+                                </li>
+                            )}
                              <li>
                                 <Link href="/" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <HomeIcon />
@@ -212,14 +220,6 @@ const Navbar = () => {
                                     <span>My Orders</span>
                                 </Link>
                             </li>
-                            {isSeller && (
-                                <li>
-                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <Wallet className="w-5 h-5 text-gray-600" />
-                                        <span>My Wallet</span>
-                                    </Link>
-                                </li>
-                            )}
                             <div className="h-px bg-gray-200 my-2"></div>
                             <li>
                                 <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -242,5 +242,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-    
