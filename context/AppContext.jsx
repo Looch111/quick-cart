@@ -1,4 +1,5 @@
 
+
 'use client'
 import { assets, productsDummyData, userDummyData, addressDummyData, orderDummyData } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -60,6 +61,11 @@ export const AppContextProvider = (props) => {
 
 
     const fundWallet = (amount) => {
+        if (!userData) {
+            toast.error("Please log in to fund your wallet.");
+            setShowLogin(true);
+            return;
+        }
         const newBalance = walletBalance + amount;
         setWalletBalance(newBalance);
         const newTransaction = {
@@ -79,6 +85,11 @@ export const AppContextProvider = (props) => {
     };
 
     const addAddress = (newAddress) => {
+        if (!userData) {
+            toast.error("Please log in to add an address.");
+            setShowLogin(true);
+            return;
+        }
         const addressToAdd = { ...newAddress, _id: `addr_${Date.now()}`};
         const updatedAddresses = [...userAddresses, addressToAdd];
         setUserAddresses(updatedAddresses);
@@ -90,6 +101,10 @@ export const AppContextProvider = (props) => {
     }
 
     const addBanner = (newBanner) => {
+        if (!userData || userData.role !== 'admin') {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
         const newBannerData = {
             id: `banner_${Date.now()}`,
             title: newBanner.title,
@@ -104,16 +119,29 @@ export const AppContextProvider = (props) => {
     }
 
     const deleteBanner = (id) => {
+        if (!userData || userData.role !== 'admin') {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
         setBanners(banners.filter(b => b.id !== id));
         toast.success("Banner deleted.");
     }
 
     const updateBanner = (updatedBanner) => {
+        if (!userData || userData.role !== 'admin') {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
         setBanners(banners.map(b => (b.id === updatedBanner.id ? updatedBanner : b)));
         toast.success("Banner updated successfully!");
     }
     
     const addProduct = (productData) => {
+        if (!userData) {
+            toast.error("Please log in to add a product.");
+            setShowLogin(true);
+            return;
+        }
         const newProduct = {
             ...productData,
             _id: `prod_${Date.now()}`,
@@ -129,6 +157,11 @@ export const AppContextProvider = (props) => {
     }
 
     const updateProduct = (updatedProduct) => {
+        if (!userData) {
+            toast.error("Please log in to update a product.");
+            setShowLogin(true);
+            return;
+        }
         const updatedProducts = products.map(p => (p._id === updatedProduct._id ? updatedProduct : p));
         setProducts(updatedProducts);
         if (isBrowser) {
@@ -138,6 +171,11 @@ export const AppContextProvider = (props) => {
     }
 
     const deleteProduct = (productId) => {
+        if (!userData) {
+            toast.error("Please log in to delete a product.");
+            setShowLogin(true);
+            return;
+        }
         const updatedProducts = products.filter(p => p._id !== productId);
         setProducts(updatedProducts);
         if (isBrowser) {
@@ -146,7 +184,7 @@ export const AppContextProvider = (props) => {
     }
 
     const fetchUserAddresses = async () => {
-        if (!isBrowser) return;
+        if (!isBrowser || !userData) return;
         const storedAddresses = localStorage.getItem('userAddresses');
         setUserAddresses(storedAddresses ? JSON.parse(storedAddresses) : addressDummyData);
     }
@@ -176,6 +214,11 @@ export const AppContextProvider = (props) => {
     };
     
     const placeOrder = async (address, paymentMethod, totalAmount) => {
+        if (!userData) {
+            toast.error("Please log in to place an order.");
+            setShowLogin(true);
+            return;
+          }
         const newOrder = {
             _id: `order_${Date.now()}`,
             userId: userData._id,
@@ -220,6 +263,11 @@ export const AppContextProvider = (props) => {
     }
 
     const updateOrderStatus = async (orderId, newStatus) => {
+        if (!userData) {
+            toast.error("Please log in to update an order.");
+            setShowLogin(true);
+            return;
+        }
         const updatedOrders = allOrders.map(order => 
             order._id === orderId ? { ...order, status: newStatus } : order
         );
@@ -232,6 +280,11 @@ export const AppContextProvider = (props) => {
 
 
     const addToCart = (itemId) => {
+        if (!userData) {
+            toast.error("Please log in to add items to your cart.");
+            setShowLogin(true);
+            return;
+        }
         setCartItems(prev => {
             const newCart = { ...prev };
             if (newCart[itemId]) {
@@ -248,6 +301,11 @@ export const AppContextProvider = (props) => {
     }
 
     const updateCartQuantity = (itemId, quantity) => {
+        if (!userData) {
+            toast.error("Please log in to modify your cart.");
+            setShowLogin(true);
+            return;
+        }
         let message = "";
         setCartItems(prev => {
             const newCart = { ...prev };
@@ -290,6 +348,11 @@ export const AppContextProvider = (props) => {
     }
 
     const toggleWishlist = (productId) => {
+        if (!userData) {
+            toast.error("Please log in to manage your wishlist.");
+            setShowLogin(true);
+            return;
+        }
         const isWishlisted = !!wishlistItems[productId];
         let message;
     
