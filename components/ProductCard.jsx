@@ -125,7 +125,7 @@ const ProductCard = ({ product }) => {
                 </div>
 
                 <div className="flex items-end justify-between w-full mt-2">
-                    <div className="flex items-end gap-2">
+                    <div className="flex items-center flex-wrap gap-x-2">
                         <p className="text-base font-medium text-orange-600">{currency}{product.offerPrice}</p>
                         {product.price > product.offerPrice && <p className="text-sm line-through text-gray-400">{currency}{product.price}</p>}
                     </div>
@@ -133,7 +133,7 @@ const ProductCard = ({ product }) => {
                         <button 
                             onClick={handleAddToCartClick} 
                             disabled={isOutOfStock}
-                            className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 text-lg border border-gray-500/20 disabled:cursor-not-allowed disabled:bg-gray-200"
+                            className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full text-gray-500 text-lg border border-gray-500/20 disabled:cursor-not-allowed disabled:bg-gray-200"
                         >
                             +
                         </button>
