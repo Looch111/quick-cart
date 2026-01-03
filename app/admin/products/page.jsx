@@ -11,20 +11,15 @@ import toast from "react-hot-toast";
 
 const ProductList = () => {
 
-  const { router, products, setProducts, deleteProduct } = useAppContext()
+  const { router, products, deleteProduct } = useAppContext()
 
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchAllProducts = async () => {
-    // In a real app, you would fetch all products from your backend
-    setLoading(false)
-  }
-
   useEffect(() => {
     if (products.length > 0) {
-      fetchAllProducts();
+      setLoading(false);
     }
   }, [products])
 
@@ -33,7 +28,6 @@ const ProductList = () => {
   };
 
   const handleSaveProduct = (updatedProduct) => {
-    // This will be handled by AppContext now
     setEditingProduct(null);
   };
 
@@ -144,5 +138,3 @@ const ProductList = () => {
 };
 
 export default ProductList;
-
-    

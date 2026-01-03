@@ -40,7 +40,9 @@ const Navbar = () => {
 
   return (
     <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b'>
-      <Image onClick={() => router.push('/')} className='w-28 lg:w-32 cursor-pointer' src={assets.logo} alt="" />
+      <Link href="/">
+        <Image className='w-28 lg:w-32 cursor-pointer' src={assets.logo} alt="" />
+      </Link>
       <div className='flex items-center gap-4 md:gap-8'>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;

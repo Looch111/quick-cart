@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
@@ -7,23 +7,35 @@ import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
 
 const Orders = () => {
-
     const { currency, userData, allOrders, fetchAllOrders } = useAppContext();
     const [sellerOrders, setSellerOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const filterSellerOrders = useCallback(() => {
+        if (userData && allOrders.length > 0) {
+            const filteredOrders = allOrders.map(order => {
+                const sellerItems = order.items.filter(item => item.product.userId === userData._id);
+                if (sellerItems.length > 0) {
+                    return { ...order, items: sellerItems };
+                }
+                return null;
+            }).filter(order => order !== null);
+            setSellerOrders(filteredOrders);
+        }
+    }, [userData, allOrders]);
+
     useEffect(() => {
         setLoading(true);
         fetchAllOrders().then(() => {
-            if (userData) {
-                const filteredOrders = allOrders.filter(order => 
-                    order.items.some(item => item.product.userId === userData._id)
-                );
-                setSellerOrders(filteredOrders);
-            }
             setLoading(false);
         });
-    }, [userData, allOrders, fetchAllOrders]);
+    }, [fetchAllOrders]);
+
+    useEffect(() => {
+        if (!loading) {
+            filterSellerOrders();
+        }
+    }, [loading, filterSellerOrders]);
 
     return (
         <div className="flex-1 h-screen overflow-scroll flex flex-col justify-between text-sm">
@@ -42,7 +54,7 @@ const Orders = () => {
                                     <span className="font-medium">
                                         {order.items.map((item) => item.product.name + ` x ${item.quantity}`).join(", ")}
                                     </span>
-                                    <span>Items : {order.items.length}</span>
+                                    <span>Items : {order.items.reduce((sum, item) => sum + item.quantity, 0)}</span>
                                 </p>
                             </div>
                             <div>
@@ -56,7 +68,7 @@ const Orders = () => {
                                     <span>{order.address.phoneNumber}</span>
                                 </p>
                             </div>
-                            <p className="font-medium my-auto">{currency}{order.amount}</p>
+                            <p className="font-medium my-auto">{currency}{order.items.reduce((sum, item) => sum + item.product.offerPrice * item.quantity, 0).toFixed(2)}</p>
                             <div>
                                 <p className="flex flex-col">
                                     <span>Method : COD</span>

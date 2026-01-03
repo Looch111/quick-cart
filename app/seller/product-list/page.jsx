@@ -11,22 +11,23 @@ import toast from "react-hot-toast";
 
 const ProductList = () => {
 
-  const { router, products, setProducts, deleteProduct } = useAppContext()
+  const { router, products, userData, deleteProduct } = useAppContext()
 
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const fetchSellerProduct = async () => {
-    // In a real app, you would fetch only the seller's products
-    setLoading(false)
-  }
+  const [sellerProducts, setSellerProducts] = useState([]);
 
   useEffect(() => {
-    if (products.length > 0) {
-      fetchSellerProduct();
+    if (userData && products.length > 0) {
+      setSellerProducts(products.filter(p => p.userId === userData._id));
+      setLoading(false);
+    } else if (!userData) {
+      setLoading(true);
+    } else {
+        setLoading(false);
     }
-  }, [products])
+  }, [products, userData])
 
   const handleEditClick = (product) => {
     setEditingProduct(product);
@@ -48,7 +49,7 @@ const ProductList = () => {
     }
   }
 
-  const filteredProducts = products.filter(product =>
+  const filteredProducts = sellerProducts.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -144,5 +145,3 @@ const ProductList = () => {
 };
 
 export default ProductList;
-
-    

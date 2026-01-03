@@ -4,7 +4,7 @@ import { assets, HomeIcon, BoxIcon, BagIcon, CartIcon } from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
-import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search } from "lucide-react";
+import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search, X } from "lucide-react";
 
 const Navbar = () => {
 
@@ -27,19 +27,6 @@ const Navbar = () => {
     handleLogout();
     setIsDropdownOpen(false);
   }
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700 fixed w-full bg-white top-0 z-40">
@@ -86,7 +73,7 @@ const Navbar = () => {
 
           {isDropdownOpen && userData && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200/80 py-2 z-50">
-              <div className="px-4 py-2 border-b border-gray-200">
+              <div className="px-4 py-2 border-b border-gray-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                     <span className="text-lg font-medium text-gray-600">{userData.name[0]}</span>
@@ -96,6 +83,9 @@ const Navbar = () => {
                     <p className="text-xs text-gray-500">{userData.email}</p>
                   </div>
                 </div>
+                <button onClick={() => setIsDropdownOpen(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                </button>
               </div>
               <div className="py-2">
                 <Link onClick={() => setIsDropdownOpen(false)} href="/manage-account" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
