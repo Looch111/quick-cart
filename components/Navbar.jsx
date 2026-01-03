@@ -4,7 +4,7 @@ import { assets, HomeIcon, BoxIcon, CartIcon, BagIcon } from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, Wallet } from "lucide-react";
 
 const Navbar = () => {
 
@@ -123,6 +123,14 @@ const Navbar = () => {
                                     <span>My Orders</span>
                                 </Link>
                             </li>
+                            {isSeller && (
+                                <li>
+                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <Wallet className="w-5 h-5 text-gray-600" />
+                                        <span>My Wallet</span>
+                                    </Link>
+                                </li>
+                            )}
                             <div className="h-px bg-gray-200 my-2"></div>
                             <li>
                                 <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -204,6 +212,14 @@ const Navbar = () => {
                                     <span>My Orders</span>
                                 </Link>
                             </li>
+                            {isSeller && (
+                                <li>
+                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <Wallet className="w-5 h-5 text-gray-600" />
+                                        <span>My Wallet</span>
+                                    </Link>
+                                </li>
+                            )}
                             <div className="h-px bg-gray-200 my-2"></div>
                             <li>
                                 <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
