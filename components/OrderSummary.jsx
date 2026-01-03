@@ -5,16 +5,10 @@ import { Wallet } from "lucide-react";
 
 const OrderSummary = () => {
 
-  const { currency, router, getCartCount, getCartAmount, userAddresses, fetchUserAddresses, placeOrder, userData, setShowLogin, walletBalance } = useAppContext()
+  const { currency, router, getCartCount, getCartAmount, userAddresses, placeOrder, userData, setShowLogin, walletBalance } = useAppContext()
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
-
-  useEffect(() => {
-    if (userData) {
-      fetchUserAddresses();
-    }
-  }, [userData, fetchUserAddresses])
 
   useEffect(() => {
     if (userAddresses.length > 0) {

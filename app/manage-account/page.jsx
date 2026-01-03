@@ -8,7 +8,7 @@ import { User, Mail, Key, Save, PlusCircle, Home, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 const ManageAccount = () => {
-    const { userData, setUserData, setShowLogin, userAddresses, fetchUserAddresses, router } = useAppContext();
+    const { userData, setUserData, setShowLogin, userAddresses, router } = useAppContext();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -18,12 +18,11 @@ const ManageAccount = () => {
         if (userData) {
             setName(userData.name);
             setEmail(userData.email);
-            fetchUserAddresses();
         } else {
            router.push('/');
            setShowLogin(true);
         }
-    }, [userData, setShowLogin, fetchUserAddresses, router]);
+    }, [userData, setShowLogin, router]);
 
     const handleSaveChanges = (e) => {
         e.preventDefault();
