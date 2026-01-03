@@ -45,7 +45,7 @@ const HeaderSlider = () => {
                             </h1>
                             <div className="flex items-center mt-4 md:mt-6 ">
                                 <button onClick={() => router.push(slide.link)} className="md:px-10 px-7 md:py-2.5 py-2 bg-orange-600 rounded-full text-white font-medium">
-                                    Shop Now
+                                    Buy now
                                 </button>
                                 <Link href="/all-products" className="group flex items-center gap-2 px-6 py-2.5 font-medium">
                                     Find more
