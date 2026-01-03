@@ -43,7 +43,7 @@ const LoginPopup = () => {
                     <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with QuickCart"}</p>
                 </div>
                 <div className="mt-6">
-                    <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-md hover:bg-gray-50">
+                    <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
                         <GoogleIcon />
                         <span className="text-gray-700 font-medium text-sm">Continue with Google</span>
                     </button>
@@ -78,7 +78,7 @@ const LoginPopup = () => {
                             />
                         </div>
                     )}
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-md font-semibold text-sm">
+                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
                         Continue
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
                     </button>
