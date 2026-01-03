@@ -9,7 +9,7 @@ import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
 
-const Product = ({ params }) => {
+const Product = ({ params: { id } }) => {
     const { products, router, addToCart } = useAppContext()
 
     const [mainImage, setMainImage] = useState(null);
@@ -28,10 +28,10 @@ const Product = ({ params }) => {
     }
 
     useEffect(() => {
-        if (params.id && products.length > 0) {
-            fetchProductData(params.id);
+        if (id && products.length > 0) {
+            fetchProductData(id);
         }
-    }, [params.id, products]);
+    }, [id, products]);
 
     const isOutOfStock = productData && productData.stock === 0;
 
