@@ -4,11 +4,11 @@ import { assets, HomeIcon, BoxIcon, BagIcon, CartIcon } from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
-import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search, X, Wallet } from "lucide-react";
+import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search, X, Wallet, ShieldCheck } from "lucide-react";
 
 const Navbar = () => {
 
-  const { isSeller, router, getWishlistCount, getCartCount, setShowLogin, userData, handleLogout } = useAppContext();
+  const { isSeller, isAdmin, router, getWishlistCount, getCartCount, setShowLogin, userData, handleLogout } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -116,6 +116,12 @@ const Navbar = () => {
                   <Link onClick={() => setIsDropdownOpen(false)} href="/seller" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
                     <Package className="w-5 h-5 text-gray-500" />
                     Seller Dashboard
+                  </Link>
+                }
+                 {isAdmin &&
+                  <Link onClick={() => setIsDropdownOpen(false)} href="/admin" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
+                    <ShieldCheck className="w-5 h-5 text-gray-500" />
+                    Admin Dashboard
                   </Link>
                 }
               </div>

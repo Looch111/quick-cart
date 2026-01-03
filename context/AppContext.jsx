@@ -33,6 +33,7 @@ export const AppContextProvider = (props) => {
     const [userOrders, setUserOrders] = useState([]);
 
     const [isSeller, setIsSeller] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
 
     // Static Banners
@@ -57,7 +58,8 @@ export const AppContextProvider = (props) => {
                 if (snapshot.exists()) {
                     const dbUser = snapshot.data();
                     setUserData({ ...dbUser, _id: snapshot.id });
-                    setIsSeller(dbUser.role === 'seller' || dbUser.role === 'admin');
+                    setIsSeller(dbUser.role === 'seller');
+                    setIsAdmin(dbUser.role === 'admin');
                 } else {
                     // Create user document if it doesn't exist
                     const newUser = {
@@ -73,6 +75,7 @@ export const AppContextProvider = (props) => {
                     setDoc(userDocRef, newUser).then(() => {
                         setUserData({ ...newUser, _id: firebaseUser.uid });
                         setIsSeller(false);
+                        setIsAdmin(false);
                     });
                 }
             });
@@ -82,6 +85,7 @@ export const AppContextProvider = (props) => {
         } else if (!authLoading && !firebaseUser) {
             setUserData(null);
             setIsSeller(false);
+            setIsAdmin(false);
         }
     }, [firebaseUser, authLoading, firestore]);
 
@@ -149,7 +153,7 @@ export const AppContextProvider = (props) => {
     }
 
     const addBanner = (newBanner) => {
-        if (!userData || userData.role !== 'admin') {
+        if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
@@ -167,7 +171,7 @@ export const AppContextProvider = (props) => {
     }
 
     const deleteBanner = (id) => {
-        if (!userData || userData.role !== 'admin') {
+        if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
@@ -176,7 +180,7 @@ export const AppContextProvider = (props) => {
     }
 
     const updateBanner = (updatedBanner) => {
-        if (!userData || userData.role !== 'admin') {
+        if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
@@ -185,9 +189,8 @@ export const AppContextProvider = (props) => {
     }
     
     const addProduct = async (productData) => {
-        if (!userData) {
-            toast.error("Please log in to add a product.");
-            setShowLogin(true);
+        if (!userData || (!isSeller && !isAdmin)) {
+            toast.error("You must be a seller to add a product.");
             return;
         }
         const productsCollectionRef = collection(firestore, 'products');
@@ -205,6 +208,13 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
+
+        const canUpdate = isAdmin || (isSeller && updatedProduct.userId === userData._id);
+        if (!canUpdate) {
+            toast.error("You are not authorized to update this product.");
+            return;
+        }
+
         const productDocRef = doc(firestore, 'products', updatedProduct._id);
         await setDoc(productDocRef, updatedProduct, { merge: true });
         toast.success("Product updated successfully!");
@@ -216,8 +226,25 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
-        const productDocRef = doc(firestore, 'products', productId);
-        await deleteDoc(productDocRef);
+        
+        // Fetch the product to check ownership before deleting
+        const productRef = doc(firestore, 'products', productId);
+        const productSnap = await getDoc(productRef);
+
+        if (!productSnap.exists()) {
+            toast.error("Product not found.");
+            return;
+        }
+
+        const productData = productSnap.data();
+        const canDelete = isAdmin || (isSeller && productData.userId === userData._id);
+
+        if (!canDelete) {
+            toast.error("You are not authorized to delete this product.");
+            return;
+        }
+
+        await deleteDoc(productRef);
         toast.success("Product deleted successfully");
     }
     
@@ -274,13 +301,10 @@ export const AppContextProvider = (props) => {
 
         // 3. Commit the batch
         await batch.commit();
-
-        toast.success("Order placed successfully!");
-        router.push("/order-placed");
     }
 
     const updateOrderStatus = async (orderId, newStatus) => {
-         if (!userData || userData.role !== 'admin') {
+         if (!isAdmin) {
             toast.error("You are not authorized.");
             return { success: false };
         }
@@ -291,8 +315,6 @@ export const AppContextProvider = (props) => {
 
     const updateUserField = async (field, value) => {
         if (!userData) {
-            toast.error("Please log in.");
-            setShowLogin(true);
             return;
         }
         const userDocRef = doc(firestore, 'users', userData._id);
@@ -375,7 +397,7 @@ export const AppContextProvider = (props) => {
 
     const value = {
         currency, router,
-        userData, setUserData, isSeller,
+        userData, setUserData, isSeller, isAdmin,
         products: products || [], 
         productsLoading,
         cartItems,
@@ -387,7 +409,7 @@ export const AppContextProvider = (props) => {
         showLogin, setShowLogin,
         banners, addBanner, deleteBanner, updateBanner,
         userAddresses, addAddress,
-        allOrders: allOrders ? allOrders.map(o => ({ ...o, date: o.date?.toDate() })) : [], 
+        allOrders: allOrders ? allOrders.map(o => ({ ...o, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) })) : [], 
         placeOrder, userOrders,
         walletBalance, fundWallet, walletTransactions,
         updateOrderStatus,
