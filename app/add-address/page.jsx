@@ -89,7 +89,7 @@ const AddAddress = () => {
                     </button>
                 </form>
                 <Image
-                    className="md:mr-16 mt-16 md:mt-0"
+                    className="md:mr-16 mt-16 md:mt-0 w-full md:w-auto md:h-auto max-w-sm"
                     src={assets.my_location_image}
                     alt="my_location_image"
                 />

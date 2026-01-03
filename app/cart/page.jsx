@@ -9,7 +9,27 @@ import { Plus, Minus } from "lucide-react";
 
 const Cart = () => {
 
-  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount } = useAppContext();
+  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin } = useAppContext();
+
+  if (!userData && getCartCount() > 0) {
+    setShowLogin(true);
+    return null;
+  }
+
+  if (getCartCount() === 0) {
+    return (
+      <>
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 md:px-16 lg:px-32 pt-28 mb-20">
+          <p className="text-2xl text-gray-600">Your cart is empty.</p>
+          <p className="text-gray-500 mt-2">Looks like you haven't added anything to your cart yet.</p>
+          <button onClick={() => router.push('/all-products')} className="group flex items-center mt-8 gap-2 px-6 py-3 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition">
+            Continue Shopping
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -54,7 +74,7 @@ const Cart = () => {
                             <Image
                               src={product.image[0]}
                               alt={product.name}
-                              className="w-16 h-auto object-cover mix-blend-multiply"
+                              className="w-16 h-16 object-contain mix-blend-multiply"
                               width={1280}
                               height={720}
                             />
@@ -89,7 +109,7 @@ const Cart = () => {
                                 onChange={e => updateCartQuantity(product._id, Number(e.target.value))} 
                                 type="number" 
                                 value={cartItems[itemId]} 
-                                className="w-10 border-none text-center appearance-none focus:outline-none"
+                                className="w-10 border-none text-center appearance-none focus:outline-none bg-transparent"
                             />
                             <button 
                                 onClick={() => addToCart(product._id)}

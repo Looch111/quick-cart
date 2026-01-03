@@ -13,9 +13,7 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
 
   const handleLoginClick = () => {
-    setTimeout(() => {
-        setShowLogin(true);
-    }, 300);
+    setShowLogin(true);
   }
 
   useEffect(() => {
@@ -94,39 +92,39 @@ const Navbar = () => {
                         </div>
                         <ul className="py-2">
                              <li>
-                                <Link href="/manage-account" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/manage-account" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <Settings className="w-5 h-5 text-gray-600" />
                                     <span>Manage account</span>
                                 </Link>
                             </li>
                             {isSeller && (
                                 <li>
-                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <Link href="/seller/wallet" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <Wallet className="w-5 h-5 text-gray-600" />
                                         <span>My Wallet</span>
                                     </Link>
                                 </li>
                             )}
                              <li>
-                                <Link href="/" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <HomeIcon />
                                     <span>Home</span>
                                 </Link>
                             </li>
                              <li>
-                                <Link href="/all-products" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/all-products" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <BoxIcon />
                                     <span>Products</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/cart" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/cart" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <CartIcon />
                                     <span>Cart</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/my-orders" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/my-orders" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <BagIcon />
                                     <span>My Orders</span>
                                 </Link>
@@ -150,8 +148,8 @@ const Navbar = () => {
       </ul>
 
       <div className="flex items-center md:hidden gap-5">
-        {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
-        {isAdmin && <button onClick={() => router.push('/admin')} className="text-xs border px-4 py-1.5 rounded-full">Admin Panel</button>}
+        {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller</button>}
+        {isAdmin && <button onClick={() => router.push('/admin')} className="text-xs border px-4 py-1.5 rounded-full">Admin</button>}
         <Link href={'/all-products?focus=search'}>
             <Image className="w-5 h-5 cursor-pointer" src={assets.search_icon} alt="search icon" />
         </Link>
@@ -183,39 +181,39 @@ const Navbar = () => {
                         </div>
                         <ul className="py-2">
                              <li>
-                                <Link href="/manage-account" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/manage-account" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <Settings className="w-5 h-5 text-gray-600" />
                                     <span>Manage account</span>
                                 </Link>
                             </li>
                             {isSeller && (
                                 <li>
-                                    <Link href="/seller/wallet" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <Link href="/seller/wallet" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <Wallet className="w-5 h-5 text-gray-600" />
                                         <span>My Wallet</span>
                                     </Link>
                                 </li>
                             )}
                              <li>
-                                <Link href="/" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <HomeIcon />
                                     <span>Home</span>
                                 </Link>
                             </li>
                              <li>
-                                <Link href="/all-products" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/all-products" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <BoxIcon />
                                     <span>Products</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/cart" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/cart" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <CartIcon />
                                     <span>Cart</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/my-orders" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <Link href="/my-orders" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <BagIcon />
                                     <span>My Orders</span>
                                 </Link>

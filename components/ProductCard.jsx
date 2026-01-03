@@ -23,15 +23,15 @@ const ProductCard = ({ product }) => {
     return (
         <div
             onClick={() => { router.push('/product/' + product._id); scrollTo(0, 0) }}
-            className="flex flex-col items-start gap-0.5 max-w-[200px] w-full cursor-pointer"
+            className="flex flex-col items-start gap-0.5 w-full cursor-pointer group"
         >
-            <div className="cursor-pointer group relative bg-gray-500/10 rounded-lg w-full h-44 md:h-52 flex items-center justify-center p-2">
+            <div className="relative bg-gray-500/10 rounded-lg w-full h-44 md:h-52 flex items-center justify-center p-2 overflow-hidden">
                 <Image
                     src={product.image[0]}
                     alt={product.name}
-                    className="group-hover:scale-105 transition object-contain w-full h-full"
-                    width={800}
-                    height={800}
+                    className="group-hover:scale-105 transition-transform duration-300 object-contain w-full h-full"
+                    width={200}
+                    height={200}
                 />
                 <button onClick={handleWishlistClick} className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md">
                     <Image
@@ -78,6 +78,7 @@ const ProductCard = ({ product }) => {
                         +
                     </button>
                     <button 
+                        onClick={(e) => { e.stopPropagation(); if(!isOutOfStock) { addToCart(product._id); router.push('/cart')} }}
                         disabled={isOutOfStock}
                         className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition disabled:cursor-not-allowed disabled:bg-gray-200"
                     >
@@ -90,5 +91,3 @@ const ProductCard = ({ product }) => {
 }
 
 export default ProductCard
-
-    

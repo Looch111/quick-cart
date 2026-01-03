@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from "react";
-import { assets, orderDummyData } from "@/assets/assets";
+import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/admin/Footer";
@@ -8,27 +8,19 @@ import Loading from "@/components/Loading";
 
 const Orders = () => {
 
-    const { currency } = useAppContext();
-
-    const [orders, setOrders] = useState([]);
+    const { currency, allOrders, fetchAllOrders } = useAppContext();
     const [loading, setLoading] = useState(true);
 
-    const fetchAllOrders = async () => {
-        // In a real app, you would fetch all orders from your backend
-        setOrders(orderDummyData);
-        setLoading(false);
-    }
-
     useEffect(() => {
-        fetchAllOrders();
-    }, []);
+        fetchAllOrders().then(() => setLoading(false));
+    }, [fetchAllOrders]);
 
     return (
         <div className="flex-1 h-screen overflow-scroll flex flex-col justify-between text-sm">
             {loading ? <Loading /> : <div className="md:p-10 p-4 space-y-5">
                 <h2 className="text-lg font-medium">All Orders</h2>
                 <div className="max-w-4xl rounded-md">
-                    {orders.map((order, index) => (
+                    {allOrders.map((order, index) => (
                         <div key={index} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-t border-gray-300">
                             <div className="flex-1 flex gap-5 max-w-80">
                                 <Image
@@ -59,7 +51,7 @@ const Orders = () => {
                                 <p className="flex flex-col">
                                     <span>Method : COD</span>
                                     <span>Date : {new Date(order.date).toLocaleDateString()}</span>
-                                    <span>Payment : Pending</span>
+                                    <span className="text-green-600 font-medium">{order.status}</span>
                                 </p>
                             </div>
                         </div>

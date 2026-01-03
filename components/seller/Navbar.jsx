@@ -6,10 +6,11 @@ import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { LogOut } from 'lucide-react'
 
 const Navbar = () => {
 
-  const { router } = useAppContext()
+  const { router, handleLogout } = useAppContext()
   const pathname = usePathname();
 
   const menuItems = [
@@ -19,6 +20,11 @@ const Navbar = () => {
     { name: 'Orders', path: '/seller/orders' },
     { name: 'Wallet', path: '/seller/wallet' },
   ];
+
+  const onLogout = () => {
+    handleLogout();
+    router.push('/');
+  }
 
   return (
     <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b'>
@@ -33,7 +39,10 @@ const Navbar = () => {
           )
         })}
       </div>
-      <button className='bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>Logout</button>
+      <button onClick={onLogout} className='flex items-center gap-2 bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>
+        <LogOut className="w-4 h-4" />
+        Logout
+      </button>
     </div>
   )
 }

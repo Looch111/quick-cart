@@ -79,11 +79,12 @@ const AddProduct = () => {
             {[...Array(4)].map((_, index) => (
               <div key={index} className="flex items-center gap-3">
                 <Image
-                  className="max-w-24 w-24 h-24 object-cover border rounded"
+                  className="w-24 h-24 object-contain border rounded bg-gray-100"
                   src={getImageUrl(imageUrls[index])}
                   alt={`Product image ${index + 1}`}
                   width={100}
                   height={100}
+                  onError={(e) => e.currentTarget.src = assets.upload_area.src}
                 />
                 <input
                   type="text"
@@ -136,7 +137,7 @@ const AddProduct = () => {
               id="category"
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
               onChange={(e) => setCategory(e.target.value)}
-              defaultValue={category}
+              value={category}
             >
               <option value="Earphone">Earphone</option>
               <option value="Headphone">Headphone</option>

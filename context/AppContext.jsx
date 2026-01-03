@@ -1,5 +1,5 @@
 'use client'
-import { assets, productsDummyData, userDummyData, addressDummyData } from "@/assets/assets";
+import { assets, productsDummyData, userDummyData, addressDummyData, orderDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -10,9 +10,11 @@ export const useAppContext = () => {
     return useContext(AppContext)
 }
 
+const isBrowser = typeof window !== 'undefined';
+
 export const AppContextProvider = (props) => {
 
-    const currency = process.env.NEXT_PUBLIC_CURRENCY
+    const currency = '$';
     const router = useRouter()
 
     const [products, setProducts] = useState(productsDummyData)
@@ -26,19 +28,25 @@ export const AppContextProvider = (props) => {
         { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: assets.header_macbook_image.src, link: '/all-products', status: 'active', buttonText: 'Order now', linkText: 'Learn More' },
     ]);
     const [userAddresses, setUserAddresses] = useState([]);
+    const [allOrders, setAllOrders] = useState([]);
+
 
     const addAddress = (newAddress) => {
         const addressToAdd = { ...newAddress, _id: `addr_${Date.now()}`};
-        setUserAddresses([...userAddresses, addressToAdd]);
+        const updatedAddresses = [...userAddresses, addressToAdd];
+        setUserAddresses(updatedAddresses);
+        if (isBrowser) {
+            localStorage.setItem('userAddresses', JSON.stringify(updatedAddresses));
+        }
         toast.success("Address added successfully!");
-        router.back(); // Go back to the previous page
+        router.back(); 
     }
 
     const addBanner = (newBanner) => {
         const newBannerData = {
             id: `banner_${Date.now()}`,
             title: newBanner.title,
-            image: assets.jbl_soundbox_image.src, // Using a persistent image from assets
+            image: assets.jbl_soundbox_image.src, 
             link: newBanner.link,
             status: 'active',
             buttonText: newBanner.buttonText,
@@ -62,36 +70,72 @@ export const AppContextProvider = (props) => {
         const newProduct = {
             ...productData,
             _id: `prod_${Date.now()}`,
-            userId: userData?._id || 'user_2sZFHS1UIIysJyDVzCpQhUhTIhw', // Assign to current user
+            userId: userData?._id || 'user_2sZFHS1UIIysJyDVzCpQhUhTIhw',
             date: Date.now()
         };
-        setProducts(prevProducts => [newProduct, ...prevProducts]);
+        const updatedProducts = [newProduct, ...products];
+        setProducts(updatedProducts);
+        if (isBrowser) {
+            localStorage.setItem('products', JSON.stringify(updatedProducts));
+        }
         toast.success("Product added successfully!");
     }
 
     const updateProduct = (updatedProduct) => {
-        setProducts(products.map(p => (p._id === updatedProduct._id ? updatedProduct : p)));
+        const updatedProducts = products.map(p => (p._id === updatedProduct._id ? updatedProduct : p));
+        setProducts(updatedProducts);
+        if (isBrowser) {
+            localStorage.setItem('products', JSON.stringify(updatedProducts));
+        }
         toast.success("Product updated successfully!");
     }
 
     const deleteProduct = (productId) => {
-        setProducts(products.filter(p => p._id !== productId));
+        const updatedProducts = products.filter(p => p._id !== productId);
+        setProducts(updatedProducts);
+        if (isBrowser) {
+            localStorage.setItem('products', JSON.stringify(updatedProducts));
+        }
     }
 
-    const fetchProductData = async () => {
-        setProducts(productsDummyData)
+    const fetchUserAddresses = async () => {
+        if (!isBrowser) return;
+        const storedAddresses = localStorage.getItem('userAddresses');
+        setUserAddresses(storedAddresses ? JSON.parse(storedAddresses) : addressDummyData);
+    }
+    
+    const fetchAllOrders = async () => {
+        if (!isBrowser) return;
+        const storedOrders = localStorage.getItem('allOrders');
+        setAllOrders(storedOrders ? JSON.parse(storedOrders) : orderDummyData);
+    }
+    
+    const placeOrder = async (address) => {
+        const newOrder = {
+            _id: `order_${Date.now()}`,
+            userId: userData._id,
+            items: Object.entries(cartItems).map(([itemId, quantity]) => ({
+                product: products.find(p => p._id === itemId),
+                quantity,
+            })),
+            amount: getCartAmount() + Math.floor(getCartAmount() * 0.02) + (getCartAmount() > 50 ? 0 : 5),
+            address: address,
+            status: "Order Placed",
+            date: Date.now(),
+        };
+
+        const updatedOrders = [newOrder, ...allOrders];
+        setAllOrders(updatedOrders);
+        if (isBrowser) {
+            localStorage.setItem('allOrders', JSON.stringify(updatedOrders));
+        }
+        setCartItems({});
+        if (isBrowser) {
+            localStorage.removeItem('cartItems');
+        }
+        toast.success("Order placed successfully!");
     }
 
-    const fetchUserData = async () => {
-        // Here you would fetch user data if logged in
-        // For now, we'll leave it null initially
-        // setUserData(userDummyData) 
-    }
-
-     const fetchUserAddresses = async () => {
-        // In a real app, this would fetch from a DB
-        setUserAddresses(addressDummyData);
-    }
 
     const addToCart = (itemId) => {
         setCartItems(prev => {
@@ -101,21 +145,28 @@ export const AppContextProvider = (props) => {
             } else {
                 newCart[itemId] = 1;
             }
+            if (isBrowser) {
+                localStorage.setItem('cartItems', JSON.stringify(newCart));
+            }
             return newCart;
         });
         toast.success("Product added to cart");
     }
 
-    const updateCartQuantity = async (itemId, quantity) => {
-
-        let cartData = structuredClone(cartItems);
-        if (quantity === 0) {
-            delete cartData[itemId];
-        } else {
-            cartData[itemId] = quantity;
-        }
-        setCartItems(cartData)
-
+    const updateCartQuantity = (itemId, quantity) => {
+        setCartItems(prev => {
+            const newCart = { ...prev };
+            if (quantity <= 0) {
+                delete newCart[itemId];
+                toast.success("Item removed from cart");
+            } else {
+                newCart[itemId] = quantity;
+            }
+            if (isBrowser) {
+                localStorage.setItem('cartItems', JSON.stringify(newCart));
+            }
+            return newCart;
+        });
     }
 
     const getCartCount = () => {
@@ -132,7 +183,7 @@ export const AppContextProvider = (props) => {
         let totalAmount = 0;
         for (const items in cartItems) {
             let itemInfo = products.find((product) => product._id === items);
-            if (cartItems[items] > 0) {
+            if (itemInfo && cartItems[items] > 0) {
                 totalAmount += itemInfo.offerPrice * cartItems[items];
             }
         }
@@ -140,23 +191,21 @@ export const AppContextProvider = (props) => {
     }
 
     const toggleWishlist = (productId) => {
-        const isWishlisted = !!wishlistItems[productId];
-    
         setWishlistItems(prev => {
             const newWishlist = { ...prev };
+            const isWishlisted = !!newWishlist[productId];
             if (isWishlisted) {
                 delete newWishlist[productId];
+                toast.success("Removed from wishlist");
             } else {
                 newWishlist[productId] = true;
+                toast.success("Added to wishlist");
+            }
+            if (isBrowser) {
+                localStorage.setItem('wishlistItems', JSON.stringify(newWishlist));
             }
             return newWishlist;
         });
-    
-        if (isWishlisted) {
-            toast.success("Removed from wishlist");
-        } else {
-            toast.success("Added to wishlist");
-        }
     }
 
     const getWishlistCount = () => {
@@ -164,6 +213,9 @@ export const AppContextProvider = (props) => {
     }
     
     const handleLogin = () => {
+        if (isBrowser) {
+            localStorage.setItem('userData', JSON.stringify(userDummyData));
+        }
         setUserData(userDummyData);
         fetchUserAddresses();
         setShowLogin(false);
@@ -171,28 +223,37 @@ export const AppContextProvider = (props) => {
     }
 
     const handleLogout = () => {
-        // Here you would typically clear tokens, user data, etc.
-        // For this dummy setup, we can just clear some state.
+        if (isBrowser) {
+            localStorage.removeItem('userData');
+            // We keep cart and wishlist so they can log back in and have them
+        }
         setUserData(null);
-        setCartItems({});
-        setWishlistItems({});
-        setUserAddresses([]);
         toast.success("Logged out successfully");
         router.push('/');
     }
 
     useEffect(() => {
-        // fetchProductData() // Data is now initialized directly
-    }, [])
+        if (!isBrowser) return;
 
-    useEffect(() => {
-        fetchUserData()
+        const storedProducts = localStorage.getItem('products');
+        if (storedProducts) setProducts(JSON.parse(storedProducts));
+
+        const storedUserData = localStorage.getItem('userData');
+        if (storedUserData) setUserData(JSON.parse(storedUserData));
+
+        const storedCart = localStorage.getItem('cartItems');
+        if (storedCart) setCartItems(JSON.parse(storedCart));
+
+        const storedWishlist = localStorage.getItem('wishlistItems');
+        if (storedWishlist) setWishlistItems(JSON.parse(storedWishlist));
+
+        fetchAllOrders();
     }, [])
 
     const value = {
         currency, router,
-        userData, fetchUserData, setUserData,
-        products, fetchProductData, setProducts, addProduct, updateProduct, deleteProduct,
+        userData, setUserData,
+        products, setProducts, addProduct, updateProduct, deleteProduct,
         cartItems, setCartItems,
         addToCart, updateCartQuantity,
         getCartCount, getCartAmount,
@@ -201,7 +262,8 @@ export const AppContextProvider = (props) => {
         handleLogin, handleLogout,
         showLogin, setShowLogin,
         banners, addBanner, deleteBanner, updateBanner,
-        userAddresses, addAddress, fetchUserAddresses
+        userAddresses, addAddress, fetchUserAddresses,
+        allOrders, fetchAllOrders, placeOrder,
     }
 
     return (

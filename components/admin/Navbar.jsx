@@ -1,33 +1,42 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { assets, orderDummyData } from '@/assets/assets'
+import { assets } from '@/assets/assets'
 import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { LogOut } from 'lucide-react'
 
 const Navbar = () => {
 
-  const { router } = useAppContext()
+  const { router, allOrders, fetchAllOrders, handleLogout } = useAppContext()
   const pathname = usePathname()
-  const [hasOrders, setHasOrders] = useState(false);
+  const [hasNewOrders, setHasNewOrders] = useState(false);
 
   useEffect(() => {
-    // In a real app, you'd fetch this from your backend.
-    if (orderDummyData && orderDummyData.length > 0) {
-      setHasOrders(true);
-    }
-  }, []);
+    fetchAllOrders().then(() => {
+        // Simple logic to check for "new" orders, in a real app this would be more sophisticated
+        const newOrders = allOrders.filter(order => order.status === "Order Placed");
+        if (newOrders.length > 0) {
+            setHasNewOrders(true);
+        }
+    });
+  }, [allOrders, fetchAllOrders]);
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin' },
     { name: 'Users', path: '/admin/users' },
     { name: 'Products', path: '/admin/products' },
-    { name: 'Orders', path: '/admin/orders', notification: hasOrders },
+    { name: 'Orders', path: '/admin/orders', notification: hasNewOrders },
     { name: 'Promotions', path: '/admin/promotions' },
     { name: 'Marketing', path: '/admin/marketing' },
     { name: 'Settings', path: '/admin/settings' },
   ];
+
+  const onLogout = () => {
+    handleLogout();
+    router.push('/');
+  }
 
   return (
     <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b'>
@@ -45,8 +54,11 @@ const Navbar = () => {
           )
         })}
       </div>
-      <button className='bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>Logout</button>
-      {hasOrders && <audio src="https://cdn.pixabay.com/audio/2021/08/04/audio_9521327341.mp3" autoPlay ></audio>}
+      <button onClick={onLogout} className='flex items-center gap-2 bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>
+        <LogOut className="w-4 h-4" />
+        Logout
+      </button>
+      {hasNewOrders && <audio src="https://cdn.pixabay.com/audio/2021/08/04/audio_9521327341.mp3" autoPlay ></audio>}
     </div>
   )
 }

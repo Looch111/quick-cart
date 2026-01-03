@@ -20,8 +20,11 @@ const Product = ({ params }) => {
     const fetchProductData = async () => {
         const product = products.find(product => product._id === params.id);
         setProductData(product);
-        if (product?.sizes?.length > 0) {
-            setSelectedSize(product.sizes[0]);
+        if (product) {
+            setMainImage(product.image[0]);
+            if (product.sizes && product.sizes.length > 0) {
+                setSelectedSize(product.sizes[0]);
+            }
         }
     }
 
@@ -38,13 +41,13 @@ const Product = ({ params }) => {
         <div className="px-6 md:px-16 lg:px-32 pt-32 md:pt-28 space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                 <div className="px-5 lg:px-16 xl:px-20">
-                    <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4 relative">
+                    <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4 relative aspect-square">
                         <Image
-                            src={mainImage || productData.image[0]}
-                            alt="alt"
-                            className="w-full h-auto object-cover mix-blend-multiply"
-                            width={1280}
-                            height={720}
+                            src={mainImage}
+                            alt={productData.name}
+                            className="w-full h-full object-contain mix-blend-multiply"
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                         {isOutOfStock && (
                             <div className="absolute top-4 left-4 bg-red-500 text-white text-sm px-3 py-1 rounded-full">
@@ -58,14 +61,14 @@ const Product = ({ params }) => {
                             <div
                                 key={index}
                                 onClick={() => setMainImage(image)}
-                                className="cursor-pointer rounded-lg overflow-hidden bg-gray-500/10"
+                                className={`cursor-pointer rounded-lg overflow-hidden bg-gray-500/10 aspect-square border-2 ${mainImage === image ? 'border-orange-500' : 'border-transparent'}`}
                             >
                                 <Image
                                     src={image}
-                                    alt="alt"
-                                    className="w-full h-auto object-cover mix-blend-multiply"
-                                    width={1280}
-                                    height={720}
+                                    alt={`${productData.name} thumbnail ${index + 1}`}
+                                    className="w-full h-full object-contain mix-blend-multiply"
+                                    width={100}
+                                    height={100}
                                 />
                             </div>
 
@@ -121,22 +124,22 @@ const Product = ({ params }) => {
                         <table className="table-auto border-collapse w-full max-w-72">
                             <tbody>
                                 <tr>
-                                    <td className="text-gray-600 font-medium">Brand</td>
-                                    <td className="text-gray-800/50 ">Generic</td>
+                                    <td className="text-gray-600 font-medium pr-4 py-1">Brand</td>
+                                    <td className="text-gray-800/50 py-1">Generic</td>
                                 </tr>
                                 <tr>
-                                    <td className="text-gray-600 font-medium">Color</td>
-                                    <td className="text-gray-800/50 ">Multi</td>
+                                    <td className="text-gray-600 font-medium pr-4 py-1">Color</td>
+                                    <td className="text-gray-800/50 py-1">Multi</td>
                                 </tr>
                                 <tr>
-                                    <td className="text-gray-600 font-medium">Category</td>
-                                    <td className="text-gray-800/50">
+                                    <td className="text-gray-600 font-medium pr-4 py-1">Category</td>
+                                    <td className="text-gray-800/50 py-1">
                                         {productData.category}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td className="text-gray-600 font-medium">Availability</td>
-                                    <td className={`font-medium ${isOutOfStock ? 'text-red-500' : 'text-green-600'}`}>
+                                    <td className="text-gray-600 font-medium pr-4 py-1">Availability</td>
+                                    <td className={`font-medium py-1 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}`}>
                                         {isOutOfStock ? "Out of Stock" : "In Stock"}
                                     </td>
                                 </tr>
@@ -153,7 +156,7 @@ const Product = ({ params }) => {
                             Add to Cart
                         </button>
                         <button 
-                            onClick={() => { addToCart(productData._id); router.push('/cart') }} 
+                            onClick={() => { if (!isOutOfStock) { addToCart(productData._id); router.push('/cart') } }} 
                             disabled={isOutOfStock}
                             className="w-full py-3.5 bg-orange-500 text-white hover:bg-orange-600 transition rounded-full disabled:bg-orange-300 disabled:cursor-not-allowed"
                         >
@@ -164,13 +167,13 @@ const Product = ({ params }) => {
             </div>
             <div className="flex flex-col items-center">
                 <div className="flex flex-col items-center mb-4 mt-16">
-                    <p className="text-3xl font-medium">Featured <span className="font-medium text-orange-600">Products</span></p>
+                    <p className="text-3xl font-medium">Related <span className="font-medium text-orange-600">Products</span></p>
                     <div className="w-28 h-0.5 bg-orange-600 mt-2"></div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 pb-14 w-full">
-                    {products.slice(0, 5).map((product, index) => <ProductCard key={index} product={product} />)}
+                    {products.filter(p => p.category === productData.category && p._id !== productData._id).slice(0, 5).map((product, index) => <ProductCard key={index} product={product} />)}
                 </div>
-                <button className="px-8 py-2 mb-16 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">
+                <button onClick={() => router.push('/all-products')} className="px-8 py-2 mb-16 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">
                     See more
                 </button>
             </div>
