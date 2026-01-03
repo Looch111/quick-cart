@@ -17,3 +17,13 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.blinking-dot {
+  animation: blink 1s linear infinite;
+}
