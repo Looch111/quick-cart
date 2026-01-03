@@ -61,8 +61,8 @@ const Navbar = () => {
         </Link>
         {userData ? (
             <div className="relative">
-                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center gap-2 hover:text-gray-900 transition">
-                    <Image src={assets.user_icon} alt="user icon" />
+                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                    <Image src={assets.user_icon} alt="user icon" className='w-4 h-4' />
                 </button>
                 {isDropdownOpen && (
                     <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
@@ -76,8 +76,8 @@ const Navbar = () => {
                 )}
             </div>
         ) : (
-            <button onClick={handleLoginClick} className="flex items-center gap-2 hover:text-gray-900 transition">
-                <Image src={assets.user_icon} alt="user icon" />
+            <button onClick={handleLoginClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                 <Image src={assets.user_icon} alt="user icon" className='w-4 h-4' />
             </button>
         )}
       </ul>
@@ -95,8 +95,8 @@ const Navbar = () => {
         </Link>
         {userData ? (
             <div className="relative">
-                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center gap-2 hover:text-gray-900 transition">
-                    <Image src={assets.user_icon} alt="user icon" />
+                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                     <Image src={assets.user_icon} alt="user icon" className='w-4 h-4' />
                 </button>
                 {isDropdownOpen && (
                     <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
@@ -110,8 +110,8 @@ const Navbar = () => {
                 )}
             </div>
         ) : (
-             <button onClick={handleLoginClick} className="flex items-center gap-2 hover:text-gray-900 transition">
-                <Image src={assets.user_icon} alt="user icon" />
+             <button onClick={handleLoginClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                 <Image src={assets.user_icon} alt="user icon" className='w-4 h-4' />
             </button>
         )}
       </div>
