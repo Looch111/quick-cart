@@ -13,6 +13,8 @@ import {
 } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import Footer from '@/components/admin/Footer';
+import { orderDummyData, assets } from '@/assets/assets';
+import Image from 'next/image';
 
 const salesData = [
   { name: 'Jan', sales: 4000 },
@@ -46,6 +48,7 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const AdminDashboard = () => {
+  const recentOrders = orderDummyData.slice(0, 5);
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
        <div className="w-full md:p-10 p-4">
@@ -58,7 +61,7 @@ const AdminDashboard = () => {
             <Card title="Active Now" value="350" icon={<Activity className="w-6 h-6" />} change="+50 since last hour" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Sales Overview</h3>
             <ResponsiveContainer width="100%" height={300}>
@@ -86,6 +89,37 @@ const AdminDashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Recent Orders</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm text-left text-gray-500">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">Order ID</th>
+                    <th scope="col" className="px-6 py-3">Customer</th>
+                    <th scope="col" className="px-6 py-3">Amount</th>
+                    <th scope="col" className="px-6 py-3">Date</th>
+                    <th scope="col" className="px-6 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => (
+                    <tr key={order._id} className="bg-white border-b">
+                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">...{order._id.slice(-6)}</td>
+                      <td className="px-6 py-4">{order.address.fullName}</td>
+                      <td className="px-6 py-4">${order.amount.toFixed(2)}</td>
+                      <td className="px-6 py-4">{new Date(order.date).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">{order.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+        </div>
+
        </div>
       <Footer />
     </div>
