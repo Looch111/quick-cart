@@ -130,6 +130,9 @@ const Navbar = () => {
       <div className="flex items-center md:hidden gap-5">
         {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
         {isAdmin && <button onClick={() => router.push('/admin')} className="text-xs border px-4 py-1.5 rounded-full">Admin Panel</button>}
+        <Link href={'/all-products?focus=search'}>
+            <Image className="w-5 h-5 cursor-pointer" src={assets.search_icon} alt="search icon" />
+        </Link>
         <Link href={'/wishlist'} className='relative'>
             <Image className="w-5 h-5" src={assets.heart_icon} alt="wishlist icon" />
             {getWishlistCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getWishlistCount()}</div>}
