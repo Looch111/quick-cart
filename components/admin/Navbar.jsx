@@ -16,6 +16,7 @@ const Navbar = () => {
     { name: 'Users', path: '/admin/users' },
     { name: 'Products', path: '/admin/products' },
     { name: 'Orders', path: '/admin/orders' },
+    { name: 'Settings', path: '/admin/settings' },
   ];
 
   return (
