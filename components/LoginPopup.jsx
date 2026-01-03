@@ -12,7 +12,7 @@ const GoogleIcon = () => (
 );
 
 const LoginPopup = () => {
-    const { showLogin, setShowLogin } = useAppContext();
+    const { showLogin, setShowLogin, handleLogin } = useAppContext();
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
@@ -23,10 +23,11 @@ const LoginPopup = () => {
 
     const handleContinue = (e) => {
         e.preventDefault();
-        if (isLogin && email) {
-            setShowPassword(true);
+        if (isLogin) {
+            handleLogin(); // Mock login
         } else {
             // Handle signup logic
+            handleLogin(); // Mock signup/login
         }
     }
 

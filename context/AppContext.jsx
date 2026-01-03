@@ -139,6 +139,12 @@ export const AppContextProvider = (props) => {
         return Object.keys(wishlistItems).length;
     }
     
+    const handleLogin = () => {
+        setUserData(userDummyData);
+        setShowLogin(false);
+        toast.success(`Welcome back, ${userDummyData.name}!`);
+    }
+
     const handleLogout = () => {
         // Here you would typically clear tokens, user data, etc.
         // For this dummy setup, we can just clear some state.
@@ -166,7 +172,7 @@ export const AppContextProvider = (props) => {
         getCartCount, getCartAmount,
         wishlistItems, toggleWishlist,
         getWishlistCount,
-        handleLogout,
+        handleLogin, handleLogout,
         showLogin, setShowLogin,
         banners, addBanner, deleteBanner, updateBanner,
     }
