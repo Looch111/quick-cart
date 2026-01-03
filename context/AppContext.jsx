@@ -83,8 +83,10 @@ export const AppContextProvider = (props) => {
             const newWishlist = { ...prev };
             if (newWishlist[productId]) {
                 delete newWishlist[productId];
+                toast.success("Removed from wishlist");
             } else {
                 newWishlist[productId] = true;
+                toast.success("Added to wishlist");
             }
             return newWishlist;
         });
