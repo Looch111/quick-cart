@@ -2,6 +2,7 @@
 import { productsDummyData, userDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export const AppContext = createContext();
 
@@ -89,6 +90,17 @@ export const AppContextProvider = (props) => {
     const getWishlistCount = () => {
         return Object.keys(wishlistItems).length;
     }
+    
+    const handleLogout = () => {
+        // Here you would typically clear tokens, user data, etc.
+        // For this dummy setup, we can just clear some state.
+        setUserData(null);
+        setIsSeller(false);
+        setCartItems({});
+        setWishlistItems({});
+        toast.success("Logged out successfully");
+        router.push('/');
+    }
 
     useEffect(() => {
         fetchProductData()
@@ -107,7 +119,8 @@ export const AppContextProvider = (props) => {
         addToCart, updateCartQuantity,
         getCartCount, getCartAmount,
         wishlistItems, toggleWishlist,
-        getWishlistCount
+        getWishlistCount,
+        handleLogout
     }
 
     return (
