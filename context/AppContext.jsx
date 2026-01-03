@@ -16,7 +16,7 @@ export const AppContextProvider = (props) => {
     const router = useRouter()
 
     const [products, setProducts] = useState([])
-    const [userData, setUserData] = useState(false)
+    const [userData, setUserData] = useState(null)
     const [isSeller, setIsSeller] = useState(true)
     const [cartItems, setCartItems] = useState({})
     const [wishlistItems, setWishlistItems] = useState({});
@@ -26,7 +26,9 @@ export const AppContextProvider = (props) => {
     }
 
     const fetchUserData = async () => {
-        setUserData(userDummyData)
+        // Here you would fetch user data if logged in
+        // For now, we'll leave it null initially
+        // setUserData(userDummyData) 
     }
 
     const addToCart = async (itemId) => {
@@ -113,7 +115,7 @@ export const AppContextProvider = (props) => {
     const value = {
         currency, router,
         isSeller, setIsSeller,
-        userData, fetchUserData,
+        userData, fetchUserData, setUserData,
         products, fetchProductData,
         cartItems, setCartItems,
         addToCart, updateCartQuantity,
@@ -129,5 +131,3 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
-
-  

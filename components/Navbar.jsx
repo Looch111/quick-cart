@@ -7,7 +7,7 @@ import Image from "next/image";
 
 const Navbar = () => {
 
-  const { isSeller, router, getCartCount, getWishlistCount, handleLogout } = useAppContext();
+  const { isSeller, router, getCartCount, getWishlistCount, handleLogout, userData } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
@@ -48,22 +48,29 @@ const Navbar = () => {
           <Image className="w-5 h-5" src={assets.cart_icon} alt="cart icon" />
           {getCartCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getCartCount()}</div>}
         </Link>
-        <div className="relative">
-          <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center gap-2 hover:text-gray-900 transition">
-            <Image src={assets.user_icon} alt="user icon" />
-            Account
-          </button>
-          {isDropdownOpen && (
-            <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
-              <li>
-                <Link href="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
-              </li>
-              <li>
-                <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-              </li>
-            </ul>
-          )}
-        </div>
+        {userData ? (
+            <div className="relative">
+                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center gap-2 hover:text-gray-900 transition">
+                    <Image src={assets.user_icon} alt="user icon" />
+                    Account
+                </button>
+                {isDropdownOpen && (
+                    <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                        <li>
+                            <Link href="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
+                        </li>
+                        <li>
+                            <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                        </li>
+                    </ul>
+                )}
+            </div>
+        ) : (
+            <Link href="/login" className="flex items-center gap-2 hover:text-gray-900 transition">
+                <Image src={assets.user_icon} alt="user icon" />
+                Account
+            </Link>
+        )}
       </ul>
 
       <div className="flex items-center md:hidden gap-5">
@@ -76,21 +83,27 @@ const Navbar = () => {
           <Image className="w-5 h-5" src={assets.cart_icon} alt="cart icon" />
           {getCartCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getCartCount()}</div>}
         </Link>
-        <div className="relative">
-          <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center gap-2 hover:text-gray-900 transition">
-            <Image src={assets.user_icon} alt="user icon" />
-          </button>
-          {isDropdownOpen && (
-            <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
-              <li>
-                <Link href="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
-              </li>
-              <li>
-                <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-              </li>
-            </ul>
-          )}
-        </div>
+        {userData ? (
+            <div className="relative">
+                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center gap-2 hover:text-gray-900 transition">
+                    <Image src={assets.user_icon} alt="user icon" />
+                </button>
+                {isDropdownOpen && (
+                    <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                        <li>
+                            <Link href="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
+                        </li>
+                        <li>
+                            <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                        </li>
+                    </ul>
+                )}
+            </div>
+        ) : (
+             <Link href="/login" className="flex items-center gap-2 hover:text-gray-900 transition">
+                <Image src={assets.user_icon} alt="user icon" />
+            </Link>
+        )}
       </div>
     </nav>
   );
