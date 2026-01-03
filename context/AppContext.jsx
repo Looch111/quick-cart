@@ -79,17 +79,23 @@ export const AppContextProvider = (props) => {
     }
 
     const toggleWishlist = (productId) => {
+        const isWishlisted = wishlistItems[productId];
+    
         setWishlistItems(prev => {
             const newWishlist = { ...prev };
-            if (newWishlist[productId]) {
+            if (isWishlisted) {
                 delete newWishlist[productId];
-                toast.success("Removed from wishlist");
             } else {
                 newWishlist[productId] = true;
-                toast.success("Added to wishlist");
             }
             return newWishlist;
         });
+    
+        if (isWishlisted) {
+            toast.success("Removed from wishlist");
+        } else {
+            toast.success("Added to wishlist");
+        }
     }
 
     const getWishlistCount = () => {
