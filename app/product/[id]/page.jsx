@@ -32,12 +32,14 @@ const Product = ({ params }) => {
         }
     }, [id, products]);
 
+    const isOutOfStock = productData && productData.stock === 0;
+
     return productData ? (<>
         <Navbar />
         <div className="px-6 md:px-16 lg:px-32 pt-32 md:pt-28 space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                 <div className="px-5 lg:px-16 xl:px-20">
-                    <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4">
+                    <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4 relative">
                         <Image
                             src={mainImage || productData.image[0]}
                             alt="alt"
@@ -45,6 +47,11 @@ const Product = ({ params }) => {
                             width={1280}
                             height={720}
                         />
+                        {isOutOfStock && (
+                            <div className="absolute top-4 left-4 bg-red-500 text-white text-sm px-3 py-1 rounded-full">
+                                Out of Stock
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-4 gap-4">
@@ -128,15 +135,29 @@ const Product = ({ params }) => {
                                         {productData.category}
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td className="text-gray-600 font-medium">Availability</td>
+                                    <td className={`font-medium ${isOutOfStock ? 'text-red-500' : 'text-green-600'}`}>
+                                        {isOutOfStock ? "Out of Stock" : "In Stock"}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div className="flex items-center mt-10 gap-4">
-                        <button onClick={() => addToCart(productData._id)} className="w-full py-3.5 bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition rounded-full">
+                        <button 
+                            onClick={() => addToCart(productData._id)} 
+                            disabled={isOutOfStock}
+                            className="w-full py-3.5 bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition rounded-full disabled:bg-gray-200 disabled:cursor-not-allowed disabled:text-gray-400"
+                        >
                             Add to Cart
                         </button>
-                        <button onClick={() => { addToCart(productData._id); router.push('/cart') }} className="w-full py-3.5 bg-orange-500 text-white hover:bg-orange-600 transition rounded-full">
+                        <button 
+                            onClick={() => { addToCart(productData._id); router.push('/cart') }} 
+                            disabled={isOutOfStock}
+                            className="w-full py-3.5 bg-orange-500 text-white hover:bg-orange-600 transition rounded-full disabled:bg-orange-300 disabled:cursor-not-allowed"
+                        >
                             Buy now
                         </button>
                     </div>
@@ -161,3 +182,5 @@ const Product = ({ params }) => {
 };
 
 export default Product;
+
+    

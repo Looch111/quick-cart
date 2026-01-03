@@ -73,13 +73,16 @@ const ProductList = () => {
           </div>
         </div>
         <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-          <table className=" table-fixed w-full overflow-hidden">
+          <table className=" table-auto w-full overflow-hidden">
             <thead className="text-gray-900 text-sm text-left">
               <tr>
                 <th className="w-2/3 md:w-2/5 px-4 py-3 font-medium truncate">Product</th>
                 <th className="px-4 py-3 font-medium truncate max-sm:hidden">Category</th>
                 <th className="px-4 py-3 font-medium truncate">
                   Price
+                </th>
+                <th className="px-4 py-3 font-medium truncate max-sm:hidden">
+                  Stock
                 </th>
                 <th className="px-4 py-3 font-medium truncate">Action</th>
               </tr>
@@ -103,6 +106,7 @@ const ProductList = () => {
                   </td>
                   <td className="px-4 py-3 max-sm:hidden">{product.category}</td>
                   <td className="px-4 py-3">${product.offerPrice}</td>
+                  <td className="px-4 py-3 max-sm:hidden">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                        <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700">
@@ -140,3 +144,5 @@ const ProductList = () => {
 };
 
 export default ProductList;
+
+    

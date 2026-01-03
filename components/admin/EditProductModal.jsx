@@ -99,6 +99,16 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                 onChange={handleChange}
                             />
                         </div>
+                         <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                            <input
+                                type="number"
+                                name="stock"
+                                className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                value={productData.stock}
+                                onChange={handleChange}
+                            />
+                        </div>
                     </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sizes (comma-separated)</label>
@@ -126,3 +136,5 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 };
 
 export default EditProductModal;
+
+    

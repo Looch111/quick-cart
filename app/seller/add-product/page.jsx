@@ -12,6 +12,7 @@ const AddProduct = () => {
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
   const [sizes, setSizes] = useState('');
+  const [stock, setStock] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -125,6 +126,20 @@ const AddProduct = () => {
               required
             />
           </div>
+           <div className="flex flex-col gap-1 w-32">
+            <label className="text-base font-medium" htmlFor="stock-quantity">
+              Stock Quantity
+            </label>
+            <input
+              id="stock-quantity"
+              type="number"
+              placeholder="0"
+              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+              onChange={(e) => setStock(e.target.value)}
+              value={stock}
+              required
+            />
+          </div>
         </div>
          <div className="flex flex-col gap-1 max-w-md">
           <label className="text-base font-medium" htmlFor="product-sizes">
@@ -149,3 +164,5 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+
+    

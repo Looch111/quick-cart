@@ -147,6 +147,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/k1oqaslw5tb3ebw01vvj.webp"
     ],
     "category": "Earphone",
+    "stock": 15,
     "date": 1738667236865,
     "__v": 0
   },
@@ -161,6 +162,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/m16coelz8ivkk9f0nwrz.webp"
     ],
     "category": "Headphone",
+    "stock": 10,
     "date": 1738667310300,
     "__v": 0
   },
@@ -176,6 +178,7 @@ export const productsDummyData = [
     ],
     "category": "Clothes",
     "sizes": ["S", "M", "L", "XL"],
+    "stock": 50,
     "date": 1738667366224,
     "__v": 0
   },
@@ -190,6 +193,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/xjd4eprpwqs7odbera1w.webp"
     ],
     "category": "Smartphone",
+    "stock": 20,
     "date": 1738667366224,
     "__v": 0
   },
@@ -204,6 +208,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/hdfi4u3fmprazpnrnaga.webp"
     ],
     "category": "Earphone",
+    "stock": 0,
     "date": 1738667417511,
     "__v": 0
   },
@@ -218,6 +223,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/dd3l13vfoartrgbvkkh5.webp"
     ],
     "category": "Accessories",
+    "stock": 5,
     "date": 1738667503075,
     "__v": 0
   },
@@ -232,6 +238,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/r5h370zuujvrw461c6wy.webp"
     ],
     "category": "Camera",
+    "stock": 8,
     "date": 1738667788883,
     "__v": 0
   },
@@ -246,6 +253,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/rzri7kytphxalrm9rubd.webp"
     ],
     "category": "Laptop",
+    "stock": 12,
     "date": 1738667977644,
     "__v": 0
   },
@@ -260,6 +268,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/e3zjaupyumdkladmytke.webp"
     ],
     "category": "Earphone",
+    "stock": 25,
     "date": 1738668086331,
     "__v": 0
   },
@@ -274,6 +283,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/qqdcly8a8vkyciy9g0bw.webp"
     ],
     "category": "Accessories",
+    "stock": 7,
     "date": 1738668126660,
     "__v": 0
   },
@@ -288,6 +298,7 @@ export const productsDummyData = [
       "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/wig1urqgnkeyp4t2rtso.webp"
     ],
     "category": "Laptop",
+    "stock": 9,
     "date": 1738668619198,
     "__v": 0
   }
@@ -446,3 +457,5 @@ export const addressDummyData = [
 ]
 
   
+
+    

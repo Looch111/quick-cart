@@ -7,6 +7,7 @@ const ProductCard = ({ product }) => {
 
     const { currency, router, wishlistItems, toggleWishlist, addToCart } = useAppContext()
     const isWishlisted = wishlistItems[product._id];
+    const isOutOfStock = product.stock === 0;
 
     const handleWishlistClick = (e) => {
         e.stopPropagation();
@@ -15,6 +16,7 @@ const ProductCard = ({ product }) => {
 
     const handleAddToCartClick = (e) => {
         e.stopPropagation();
+        if (isOutOfStock) return;
         addToCart(product._id);
     }
 
@@ -38,6 +40,11 @@ const ProductCard = ({ product }) => {
                         alt="heart_icon"
                     />
                 </button>
+                {isOutOfStock && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">
+                        Out of Stock
+                    </div>
+                )}
             </div>
 
             <p className="md:text-base font-medium pt-2 w-full truncate">{product.name}</p>
@@ -63,10 +70,17 @@ const ProductCard = ({ product }) => {
             <div className="flex items-end justify-between w-full mt-1">
                 <p className="text-base font-medium">{currency}{product.offerPrice}</p>
                 <div className="flex items-center gap-2">
-                    <button onClick={handleAddToCartClick} className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 text-lg border border-gray-500/20">
+                    <button 
+                        onClick={handleAddToCartClick} 
+                        disabled={isOutOfStock}
+                        className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 text-lg border border-gray-500/20 disabled:cursor-not-allowed disabled:bg-gray-200"
+                    >
                         +
                     </button>
-                    <button className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition">
+                    <button 
+                        disabled={isOutOfStock}
+                        className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition disabled:cursor-not-allowed disabled:bg-gray-200"
+                    >
                         Buy now
                     </button>
                 </div>
@@ -76,3 +90,5 @@ const ProductCard = ({ product }) => {
 }
 
 export default ProductCard
+
+    
