@@ -14,14 +14,17 @@ const Navbar = () => {
   const [hasNewOrders, setHasNewOrders] = useState(false);
 
   useEffect(() => {
-    fetchAllOrders().then(() => {
-        // Simple logic to check for "new" orders, in a real app this would be more sophisticated
-        const newOrders = allOrders.filter(order => order.status === "Order Placed");
-        if (newOrders.length > 0) {
-            setHasNewOrders(true);
-        }
-    });
-  }, [allOrders, fetchAllOrders]);
+    // Fetch orders once when the component mounts
+    fetchAllOrders();
+  }, [fetchAllOrders]);
+
+  useEffect(() => {
+    // This effect runs only when allOrders changes
+    if (allOrders.length > 0) {
+      const newOrders = allOrders.filter(order => order.status === "Order Placed");
+      setHasNewOrders(newOrders.length > 0);
+    }
+  }, [allOrders]);
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin' },
