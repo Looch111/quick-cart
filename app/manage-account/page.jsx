@@ -63,10 +63,14 @@ const ManageAccount = () => {
                             <form onSubmit={handleSaveChanges} className="space-y-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <span className="text-3xl font-medium text-gray-600">{name?.[0]}</span>
+                                        {name ? (
+                                            <span className="text-3xl font-medium text-gray-600">{name[0]}</span>
+                                        ) : (
+                                            <User className="w-10 h-10 text-gray-500" />
+                                        )}
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-semibold text-gray-900">{name}</h2>
+                                        <h2 className="text-2xl font-semibold text-gray-900">{name || 'User'}</h2>
                                         <p className="text-sm text-gray-500">{email}</p>
                                     </div>
                                 </div>

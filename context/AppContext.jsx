@@ -64,7 +64,7 @@ export const AppContextProvider = (props) => {
                     // Create user document if it doesn't exist
                     const newUser = {
                         email: firebaseUser.email,
-                        name: firebaseUser.displayName || 'New User',
+                        name: firebaseUser.displayName || '',
                         photoURL: firebaseUser.photoURL || '',
                         role: 'buyer',
                         cartItems: {},

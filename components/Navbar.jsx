@@ -68,7 +68,15 @@ const Navbar = () => {
 
         <div className="relative" ref={dropdownRef}>
           <button onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
-            {userData ? <span className="text-gray-600 font-medium">{userData.name[0]}</span> : <User className="w-5 h-5 text-gray-600" />}
+            {userData ? (
+                userData.name ? (
+                    <span className="text-gray-600 font-medium">{userData.name[0]}</span>
+                ) : (
+                    <User className="w-5 h-5 text-gray-600" />
+                )
+            ) : (
+                <User className="w-5 h-5 text-gray-600" />
+            )}
           </button>
 
           {isDropdownOpen && userData && (
@@ -76,10 +84,14 @@ const Navbar = () => {
               <div className="px-4 py-2 border-b border-gray-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-lg font-medium text-gray-600">{userData.name[0]}</span>
+                    {userData.name ? (
+                        <span className="text-lg font-medium text-gray-600">{userData.name[0]}</span>
+                    ) : (
+                        <User className="w-6 h-6 text-gray-500" />
+                    )}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-gray-800">{userData.name}</p>
+                    <p className="font-semibold text-sm text-gray-800">{userData.name || 'User'}</p>
                     <p className="text-xs text-gray-500">{userData.email}</p>
                   </div>
                 </div>
