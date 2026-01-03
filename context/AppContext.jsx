@@ -21,8 +21,9 @@ export const AppContextProvider = (props) => {
     const [wishlistItems, setWishlistItems] = useState({});
     const [showLogin, setShowLogin] = useState(false);
     const [banners, setBanners] = useState([
-        { id: 1, title: 'Summer Sale', image: 'https://picsum.photos/seed/1/1200/400', link: '/all-products', status: 'active' },
-        { id: 2, title: 'New Arrivals', image: 'https://picsum.photos/seed/2/1200/400', link: '/all-products', status: 'inactive' },
+        { id: 'slide1', title: 'The Latest Collection of Headphones', image: 'https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/header_headphone_image.png', link: '/all-products', status: 'active' },
+        { id: 'slide2', title: 'Experience Gaming Like Never Before', image: 'https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/header_playstation_image.png', link: '/all-products', status: 'active' },
+        { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: 'https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/header_macbook_image.png', link: '/all-products', status: 'active' },
     ]);
 
     const addBanner = (newBanner) => {
