@@ -111,7 +111,7 @@ const AddProduct = () => {
               type="number"
               placeholder="0"
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setPrice(e.gexitt.value)}
+              onChange={(e) => setPrice(e.target.value)}
               value={price}
               required
             />
