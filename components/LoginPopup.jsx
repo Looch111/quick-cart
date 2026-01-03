@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { useAuth } from "@/src/firebase/auth/use-user";
 
@@ -19,6 +19,16 @@ const LoginPopup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (showLogin) {
+            // Reset to login view every time the popup opens
+            setIsLogin(true);
+            setError('');
+            setEmail('');
+            setPassword('');
+        }
+    }, [showLogin]);
 
     if (!showLogin) {
         return null;
