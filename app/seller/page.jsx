@@ -1,151 +1,103 @@
-'use client'
-import React, { useState } from "react";
-import { assets } from "@/assets/assets";
-import Image from "next/image";
+'use client';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import { DollarSign, ShoppingCart, Package } from 'lucide-react';
+import Footer from '@/components/seller/Footer';
+import { orderDummyData, productsDummyData } from '@/assets/assets';
 
-const AddProduct = () => {
+const salesData = [
+  { name: 'Jan', sales: 2200 },
+  { name: 'Feb', sales: 1800 },
+  { name: 'Mar', sales: 3200 },
+  { name: 'Apr', sales: 2800 },
+  { name: 'May', sales: 4100 },
+  { name: 'Jun', sales: 3900 },
+];
 
-  const [files, setFiles] = useState([]);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Earphone');
-  const [price, setPrice] = useState('');
-  const [offerPrice, setOfferPrice] = useState('');
-  const [sizes, setSizes] = useState('');
+const Card = ({ title, value, icon, change }) => (
+    <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500">{title}</p>
+        <p className="text-2xl font-bold text-gray-800">{value}</p>
+        <p className={`text-xs mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</p>
+      </div>
+      <div className="bg-orange-100 text-orange-600 p-3 rounded-full">
+        {icon}
+      </div>
+    </div>
+);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-  };
-
+const SellerDashboard = () => {
+  const recentOrders = orderDummyData.slice(0, 5);
   return (
-    <div className="flex-1 min-h-screen flex flex-col justify-between">
-      <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg">
-        <div>
-          <p className="text-base font-medium">Product Image</p>
-          <div className="flex flex-wrap items-center gap-3 mt-2">
+    <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
+       <div className="w-full md:p-10 p-4">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seller Dashboard</h2>
 
-            {[...Array(4)].map((_, index) => (
-              <label key={index} htmlFor={`image${index}`}>
-                <input onChange={(e) => {
-                  const updatedFiles = [...files];
-                  updatedFiles[index] = e.target.files[0];
-                  setFiles(updatedFiles);
-                }} type="file" id={`image${index}`} hidden />
-                <Image
-                  key={index}
-                  className="max-w-24 cursor-pointer"
-                  src={files[index] ? URL.createObjectURL(files[index]) : assets.upload_area}
-                  alt=""
-                  width={100}
-                  height={100}
-                />
-              </label>
-            ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <Card title="Total Earnings" value="$12,540.50" icon={<DollarSign className="w-6 h-6" />} change="+15.5% from last month" />
+            <Card title="Products Sold" value="850" icon={<ShoppingCart className="w-6 h-6" />} change="+90 from last month" />
+            <Card title="Active Listings" value={productsDummyData.length} icon={<Package className="w-6 h-6" />} change="+5 from last month" />
+        </div>
 
+        <div className="grid grid-cols-1 gap-8 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Sales</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="sales" fill="#fb923c" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
-        <div className="flex flex-col gap-1 max-w-md">
-          <label className="text-base font-medium" htmlFor="product-name">
-            Product Name
-          </label>
-          <input
-            id="product-name"
-            type="text"
-            placeholder="Type here"
-            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-            onChange={(e) => setName(e.target.value)}
-            value={name}
-            required
-          />
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Recent Orders</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm text-left text-gray-500">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">Order ID</th>
+                    <th scope="col" className="px-6 py-3">Customer</th>
+                    <th scope="col" className="px-6 py-3">Amount</th>
+                    <th scope="col" className="px-6 py-3">Date</th>
+                    <th scope="col" className="px-6 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => (
+                    <tr key={order._id} className="bg-white border-b">
+                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">...{order._id.slice(-6)}</td>
+                      <td className="px-6 py-4">{order.address.fullName}</td>
+                      <td className="px-6 py-4">${order.amount.toFixed(2)}</td>
+                      <td className="px-6 py-4">{new Date(order.date).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">{order.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
         </div>
-        <div className="flex flex-col gap-1 max-w-md">
-          <label
-            className="text-base font-medium"
-            htmlFor="product-description"
-          >
-            Product Description
-          </label>
-          <textarea
-            id="product-description"
-            rows={4}
-            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none"
-            placeholder="Type here"
-            onChange={(e) => setDescription(e.target.value)}
-            value={description}
-            required
-          ></textarea>
-        </div>
-        <div className="flex items-center gap-5 flex-wrap">
-          <div className="flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="category">
-              Category
-            </label>
-            <select
-              id="category"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setCategory(e.target.value)}
-              defaultValue={category}
-            >
-              <option value="Earphone">Earphone</option>
-              <option value="Headphone">Headphone</option>
-              <option value="Watch">Watch</option>
-              <option value="Smartphone">Smartphone</option>
-              <option value="Laptop">Laptop</option>
-              <option value="Camera">Camera</option>
-              <option value="Accessories">Accessories</option>
-              <option value="Clothes">Clothes</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="product-price">
-              Product Price
-            </label>
-            <input
-              id="product-price"
-              type="number"
-              placeholder="0"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setPrice(e.target.value)}
-              value={price}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="offer-price">
-              Offer Price
-            </label>
-            <input
-              id="offer-price"
-              type="number"
-              placeholder="0"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setOfferPrice(e.target.value)}
-              value={offerPrice}
-              required
-            />
-          </div>
-        </div>
-         <div className="flex flex-col gap-1 max-w-md">
-          <label className="text-base font-medium" htmlFor="product-sizes">
-            Sizes (comma-separated)
-          </label>
-          <input
-            id="product-sizes"
-            type="text"
-            placeholder="e.g. S, M, L, XL"
-            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-            onChange={(e) => setSizes(e.target.value)}
-            value={sizes}
-          />
-        </div>
-        <button type="submit" className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded">
-          ADD
-        </button>
-      </form>
-      {/* <Footer /> */}
+
+       </div>
+      <Footer />
     </div>
   );
 };
 
-export default AddProduct;
+export default SellerDashboard;
