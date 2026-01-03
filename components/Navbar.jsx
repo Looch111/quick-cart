@@ -4,7 +4,7 @@ import { assets, HomeIcon, BoxIcon, BagIcon, CartIcon } from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
-import { Heart, ShoppingCart, User, Settings, LogOut, Package } from "lucide-react";
+import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search } from "lucide-react";
 
 const Navbar = () => {
 
@@ -67,6 +67,9 @@ const Navbar = () => {
       </div>
 
       <div className="flex items-center gap-4 md:gap-5">
+        <Link href="/all-products?focus=search" className="hover:text-gray-900 transition">
+          <Search className="w-5 h-5" />
+        </Link>
         <Link href="/wishlist" className="relative">
           <Heart className="w-5 h-5" />
           {wishlistCount > 0 && <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>}
