@@ -4,7 +4,7 @@ import { assets} from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
-import { Heart, ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart, User } from "lucide-react";
 
 const Navbar = () => {
 
@@ -46,35 +46,23 @@ const Navbar = () => {
 
       </div>
 
-      <div className="flex items-center gap-4 md:gap-6">
+      <div className="flex items-center gap-4 md:gap-5">
          {isSeller && <button onClick={() => router.push('/seller')} className="hidden md:block text-xs border px-4 py-1.5 rounded-full hover:bg-gray-50">Seller Dashboard</button>}
-        <Link href="/wishlist" className="relative hidden md:block">
+        <Link href="/wishlist" className="relative">
           <Heart className="w-5 h-5" />
           {wishlistCount > 0 && <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>}
         </Link>
-         <Link href="/cart" className="relative hidden md:block">
+         <Link href="/cart" className="relative">
           <ShoppingCart className="w-5 h-5" />
           {cartCount > 0 && <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{cartCount}</span>}
         </Link>
-        <button onClick={handleAccountClick} className="hidden md:flex items-center gap-2 hover:text-gray-900 transition">
-          <Image src={assets.user_icon} alt="user icon" />
-          Account
+        <button onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+          <User className="w-5 h-5 text-gray-600"/>
         </button>
 
-         {/* Mobile View */}
+         {/* Mobile View Specifics */}
         <div className="flex items-center gap-3 md:hidden">
           {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller</button>}
-          <Link href="/wishlist" className="relative">
-            <Heart className="w-5 h-5" />
-            {wishlistCount > 0 && <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>}
-          </Link>
-          <Link href="/cart" className="relative">
-            <ShoppingCart className="w-5 h-5" />
-            {cartCount > 0 && <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{cartCount}</span>}
-          </Link>
-          <button onClick={handleAccountClick} className="flex items-center gap-2 hover:text-gray-900 transition">
-            <Image src={assets.user_icon} alt="user icon" />
-          </button>
         </div>
       </div>
     </nav>
