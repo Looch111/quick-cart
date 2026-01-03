@@ -9,14 +9,9 @@ import { LogOut } from 'lucide-react'
 
 const Navbar = () => {
 
-  const { router, allOrders, fetchAllOrders, handleLogout } = useAppContext()
+  const { router, allOrders, handleLogout } = useAppContext()
   const pathname = usePathname()
   const [hasNewOrders, setHasNewOrders] = useState(false);
-
-  useEffect(() => {
-    // Fetch orders once when the component mounts
-    fetchAllOrders();
-  }, [fetchAllOrders]);
 
   useEffect(() => {
     // This effect runs only when allOrders changes
