@@ -9,7 +9,8 @@ import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
 
-const Product = ({ params: { id } }) => {
+const Product = ({ params }) => {
+    const { id } = params;
     const { products, router, addToCart } = useAppContext()
 
     const [mainImage, setMainImage] = useState(null);
