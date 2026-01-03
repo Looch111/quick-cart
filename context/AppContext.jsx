@@ -206,8 +206,8 @@ export const AppContextProvider = (props) => {
         setCartItems(prev => {
             const newCart = { ...prev };
             if (quantity <= 0) {
-                message = "Item removed from cart";
                 delete newCart[itemId];
+                message = "Item removed from cart";
             } else {
                 newCart[itemId] = quantity;
             }
