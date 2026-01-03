@@ -1,4 +1,5 @@
 'use client'
+import { useState } from "react";
 import { useAppContext } from "@/context/AppContext";
 
 const GoogleIcon = () => (
@@ -11,8 +12,8 @@ const GoogleIcon = () => (
 );
 
 const LoginPopup = () => {
-
     const { showLogin, setShowLogin } = useAppContext();
+    const [isLogin, setIsLogin] = useState(true);
 
     if (!showLogin) {
         return null;
@@ -27,8 +28,8 @@ const LoginPopup = () => {
                     </svg>
                 </button>
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-800">Sign in to QuickCart</h1>
-                    <p className="text-gray-500 mt-2">Welcome back! Please sign in to continue</p>
+                    <h1 className="text-2xl font-bold text-gray-800">{isLogin ? "Sign in to QuickCart" : "Create an account"}</h1>
+                    <p className="text-gray-500 mt-2">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with QuickCart"}</p>
                 </div>
                 <div className="mt-8">
                     <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-md hover:bg-gray-50">
@@ -42,6 +43,18 @@ const LoginPopup = () => {
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
                 <form className="space-y-6">
+                    {!isLogin && (
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input
+                                id="name"
+                                className="mt-1 px-3 py-2.5 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
+                                type="text"
+                                placeholder="Enter your full name"
+                                required
+                            />
+                        </div>
+                    )}
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                         <input
@@ -52,15 +65,33 @@ const LoginPopup = () => {
                             required
                         />
                     </div>
+                    {!isLogin && (
+                         <div>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                            <input
+                                id="password"
+                                className="mt-1 px-3 py-2.5 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
+                                type="password"
+                                placeholder="Enter your password"
+                                required
+                            />
+                        </div>
+                    )}
                     <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 bg-gray-800 text-white hover:bg-gray-900 rounded-md font-semibold">
                         Continue
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
                     </button>
                 </form>
                 <div className="mt-6 text-center text-sm">
-                    <p className="text-gray-500">
-                        Don't have an account? <span className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
-                    </p>
+                    {isLogin ? (
+                        <p className="text-gray-500">
+                            Don't have an account? <span onClick={() => setIsLogin(false)} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
+                        </p>
+                    ) : (
+                        <p className="text-gray-500">
+                            Already have an account? <span onClick={() => setIsLogin(true)} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
+                        </p>
+                    )}
                 </div>
             </div>
         </div>
