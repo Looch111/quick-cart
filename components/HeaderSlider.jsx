@@ -82,7 +82,7 @@ const HeaderSlider = () => {
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-8">
+      <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2">
         {sliderData.map((_, index) => (
           <div
             key={index}
