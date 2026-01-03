@@ -21,9 +21,9 @@ export const AppContextProvider = (props) => {
     const [wishlistItems, setWishlistItems] = useState({});
     const [showLogin, setShowLogin] = useState(false);
     const [banners, setBanners] = useState([
-        { id: 'slide1', title: 'The Latest Collection of Headphones', image: assets.header_headphone_image.src, link: '/all-products', status: 'active' },
-        { id: 'slide2', title: 'Experience Gaming Like Never Before', image: assets.header_playstation_image.src, link: '/all-products', status: 'active' },
-        { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: assets.header_macbook_image.src, link: '/all-products', status: 'active' },
+        { id: 'slide1', title: 'The Latest Collection of Headphones', image: assets.header_headphone_image.src, link: '/all-products', status: 'active', buttonText: 'Buy now' },
+        { id: 'slide2', title: 'Experience Gaming Like Never Before', image: assets.header_playstation_image.src, link: '/all-products', status: 'active', buttonText: 'Shop now' },
+        { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: assets.header_macbook_image.src, link: '/all-products', status: 'active', buttonText: 'Order now' },
     ]);
 
     const addBanner = (newBanner) => {
@@ -32,7 +32,8 @@ export const AppContextProvider = (props) => {
             title: newBanner.title,
             image: assets.jbl_soundbox_image.src, // Using a persistent image from assets
             link: newBanner.link,
-            status: 'active'
+            status: 'active',
+            buttonText: 'Shop now'
         };
         setBanners([...banners, newBannerData]);
         toast.success("Banner added successfully!");
