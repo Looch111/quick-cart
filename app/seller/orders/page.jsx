@@ -21,16 +21,18 @@ const Orders = () => {
                 }
                 return null;
             }).filter(order => order !== null);
-            setSellerOrders(filteredOrders);
+            setSellerOrders(filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
         }
     }, [userData, allOrders]);
 
     useEffect(() => {
-        if (allOrders) {
-            setLoading(false);
+        if (!userData) {
+            setLoading(true);
+        } else if (allOrders) {
             filterSellerOrders();
+            setLoading(false);
         }
-    }, [allOrders, filterSellerOrders]);
+    }, [allOrders, userData, filterSellerOrders]);
 
 
     return (

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useFirestore, useCollection, useDoc } from "@/src/firebase";
-import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc } from "firebase/firestore";
 
 export const AppContext = createContext();
 
@@ -64,7 +64,7 @@ export const AppContextProvider = (props) => {
                     // Create user document if it doesn't exist
                     const newUser = {
                         email: firebaseUser.email,
-                        name: firebaseUser.displayName || '',
+                        name: '',
                         photoURL: firebaseUser.photoURL || '',
                         role: 'buyer',
                         cartItems: {},
@@ -189,8 +189,13 @@ export const AppContextProvider = (props) => {
     }
     
     const addProduct = async (productData) => {
-        if (!userData || (!isSeller && !isAdmin)) {
-            toast.error("You must be a seller to add a product.");
+        if (!userData) {
+            toast.error("Please log in to add a product.");
+            setShowLogin(true);
+            return;
+        }
+        if (!isSeller && !isAdmin) {
+            toast.error("You must be a seller or admin to add a product.");
             return;
         }
         const productsCollectionRef = collection(firestore, 'products');
@@ -227,7 +232,6 @@ export const AppContextProvider = (props) => {
             return;
         }
         
-        // Fetch the product to check ownership before deleting
         const productRef = doc(firestore, 'products', productId);
         const productSnap = await getDoc(productRef);
 
@@ -252,6 +256,10 @@ export const AppContextProvider = (props) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
             setShowLogin(true);
+            return;
+        }
+         if (getCartCount() === 0) {
+            toast.error("Your cart is empty.");
             return;
         }
 
