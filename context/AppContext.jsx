@@ -127,9 +127,11 @@ export const AppContextProvider = (props) => {
     }
     
     const fetchAllOrders = async () => {
-        if (!isBrowser) return;
+        if (!isBrowser) return { success: false, orders: [] };
         const storedOrders = localStorage.getItem('allOrders');
-        setAllOrders(storedOrders ? JSON.parse(storedOrders) : orderDummyData);
+        const orders = storedOrders ? JSON.parse(storedOrders) : orderDummyData;
+        setAllOrders(orders);
+        return { success: true, orders: orders };
     }
 
     const fetchUserOrders = async () => {
@@ -182,6 +184,17 @@ export const AppContextProvider = (props) => {
             localStorage.removeItem('cartItems');
         }
         toast.success("Order placed successfully!");
+    }
+
+    const updateOrderStatus = async (orderId, newStatus) => {
+        const updatedOrders = allOrders.map(order => 
+            order._id === orderId ? { ...order, status: newStatus } : order
+        );
+        setAllOrders(updatedOrders);
+        if (isBrowser) {
+            localStorage.setItem('allOrders', JSON.stringify(updatedOrders));
+        }
+        return { success: true };
     }
 
 
@@ -335,6 +348,7 @@ export const AppContextProvider = (props) => {
         userAddresses, addAddress, fetchUserAddresses,
         allOrders, fetchAllOrders, placeOrder, fetchUserOrders,
         walletBalance, fundWallet, walletTransactions,
+        updateOrderStatus,
     }
 
     return (
