@@ -63,8 +63,10 @@ const ManageAccount = () => {
                             <form onSubmit={handleSaveChanges} className="space-y-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-                                        {name ? (
-                                            <span className="text-3xl font-medium text-gray-600">{name[0]}</span>
+                                        {userData.name ? (
+                                            <span className="text-3xl font-medium text-gray-600">{userData.name[0]}</span>
+                                        ) : userData.email ? (
+                                            <span className="text-3xl font-medium text-gray-600">{userData.email[0]}</span>
                                         ) : (
                                             <User className="w-10 h-10 text-gray-500" />
                                         )}

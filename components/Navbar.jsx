@@ -71,6 +71,8 @@ const Navbar = () => {
             {userData ? (
                 userData.name ? (
                     <span className="text-gray-600 font-medium">{userData.name[0]}</span>
+                ) : userData.email ? (
+                    <span className="text-gray-600 font-medium">{userData.email[0]}</span>
                 ) : (
                     <User className="w-5 h-5 text-gray-600" />
                 )
@@ -86,6 +88,8 @@ const Navbar = () => {
                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                     {userData.name ? (
                         <span className="text-lg font-medium text-gray-600">{userData.name[0]}</span>
+                    ) : userData.email ? (
+                        <span className="text-lg font-medium text-gray-600">{userData.email[0]}</span>
                     ) : (
                         <User className="w-6 h-6 text-gray-500" />
                     )}
