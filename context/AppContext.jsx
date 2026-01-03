@@ -24,8 +24,10 @@ export const AppContextProvider = (props) => {
     const firestore = useFirestore();
 
     // App Data
-    const { data: products, loading: productsLoading } = useCollection('products');
-    const { data: allOrders, loading: ordersLoading } = useCollection('orders');
+    const { data: productsData, loading: productsLoading } = useCollection('products');
+    const { data: ordersData, loading: ordersLoading } = useCollection('orders');
+    const [products, setProducts] = useState([]);
+    const [allOrders, setAllOrders] = useState([]);
 
     // User-specific Data
     const [userData, setUserData] = useState(null);
@@ -48,6 +50,20 @@ export const AppContextProvider = (props) => {
     const wishlistItems = userData?.wishlistItems || {};
     const walletBalance = userData?.walletBalance || 0;
     const walletTransactions = userData?.walletTransactions || [];
+
+     // Update products state when data loads
+    useEffect(() => {
+        if (!productsLoading) {
+            setProducts(productsData.map(p => ({ ...p, _id: p.id })));
+        }
+    }, [productsData, productsLoading]);
+
+    // Update orders state when data loads
+    useEffect(() => {
+        if (!ordersLoading) {
+             setAllOrders(ordersData.map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) })));
+        }
+    }, [ordersData, ordersLoading]);
 
 
     // Effect to handle user authentication state changes
@@ -417,7 +433,7 @@ export const AppContextProvider = (props) => {
         showLogin, setShowLogin,
         banners, addBanner, deleteBanner, updateBanner,
         userAddresses, addAddress,
-        allOrders: allOrders ? allOrders.map(o => ({ ...o, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) })) : [], 
+        allOrders,
         placeOrder, userOrders,
         walletBalance, fundWallet, walletTransactions,
         updateOrderStatus,
