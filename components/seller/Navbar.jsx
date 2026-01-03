@@ -1,3 +1,4 @@
+
 'use client'
 import React from 'react'
 import { assets } from '../../assets/assets'
@@ -16,6 +17,7 @@ const Navbar = () => {
     { name: 'Add Product', path: '/seller/add-product' },
     { name: 'Product List', path: '/seller/product-list' },
     { name: 'Orders', path: '/seller/orders' },
+    { name: 'Wallet', path: '/seller/wallet' },
   ];
 
   return (
