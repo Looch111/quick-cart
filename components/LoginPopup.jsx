@@ -1,7 +1,7 @@
 'use client'
 import { useState } from "react";
 import { useAppContext } from "@/context/AppContext";
-import { useAuth } from "@/firebase/auth/use-user";
+import { useAuth } from "@/src/firebase/auth/use-user";
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">

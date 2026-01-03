@@ -3,8 +3,8 @@ import "./globals.css";
 import { AppContextProvider } from "@/context/AppContext";
 import { Toaster } from "react-hot-toast";
 import LoginPopup from "@/components/LoginPopup";
-import { FirebaseClientProvider } from "@/firebase/client-provider";
-import FirebaseErrorListener from "@/components/FirebaseErrorListener";
+import { FirebaseClientProvider } from "@/src/firebase/client-provider";
+import FirebaseErrorListener from "@/src/components/FirebaseErrorListener";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 

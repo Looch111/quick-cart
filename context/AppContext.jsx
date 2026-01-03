@@ -1,7 +1,7 @@
 
 'use client'
 import { assets, productsDummyData, userDummyData, addressDummyData, orderDummyData } from "@/assets/assets";
-import { useAuth, useUser } from "@/firebase/auth/use-user";
+import { useAuth, useUser } from "@/src/firebase/auth/use-user";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
