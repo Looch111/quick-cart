@@ -23,6 +23,13 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   };
+  
+  const getImageUrl = (url) => {
+    if (url && url.startsWith('https://i.imgur.com/') && !url.endsWith('.png') && !url.endsWith('.jpg') && !url.endsWith('.jpeg') && !url.endsWith('.gif')) {
+      return `${url}.png`;
+    }
+    return url || assets.upload_area;
+  };
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between">
@@ -34,7 +41,7 @@ const AddProduct = () => {
               <div key={index} className="flex items-center gap-3">
                 <Image
                   className="max-w-24 w-24 h-24 object-cover border rounded"
-                  src={imageUrls[index] || assets.upload_area}
+                  src={getImageUrl(imageUrls[index])}
                   alt={`Product image ${index + 1}`}
                   width={100}
                   height={100}
