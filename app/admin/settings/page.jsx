@@ -6,11 +6,12 @@ import toast from 'react-hot-toast';
 const SettingsPage = () => {
     const [commission, setCommission] = useState(15); // Default 15%
     const [shippingFee, setShippingFee] = useState(5); // Default $5 shipping fee
+    const [freeShippingThreshold, setFreeShippingThreshold] = useState(50); // Default $50
 
     const handleSaveSettings = (e) => {
         e.preventDefault();
         // In a real app, you would save this to your backend
-        console.log("Saving settings:", { commission, shippingFee });
+        console.log("Saving settings:", { commission, shippingFee, freeShippingThreshold });
         toast.success("Settings saved successfully!");
     };
 
@@ -70,6 +71,30 @@ const SettingsPage = () => {
                                 </div>
                                 <p className="mt-2 text-xs text-gray-500">
                                     The default shipping fee applied to orders.
+                                </p>
+                            </div>
+                            <div>
+                                <label htmlFor="free-shipping-threshold" className="block text-sm font-medium text-gray-700">
+                                    Free Shipping Threshold
+                                </label>
+                                <div className="mt-1 relative rounded-md shadow-sm">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span className="text-gray-500 sm:text-sm">$</span>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        name="free-shipping-threshold"
+                                        id="free-shipping-threshold"
+                                        className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                                        placeholder="0.00"
+                                        value={freeShippingThreshold}
+                                        onChange={(e) => setFreeShippingThreshold(e.target.value)}
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                </div>
+                                <p className="mt-2 text-xs text-gray-500">
+                                    The minimum order amount to qualify for free shipping.
                                 </p>
                             </div>
                         </div>
