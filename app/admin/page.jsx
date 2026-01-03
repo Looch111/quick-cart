@@ -2,14 +2,15 @@
 import React, { useEffect, useState } from "react";
 import { userDummyData } from "@/assets/assets";
 import Image from "next/image";
-import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/admin/Footer";
 import Loading from "@/components/Loading";
+import EditUserModal from "@/components/admin/EditUserModal";
 
 const UserList = () => {
 
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
+    const [editingUser, setEditingUser] = useState(null);
 
     const fetchUsers = async () => {
         // In a real app, you would fetch all users from your backend
@@ -25,6 +26,20 @@ const UserList = () => {
     useEffect(() => {
         fetchUsers();
     }, [])
+
+    const handleEditClick = (user) => {
+        setEditingUser(user);
+    };
+
+    const handleSaveUser = (updatedUser) => {
+        // In a real app, you would send this to your backend
+        setUsers(users.map(u => (u._id === updatedUser._id ? updatedUser : u)));
+        setEditingUser(null);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingUser(null);
+    };
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between">
@@ -58,7 +73,7 @@ const UserList = () => {
                                     <td className="px-4 py-3 max-sm:hidden">{user.email}</td>
                                     <td className="px-4 py-3 capitalize">{user.role}</td>
                                     <td className="px-4 py-3 max-sm:hidden">
-                                        <button className="px-3.5 py-2 bg-gray-100 text-gray-700 rounded-md text-xs">
+                                        <button onClick={() => handleEditClick(user)} className="px-3.5 py-2 bg-gray-100 text-gray-700 rounded-md text-xs">
                                             Edit
                                         </button>
                                     </td>
@@ -69,6 +84,13 @@ const UserList = () => {
                 </div>
             </div>}
             <Footer />
+            {editingUser && (
+                <EditUserModal
+                    user={editingUser}
+                    onSave={handleSaveUser}
+                    onCancel={handleCancelEdit}
+                />
+            )}
         </div>
     );
 };
