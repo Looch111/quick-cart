@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/src/firebase/error-emitter';
+import { FirestorePermissionError } from '@/src/firebase/errors';
 import toast from 'react-hot-toast';
 
 // This component listens for permission errors and displays a toast
