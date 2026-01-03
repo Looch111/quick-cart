@@ -1,7 +1,5 @@
 'use client'
-import { assets } from "@/assets/assets";
 import { useAppContext } from "@/context/AppContext";
-import Image from "next/image";
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -12,20 +10,24 @@ const GoogleIcon = () => (
     </svg>
 );
 
-const LoginPage = () => {
+const LoginPopup = () => {
 
-    const { router } = useAppContext();
+    const { showLogin, setShowLogin } = useAppContext();
+
+    if (!showLogin) {
+        return null;
+    }
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100/50">
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50">
             <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg relative">
-                <button onClick={() => router.push('/')} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-800">Sign in to QuickCart Ecommerce</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">Sign in to QuickCart</h1>
                     <p className="text-gray-500 mt-2">Welcome back! Please sign in to continue</p>
                 </div>
                 <div className="mt-8">
@@ -60,17 +62,9 @@ const LoginPage = () => {
                         Don't have an account? <span className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
                     </p>
                 </div>
-
-                <div className="text-center mt-8 text-xs text-gray-400">
-                    <p>Secured by <span className="font-semibold text-gray-500">Clerk</span></p>
-                </div>
-                 <div className="text-center mt-2">
-                    <span className="text-orange-500 bg-orange-100 text-xs font-bold px-2 py-1 rounded">Development mode</span>
-                </div>
-
             </div>
         </div>
     );
 };
 
-export default LoginPage;
+export default LoginPopup;

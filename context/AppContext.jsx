@@ -20,6 +20,7 @@ export const AppContextProvider = (props) => {
     const [isSeller, setIsSeller] = useState(true)
     const [cartItems, setCartItems] = useState({})
     const [wishlistItems, setWishlistItems] = useState({});
+    const [showLogin, setShowLogin] = useState(false);
 
     const fetchProductData = async () => {
         setProducts(productsDummyData)
@@ -122,7 +123,8 @@ export const AppContextProvider = (props) => {
         getCartCount, getCartAmount,
         wishlistItems, toggleWishlist,
         getWishlistCount,
-        handleLogout
+        handleLogout,
+        showLogin, setShowLogin
     }
 
     return (

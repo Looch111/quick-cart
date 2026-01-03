@@ -7,7 +7,7 @@ import Image from "next/image";
 
 const Navbar = () => {
 
-  const { isSeller, router, getCartCount, getWishlistCount, handleLogout, userData } = useAppContext();
+  const { isSeller, router, getCartCount, getWishlistCount, handleLogout, userData, setShowLogin } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
@@ -66,10 +66,10 @@ const Navbar = () => {
                 )}
             </div>
         ) : (
-            <Link href="/login" className="flex items-center gap-2 hover:text-gray-900 transition">
+            <button onClick={()=> setShowLogin(true)} className="flex items-center gap-2 hover:text-gray-900 transition">
                 <Image src={assets.user_icon} alt="user icon" />
                 Account
-            </Link>
+            </button>
         )}
       </ul>
 
@@ -100,9 +100,9 @@ const Navbar = () => {
                 )}
             </div>
         ) : (
-             <Link href="/login" className="flex items-center gap-2 hover:text-gray-900 transition">
+             <button onClick={()=> setShowLogin(true)} className="flex items-center gap-2 hover:text-gray-900 transition">
                 <Image src={assets.user_icon} alt="user icon" />
-            </Link>
+            </button>
         )}
       </div>
     </nav>

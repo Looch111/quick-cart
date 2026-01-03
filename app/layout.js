@@ -2,6 +2,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { AppContextProvider } from "@/context/AppContext";
 import { Toaster } from "react-hot-toast";
+import LoginPopup from "@/components/LoginPopup";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
         <body className={`${outfit.className} antialiased text-gray-700`} >
           <Toaster />
           <AppContextProvider>
+            <LoginPopup />
             {children}
           </AppContextProvider>
         </body>
