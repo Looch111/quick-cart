@@ -20,7 +20,7 @@ const LoginPopup = () => {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
             <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-lg relative">
                 <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
