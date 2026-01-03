@@ -82,9 +82,9 @@ const Navbar = () => {
           <button onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
             {userData ? (
                 userData.name ? (
-                    <span className="text-gray-600 font-medium">{userData.name[0]}</span>
+                    <span className="text-gray-600 font-medium">{userData.name[0].toUpperCase()}</span>
                 ) : userData.email ? (
-                    <span className="text-gray-600 font-medium">{userData.email[0]}</span>
+                    <span className="text-gray-600 font-medium">{userData.email[0].toUpperCase()}</span>
                 ) : (
                     <User className="w-5 h-5 text-gray-600" />
                 )
@@ -99,15 +99,15 @@ const Navbar = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                     {userData.name ? (
-                        <span className="text-lg font-medium text-gray-600">{userData.name[0]}</span>
+                        <span className="text-lg font-medium text-gray-600">{userData.name[0].toUpperCase()}</span>
                     ) : userData.email ? (
-                        <span className="text-lg font-medium text-gray-600">{userData.email[0]}</span>
+                        <span className="text-lg font-medium text-gray-600">{userData.email[0].toUpperCase()}</span>
                     ) : (
                         <User className="w-6 h-6 text-gray-500" />
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-gray-800">{userData.name || userData.email}</p>
+                    <p className="font-semibold text-sm text-gray-800">{userData.name || ''}</p>
                     <p className="text-xs text-gray-500">{userData.email}</p>
                   </div>
                 </div>
