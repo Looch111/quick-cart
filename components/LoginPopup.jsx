@@ -43,18 +43,6 @@ const LoginPopup = () => {
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
                 <form className="space-y-6">
-                    {!isLogin && (
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-                            <input
-                                id="name"
-                                className="mt-1 px-3 py-2.5 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
-                                type="text"
-                                placeholder="Enter your full name"
-                                required
-                            />
-                        </div>
-                    )}
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                         <input
