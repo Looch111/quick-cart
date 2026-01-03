@@ -1,9 +1,10 @@
 "use client"
 import React, { useState } from "react";
-import { assets} from "@/assets/assets";
+import { assets, HomeIcon, BoxIcon, CartIcon, BagIcon } from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
+import { Settings, LogOut } from "lucide-react";
 
 const Navbar = () => {
 
@@ -61,18 +62,62 @@ const Navbar = () => {
         </Link>
         {userData ? (
             <div className="relative">
-                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
-                    <Image src={assets.user_icon} alt="user icon" className='w-4 h-4' />
+                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition">
+                     <span className="text-sm font-medium text-gray-600">{userData.name?.[0]}</span>
                 </button>
                 {isDropdownOpen && (
-                    <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
-                        <li>
-                            <Link href="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
-                        </li>
-                        <li>
-                            <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-                        </li>
-                    </ul>
+                    <div className="absolute right-0 mt-2 w-64 bg-white border rounded-md shadow-lg z-10">
+                        <div className="p-4 border-b">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <span className="text-lg font-medium text-gray-600">{userData.name?.[0]}</span>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-800">{userData.name}</p>
+                                    <p className="text-xs text-gray-500">{userData.email}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <ul className="py-2">
+                             <li>
+                                <Link href="#" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <Settings className="w-5 h-5 text-gray-600" />
+                                    <span>Manage account</span>
+                                </Link>
+                            </li>
+                             <li>
+                                <Link href="/" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <HomeIcon />
+                                    <span>Home</span>
+                                </Link>
+                            </li>
+                             <li>
+                                <Link href="/all-products" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <BoxIcon />
+                                    <span>Products</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/cart" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <CartIcon />
+                                    <span>Cart</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/my-orders" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <BagIcon />
+                                    <span>My Orders</span>
+                                </Link>
+                            </li>
+                            <div className="h-px bg-gray-200 my-2"></div>
+                            <li>
+                                <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <LogOut className="w-5 h-5 text-gray-600" />
+                                    <span>Sign out</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 )}
             </div>
         ) : (
@@ -95,18 +140,62 @@ const Navbar = () => {
         </Link>
         {userData ? (
             <div className="relative">
-                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
-                     <Image src={assets.user_icon} alt="user icon" className='w-4 h-4' />
+                <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition">
+                     <span className="text-sm font-medium text-gray-600">{userData.name?.[0]}</span>
                 </button>
                 {isDropdownOpen && (
-                    <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
-                        <li>
-                            <Link href="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
-                        </li>
-                        <li>
-                            <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-                        </li>
-                    </ul>
+                     <div className="absolute right-0 mt-2 w-64 bg-white border rounded-md shadow-lg z-10">
+                        <div className="p-4 border-b">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <span className="text-lg font-medium text-gray-600">{userData.name?.[0]}</span>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-800">{userData.name}</p>
+                                    <p className="text-xs text-gray-500">{userData.email}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <ul className="py-2">
+                             <li>
+                                <Link href="#" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <Settings className="w-5 h-5 text-gray-600" />
+                                    <span>Manage account</span>
+                                </Link>
+                            </li>
+                             <li>
+                                <Link href="/" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <HomeIcon />
+                                    <span>Home</span>
+                                </Link>
+                            </li>
+                             <li>
+                                <Link href="/all-products" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <BoxIcon />
+                                    <span>Products</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/cart" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <CartIcon />
+                                    <span>Cart</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/my-orders" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <BagIcon />
+                                    <span>My Orders</span>
+                                </Link>
+                            </li>
+                            <div className="h-px bg-gray-200 my-2"></div>
+                            <li>
+                                <button onClick={() => { handleLogout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <LogOut className="w-5 h-5 text-gray-600" />
+                                    <span>Sign out</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 )}
             </div>
         ) : (
