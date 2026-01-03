@@ -86,6 +86,10 @@ export const AppContextProvider = (props) => {
         });
     }
 
+    const getWishlistCount = () => {
+        return Object.keys(wishlistItems).length;
+    }
+
     useEffect(() => {
         fetchProductData()
     }, [])
@@ -102,7 +106,8 @@ export const AppContextProvider = (props) => {
         cartItems, setCartItems,
         addToCart, updateCartQuantity,
         getCartCount, getCartAmount,
-        wishlistItems, toggleWishlist
+        wishlistItems, toggleWishlist,
+        getWishlistCount
     }
 
     return (

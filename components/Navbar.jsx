@@ -7,7 +7,7 @@ import Image from "next/image";
 
 const Navbar = () => {
 
-  const { isSeller, router, getCartCount } = useAppContext();
+  const { isSeller, router, getCartCount, getWishlistCount } = useAppContext();
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700">
@@ -37,6 +37,10 @@ const Navbar = () => {
 
       <ul className="hidden md:flex items-center gap-6 ">
         <Image className="w-4 h-4 cursor-pointer" src={assets.search_icon} alt="search icon" />
+        <Link href={'/wishlist'} className='relative'>
+            <Image className="w-5 h-5" src={assets.heart_icon} alt="wishlist icon" />
+            {getWishlistCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getWishlistCount()}</div>}
+        </Link>
         <Link href={'/cart'} className='relative'>
           <Image className="w-5 h-5" src={assets.cart_icon} alt="cart icon" />
           {getCartCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getCartCount()}</div>}
@@ -49,6 +53,10 @@ const Navbar = () => {
 
       <div className="flex items-center md:hidden gap-5">
         {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
+        <Link href={'/wishlist'} className='relative'>
+            <Image className="w-5 h-5" src={assets.heart_icon} alt="wishlist icon" />
+            {getWishlistCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getWishlistCount()}</div>}
+        </Link>
         <Link href={'/cart'} className='relative'>
           <Image className="w-5 h-5" src={assets.cart_icon} alt="cart icon" />
           {getCartCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getCartCount()}</div>}
