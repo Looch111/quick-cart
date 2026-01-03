@@ -63,7 +63,7 @@ const ProductCard = ({ product }) => {
             <div className="flex items-end justify-between w-full mt-1">
                 <p className="text-base font-medium">{currency}{product.offerPrice}</p>
                 <div className="flex items-center gap-2">
-                    <button onClick={handleAddToCartClick} className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 text-lg font-bold border border-gray-500/20">
+                    <button onClick={handleAddToCartClick} className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 text-lg border border-gray-500/20">
                         +
                     </button>
                     <button className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition">
