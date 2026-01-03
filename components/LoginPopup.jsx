@@ -21,7 +21,7 @@ const LoginPopup = () => {
 
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50">
-            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg relative">
+            <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-lg relative">
                 <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -29,25 +29,25 @@ const LoginPopup = () => {
                 </button>
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-800">{isLogin ? "Sign in to QuickCart" : "Create an account"}</h1>
-                    <p className="text-gray-500 mt-2">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with QuickCart"}</p>
+                    <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with QuickCart"}</p>
                 </div>
-                <div className="mt-8">
+                <div className="mt-6">
                     <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-md hover:bg-gray-50">
                         <GoogleIcon />
-                        <span className="text-gray-700 font-medium">Continue with Google</span>
+                        <span className="text-gray-700 font-medium text-sm">Continue with Google</span>
                     </button>
                 </div>
-                <div className="flex items-center my-6">
+                <div className="flex items-center my-4">
                     <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-sm">or</span>
+                    <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
-                <form className="space-y-6">
+                <form className="space-y-4">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                         <input
                             id="email"
-                            className="mt-1 px-3 py-2.5 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
+                            className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
                             type="email"
                             placeholder="Enter your email address"
                             required
@@ -58,19 +58,19 @@ const LoginPopup = () => {
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                             <input
                                 id="password"
-                                className="mt-1 px-3 py-2.5 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
+                                className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
                                 type="password"
                                 placeholder="Enter your password"
                                 required
                             />
                         </div>
                     )}
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 bg-gray-800 text-white hover:bg-gray-900 rounded-md font-semibold">
+                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-md font-semibold text-sm">
                         Continue
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
                     </button>
                 </form>
-                <div className="mt-6 text-center text-sm">
+                <div className="mt-4 text-center text-xs">
                     {isLogin ? (
                         <p className="text-gray-500">
                             Don't have an account? <span onClick={() => setIsLogin(false)} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
