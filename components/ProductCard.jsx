@@ -5,12 +5,17 @@ import { useAppContext } from '@/context/AppContext';
 
 const ProductCard = ({ product }) => {
 
-    const { currency, router, wishlistItems, toggleWishlist } = useAppContext()
+    const { currency, router, wishlistItems, toggleWishlist, addToCart } = useAppContext()
     const isWishlisted = wishlistItems[product._id];
 
     const handleWishlistClick = (e) => {
         e.stopPropagation();
         toggleWishlist(product._id);
+    }
+
+    const handleAddToCartClick = (e) => {
+        e.stopPropagation();
+        addToCart(product._id);
     }
 
     return (
@@ -56,7 +61,16 @@ const ProductCard = ({ product }) => {
             </div>
 
             <div className="flex items-end justify-between w-full mt-1">
-                <p className="text-base font-medium">{currency}{product.offerPrice}</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-base font-medium">{currency}{product.offerPrice}</p>
+                    <button onClick={handleAddToCartClick} className="w-6 h-6 flex items-center justify-center bg-orange-600 rounded-full">
+                        <Image
+                            className="w-3 h-3"
+                            src={assets.add_icon}
+                            alt="add_icon"
+                        />
+                    </button>
+                </div>
                 <button className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition">
                     Buy now
                 </button>
@@ -66,5 +80,3 @@ const ProductCard = ({ product }) => {
 }
 
 export default ProductCard
-
-  
