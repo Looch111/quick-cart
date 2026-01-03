@@ -91,7 +91,7 @@ const Navbar = () => {
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-gray-800">{userData.name || 'User'}</p>
+                    <p className="font-semibold text-sm text-gray-800">{userData.name}</p>
                     <p className="text-xs text-gray-500">{userData.email}</p>
                   </div>
                 </div>
