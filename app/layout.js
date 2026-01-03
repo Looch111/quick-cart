@@ -15,8 +15,8 @@ export default function RootLayout({ children }) {
   return (
       <html lang="en">
         <body className={`${outfit.className} antialiased text-gray-700`} >
-          <Toaster position="top-center" reverseOrder={false} />
           <AppContextProvider>
+            <Toaster position="top-center" reverseOrder={false} />
             <LoginPopup />
             {children}
           </AppContextProvider>

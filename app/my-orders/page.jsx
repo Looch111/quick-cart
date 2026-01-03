@@ -77,7 +77,7 @@ const MyOrders = () => {
                                         <p className="font-medium my-auto">{currency}{order.amount.toFixed(2)}</p>
                                         <div>
                                             <p className="flex flex-col">
-                                                <span>Method: COD</span>
+                                                <span>Method: {order.paymentMethod === 'wallet' ? 'Wallet' : 'COD'}</span>
                                                 <span>Date: {new Date(order.date).toLocaleDateString()}</span>
                                                 <span className="text-green-600 font-medium">{order.status}</span>
                                             </p>

@@ -4,7 +4,7 @@ import { assets, HomeIcon, BoxIcon, BagIcon, CartIcon } from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
-import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search, X } from "lucide-react";
+import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search, X, Wallet } from "lucide-react";
 
 const Navbar = () => {
 
@@ -91,6 +91,10 @@ const Navbar = () => {
                 <Link onClick={() => setIsDropdownOpen(false)} href="/manage-account" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
                   <Settings className="w-5 h-5 text-gray-500" />
                   Manage account
+                </Link>
+                <Link onClick={() => setIsDropdownOpen(false)} href="/wallet" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
+                  <Wallet className="w-5 h-5 text-gray-500" />
+                  My Wallet
                 </Link>
                 <Link onClick={() => setIsDropdownOpen(false)} href="/" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 md:hidden">
                   <HomeIcon />

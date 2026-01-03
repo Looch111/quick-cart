@@ -30,7 +30,27 @@ export const AppContextProvider = (props) => {
     ]);
     const [userAddresses, setUserAddresses] = useState([]);
     const [allOrders, setAllOrders] = useState([]);
+    const [walletBalance, setWalletBalance] = useState(0);
+    const [walletTransactions, setWalletTransactions] = useState([]);
 
+    const fundWallet = (amount) => {
+        const newBalance = walletBalance + amount;
+        setWalletBalance(newBalance);
+        const newTransaction = {
+            id: `txn_${Date.now()}`,
+            type: 'Top Up',
+            amount: amount,
+            date: new Date().toISOString(),
+        };
+        const updatedTransactions = [newTransaction, ...walletTransactions];
+        setWalletTransactions(updatedTransactions);
+
+        if (isBrowser) {
+            localStorage.setItem('walletBalance', newBalance);
+            localStorage.setItem('walletTransactions', JSON.stringify(updatedTransactions));
+        }
+        toast.success(`$${amount.toFixed(2)} added to your wallet.`);
+    };
 
     const addAddress = (newAddress) => {
         const addressToAdd = { ...newAddress, _id: `addr_${Date.now()}`};
@@ -111,7 +131,7 @@ export const AppContextProvider = (props) => {
         setAllOrders(storedOrders ? JSON.parse(storedOrders) : orderDummyData);
     }
     
-    const placeOrder = async (address) => {
+    const placeOrder = async (address, paymentMethod, totalAmount) => {
         const newOrder = {
             _id: `order_${Date.now()}`,
             userId: userData._id,
@@ -119,11 +139,29 @@ export const AppContextProvider = (props) => {
                 product: products.find(p => p._id === itemId),
                 quantity,
             })),
-            amount: getCartAmount() + Math.floor(getCartAmount() * 0.02) + (getCartAmount() > 50 ? 0 : 5),
+            amount: totalAmount,
             address: address,
             status: "Order Placed",
             date: Date.now(),
+            paymentMethod: paymentMethod,
         };
+
+        if (paymentMethod === 'wallet') {
+            const newBalance = walletBalance - totalAmount;
+            setWalletBalance(newBalance);
+            const newTransaction = {
+                id: `txn_${Date.now()}`,
+                type: 'Payment',
+                amount: -totalAmount,
+                date: new Date().toISOString(),
+            };
+            const updatedTransactions = [newTransaction, ...walletTransactions];
+            setWalletTransactions(updatedTransactions);
+            if (isBrowser) {
+                localStorage.setItem('walletBalance', newBalance);
+                localStorage.setItem('walletTransactions', JSON.stringify(updatedTransactions));
+            }
+        }
 
         const updatedOrders = [newOrder, ...allOrders];
         setAllOrders(updatedOrders);
@@ -264,6 +302,12 @@ export const AppContextProvider = (props) => {
         const storedWishlist = localStorage.getItem('wishlistItems');
         if (storedWishlist) setWishlistItems(JSON.parse(storedWishlist));
 
+        const storedWalletBalance = localStorage.getItem('walletBalance');
+        if (storedWalletBalance) setWalletBalance(parseFloat(storedWalletBalance));
+
+        const storedWalletTransactions = localStorage.getItem('walletTransactions');
+        if (storedWalletTransactions) setWalletTransactions(JSON.parse(storedWalletTransactions));
+
         fetchAllOrders();
     }, [])
 
@@ -281,6 +325,7 @@ export const AppContextProvider = (props) => {
         banners, addBanner, deleteBanner, updateBanner,
         userAddresses, addAddress, fetchUserAddresses,
         allOrders, fetchAllOrders, placeOrder,
+        walletBalance, fundWallet, walletTransactions,
     }
 
     return (
@@ -289,5 +334,3 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
-
-    
