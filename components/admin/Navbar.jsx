@@ -12,7 +12,8 @@ const Navbar = () => {
   const pathname = usePathname()
 
   const menuItems = [
-    { name: 'Users', path: '/admin' },
+    { name: 'Dashboard', path: '/admin' },
+    { name: 'Users', path: '/admin/users' },
     { name: 'Products', path: '/admin/products' },
     { name: 'Orders', path: '/admin/orders' },
   ];
