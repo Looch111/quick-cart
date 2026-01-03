@@ -7,7 +7,7 @@ import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
 
 const Orders = () => {
-    const { currency, userData, allOrders } = useAppContext();
+    const { currency, userData, allOrders, productsLoading } = useAppContext();
     const [sellerOrders, setSellerOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -26,13 +26,13 @@ const Orders = () => {
     }, [userData, allOrders]);
 
     useEffect(() => {
-        if (!userData) {
+        if (!userData || productsLoading) {
             setLoading(true);
         } else if (allOrders) {
             filterSellerOrders();
             setLoading(false);
         }
-    }, [allOrders, userData, filterSellerOrders]);
+    }, [allOrders, userData, filterSellerOrders, productsLoading]);
 
 
     return (

@@ -28,6 +28,18 @@ const Navbar = () => {
     setIsDropdownOpen(false);
   }
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700 fixed w-full bg-white top-0 z-40">
       <Link href="/">
@@ -95,7 +107,7 @@ const Navbar = () => {
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-gray-800">{userData.name}</p>
+                    <p className="font-semibold text-sm text-gray-800">{userData.name || userData.email}</p>
                     <p className="text-xs text-gray-500">{userData.email}</p>
                   </div>
                 </div>

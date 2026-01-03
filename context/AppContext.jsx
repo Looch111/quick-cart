@@ -13,8 +13,6 @@ export const useAppContext = () => {
     return useContext(AppContext)
 }
 
-const isBrowser = typeof window !== 'undefined';
-
 export const AppContextProvider = (props) => {
 
     const currency = '$';
@@ -339,6 +337,8 @@ export const AppContextProvider = (props) => {
 
     const updateUserField = async (field, value) => {
         if (!userData) {
+            toast.error("Please log in to update your profile.");
+            setShowLogin(true);
             return;
         }
         const userDocRef = doc(firestore, 'users', userData._id);

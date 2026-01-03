@@ -6,17 +6,19 @@ import toast from "react-hot-toast";
 
 const Orders = () => {
 
-    const { currency, updateOrderStatus, allOrders } = useAppContext();
+    const { currency, updateOrderStatus, allOrders, productsLoading } = useAppContext();
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (allOrders) {
+        if (!productsLoading) {
             setOrders(allOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
             setLoading(false);
+        } else {
+            setLoading(true);
         }
-    }, [allOrders]);
+    }, [allOrders, productsLoading]);
 
     const handleStatusChange = async (orderId, newStatus) => {
         const response = await updateOrderStatus(orderId, newStatus);
