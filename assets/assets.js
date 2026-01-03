@@ -286,6 +286,7 @@ export const userDummyData = {
   "cartItems": {
     // "67a1f4e43f34a77b6dde9144": 3
   },
+  "role": "seller",
   "__v": 0
 }
 

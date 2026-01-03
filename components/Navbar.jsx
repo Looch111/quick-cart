@@ -7,7 +7,7 @@ import Image from "next/image";
 
 const Navbar = () => {
 
-  const { isSeller, router, getCartCount, getWishlistCount, handleLogout, userData, setShowLogin } = useAppContext();
+  const { router, getCartCount, getWishlistCount, handleLogout, userData, setShowLogin } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLoginClick = () => {
@@ -15,6 +15,10 @@ const Navbar = () => {
         setShowLogin(true);
     }, 300);
   }
+
+  const isSeller = userData?.role === 'seller';
+  const isAdmin = userData?.role === 'admin';
+
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700 bg-white shadow-sm">
@@ -38,7 +42,8 @@ const Navbar = () => {
           Contact
         </Link>
 
-        {userData && isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
+        {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
+        {isAdmin && <button onClick={() => router.push('/admin')} className="text-xs border px-4 py-1.5 rounded-full">Admin Panel</button>}
 
       </div>
 
@@ -80,7 +85,8 @@ const Navbar = () => {
       </ul>
 
       <div className="flex items-center md:hidden gap-5">
-        {userData && isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
+        {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
+        {isAdmin && <button onClick={() => router.push('/admin')} className="text-xs border px-4 py-1.5 rounded-full">Admin Panel</button>}
         <Link href={'/wishlist'} className='relative'>
             <Image className="w-5 h-5" src={assets.heart_icon} alt="wishlist icon" />
             {getWishlistCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getWishlistCount()}</div>}

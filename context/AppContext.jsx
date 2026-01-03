@@ -17,7 +17,6 @@ export const AppContextProvider = (props) => {
 
     const [products, setProducts] = useState([])
     const [userData, setUserData] = useState(null)
-    const [isSeller, setIsSeller] = useState(true)
     const [cartItems, setCartItems] = useState({})
     const [wishlistItems, setWishlistItems] = useState({});
     const [showLogin, setShowLogin] = useState(false);
@@ -32,7 +31,7 @@ export const AppContextProvider = (props) => {
         // setUserData(userDummyData) 
     }
 
-    const addToCart = async (itemId) => {
+    const addToCart = (itemId) => {
         setCartItems(prev => {
             const newCart = { ...prev };
             if (newCart[itemId]) {
@@ -106,7 +105,6 @@ export const AppContextProvider = (props) => {
         // Here you would typically clear tokens, user data, etc.
         // For this dummy setup, we can just clear some state.
         setUserData(null);
-        setIsSeller(false);
         setCartItems({});
         setWishlistItems({});
         toast.success("Logged out successfully");
@@ -123,7 +121,6 @@ export const AppContextProvider = (props) => {
 
     const value = {
         currency, router,
-        isSeller, setIsSeller,
         userData, fetchUserData, setUserData,
         products, fetchProductData,
         cartItems, setCartItems,
