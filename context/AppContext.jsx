@@ -33,16 +33,16 @@ export const AppContextProvider = (props) => {
     }
 
     const addToCart = async (itemId) => {
-
-        let cartData = structuredClone(cartItems);
-        if (cartData[itemId]) {
-            cartData[itemId] += 1;
-        }
-        else {
-            cartData[itemId] = 1;
-        }
-        setCartItems(cartData);
-
+        setCartItems(prev => {
+            const newCart = { ...prev };
+            if (newCart[itemId]) {
+                newCart[itemId] += 1;
+            } else {
+                newCart[itemId] = 1;
+            }
+            return newCart;
+        });
+        toast.success("Product added to cart");
     }
 
     const updateCartQuantity = async (itemId, quantity) => {
@@ -79,7 +79,7 @@ export const AppContextProvider = (props) => {
     }
 
     const toggleWishlist = (productId) => {
-        const isWishlisted = wishlistItems[productId];
+        const isWishlisted = !!wishlistItems[productId];
     
         setWishlistItems(prev => {
             const newWishlist = { ...prev };
