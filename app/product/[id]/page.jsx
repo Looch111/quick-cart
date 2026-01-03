@@ -10,7 +10,7 @@ import { useAppContext } from "@/context/AppContext";
 import React from "react";
 
 const Product = ({ params }) => {
-
+    const { id } = params;
     const { products, router, addToCart } = useAppContext()
 
     const [mainImage, setMainImage] = useState(null);
@@ -18,7 +18,7 @@ const Product = ({ params }) => {
     const [selectedSize, setSelectedSize] = useState(null);
 
     const fetchProductData = async () => {
-        const product = products.find(product => product._id === params.id);
+        const product = products.find(product => product._id === id);
         setProductData(product);
         if (product) {
             setMainImage(product.image[0]);
@@ -29,10 +29,10 @@ const Product = ({ params }) => {
     }
 
     useEffect(() => {
-        if (params.id && products.length > 0) {
+        if (id && products.length > 0) {
             fetchProductData();
         }
-    }, [params.id, products]);
+    }, [id, products]);
 
     const isOutOfStock = productData && productData.stock === 0;
 
