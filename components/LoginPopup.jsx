@@ -14,7 +14,6 @@ const GoogleIcon = () => (
 const LoginPopup = () => {
     const { showLogin, setShowLogin, handleLogin } = useAppContext();
     const [isLogin, setIsLogin] = useState(true);
-    const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
 
     if (!showLogin) {
@@ -34,7 +33,7 @@ const LoginPopup = () => {
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
             <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-lg relative">
-                <button onClick={() => {setShowLogin(false); setShowPassword(false);}} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <button onClick={() => {setShowLogin(false)}} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -67,18 +66,16 @@ const LoginPopup = () => {
                             required
                         />
                     </div>
-                    {(!isLogin || showPassword) && (
-                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                            <input
-                                id="password"
-                                className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
-                                type="password"
-                                placeholder="Enter your password"
-                                required
-                            />
-                        </div>
-                    )}
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <input
+                            id="password"
+                            className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                            type="password"
+                            placeholder="Enter your password"
+                            required
+                        />
+                    </div>
                     <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
                         Continue
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
@@ -87,11 +84,11 @@ const LoginPopup = () => {
                 <div className="mt-4 text-center text-xs">
                     {isLogin ? (
                         <p className="text-gray-500">
-                            Don't have an account? <span onClick={() => {setIsLogin(false); setShowPassword(false);}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
+                            Don't have an account? <span onClick={() => {setIsLogin(false)}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
                         </p>
                     ) : (
                         <p className="text-gray-500">
-                            Already have an account? <span onClick={() => {setIsLogin(true); setShowPassword(false);}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
+                            Already have an account? <span onClick={() => {setIsLogin(true)}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
                         </p>
                     )}
                 </div>
