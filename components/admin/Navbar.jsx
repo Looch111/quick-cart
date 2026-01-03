@@ -21,8 +21,10 @@ const Navbar = () => {
   useEffect(() => {
     // This effect runs only when allOrders changes
     if (allOrders.length > 0) {
-      const newOrders = allOrders.filter(order => order.status === "Order Placed");
+      const newOrders = allOrders.filter(order => order.status === "Processing" || order.status === "Order Placed");
       setHasNewOrders(newOrders.length > 0);
+    } else {
+      setHasNewOrders(false);
     }
   }, [allOrders]);
 

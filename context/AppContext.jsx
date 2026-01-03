@@ -2,7 +2,7 @@
 'use client'
 import { assets, productsDummyData, userDummyData, addressDummyData, orderDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 
 export const AppContext = createContext();
@@ -126,13 +126,21 @@ export const AppContextProvider = (props) => {
         setUserAddresses(storedAddresses ? JSON.parse(storedAddresses) : addressDummyData);
     }
     
-    const fetchAllOrders = async () => {
+    const fetchAllOrders = useCallback(() => {
         if (!isBrowser) return { success: false, orders: [] };
         const storedOrders = localStorage.getItem('allOrders');
         const orders = storedOrders ? JSON.parse(storedOrders) : orderDummyData;
-        setAllOrders(orders);
+        
+        setAllOrders(prevOrders => {
+            if (JSON.stringify(prevOrders) !== JSON.stringify(orders)) {
+                return orders;
+            }
+            return prevOrders;
+        });
+
         return { success: true, orders: orders };
-    }
+    }, []);
+
 
     const fetchUserOrders = async () => {
         if (!isBrowser || !userData) return { success: false, orders: [] };
@@ -331,7 +339,7 @@ export const AppContextProvider = (props) => {
         if (storedWalletTransactions) setWalletTransactions(JSON.parse(storedWalletTransactions));
 
         fetchAllOrders();
-    }, [])
+    }, [fetchAllOrders])
 
     const value = {
         currency, router,
