@@ -8,16 +8,16 @@ import Footer from "@/components/admin/Footer";
 const MarketingPage = () => {
     const { banners, addBanner, deleteBanner } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
-    const [newBanner, setNewBanner] = useState({ title: '', image: null, link: '' });
+    const [newBanner, setNewBanner] = useState({ title: '', link: '' });
 
     const handleAddBanner = (e) => {
         e.preventDefault();
-        if (!newBanner.title || !newBanner.image || !newBanner.link) {
+        if (!newBanner.title || !newBanner.link) {
             toast.error("Please fill out all fields for the new banner.");
             return;
         }
         addBanner(newBanner);
-        setNewBanner({ title: '', image: null, link: '' });
+        setNewBanner({ title: '', link: '' });
         setIsAdding(false);
     };
 
@@ -52,22 +52,7 @@ const MarketingPage = () => {
                                     onChange={(e) => setNewBanner({ ...newBanner, title: e.target.value })}
                                 />
                             </div>
-                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Banner Image</label>
-                                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                    <div className="space-y-1 text-center">
-                                         <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                                        <div className="flex text-sm text-gray-600">
-                                            <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
-                                                <span>Upload a file</span>
-                                                <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={(e) => setNewBanner({...newBanner, image: e.target.files[0]})} accept="image/*"/>
-                                            </label>
-                                            <p className="pl-1">or drag and drop</p>
-                                        </div>
-                                        {newBanner.image ? <p className="text-xs text-gray-500">{newBanner.image.name}</p> : <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>}
-                                    </div>
-                                </div>
-                            </div>
+                            
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
                                 <input

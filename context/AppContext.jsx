@@ -1,5 +1,5 @@
 'use client'
-import { productsDummyData, userDummyData } from "@/assets/assets";
+import { assets, productsDummyData, userDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -21,16 +21,16 @@ export const AppContextProvider = (props) => {
     const [wishlistItems, setWishlistItems] = useState({});
     const [showLogin, setShowLogin] = useState(false);
     const [banners, setBanners] = useState([
-        { id: 'slide1', title: 'The Latest Collection of Headphones', image: 'https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/header_headphone_image.png', link: '/all-products', status: 'active' },
-        { id: 'slide2', title: 'Experience Gaming Like Never Before', image: 'https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/header_playstation_image.png', link: '/all-products', status: 'active' },
-        { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: 'https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/header_macbook_image.png', link: '/all-products', status: 'active' },
+        { id: 'slide1', title: 'The Latest Collection of Headphones', image: assets.header_headphone_image.src, link: '/all-products', status: 'active' },
+        { id: 'slide2', title: 'Experience Gaming Like Never Before', image: assets.header_playstation_image.src, link: '/all-products', status: 'active' },
+        { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: assets.header_macbook_image.src, link: '/all-products', status: 'active' },
     ]);
 
     const addBanner = (newBanner) => {
         const newBannerData = {
-            id: banners.length + 1,
+            id: `banner_${Date.now()}`,
             title: newBanner.title,
-            image: URL.createObjectURL(newBanner.image),
+            image: assets.jbl_soundbox_image.src, // Using a persistent image from assets
             link: newBanner.link,
             status: 'active'
         };
