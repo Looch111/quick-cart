@@ -1,5 +1,5 @@
-"use client"
-import React, { useState } from "react";
+'use client'
+import React, { useState, useEffect, useRef } from "react";
 import { assets, HomeIcon, BoxIcon, CartIcon, BagIcon } from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
@@ -10,12 +10,26 @@ const Navbar = () => {
 
   const { router, getCartCount, getWishlistCount, handleLogout, userData, setShowLogin } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleLoginClick = () => {
     setTimeout(() => {
         setShowLogin(true);
     }, 300);
   }
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const isSeller = userData?.role === 'seller';
   const isAdmin = userData?.role === 'admin';
@@ -61,7 +75,7 @@ const Navbar = () => {
           {getCartCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getCartCount()}</div>}
         </Link>
         {userData ? (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition">
                      <span className="text-sm font-medium text-gray-600">{userData.name?.[0]}</span>
                 </button>
@@ -142,7 +156,7 @@ const Navbar = () => {
           {getCartCount() > 0 && <div className='absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>{getCartCount()}</div>}
         </Link>
         {userData ? (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition">
                      <span className="text-sm font-medium text-gray-600">{userData.name?.[0]}</span>
                 </button>
