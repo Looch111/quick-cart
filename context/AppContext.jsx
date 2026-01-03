@@ -33,7 +33,8 @@ export const AppContextProvider = (props) => {
             image: assets.jbl_soundbox_image.src, // Using a persistent image from assets
             link: newBanner.link,
             status: 'active',
-            buttonText: 'Shop now'
+            buttonText: newBanner.buttonText,
+            linkText: newBanner.linkText
         };
         setBanners([...banners, newBannerData]);
         toast.success("Banner added successfully!");
