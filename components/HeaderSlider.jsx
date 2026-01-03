@@ -48,7 +48,7 @@ const HeaderSlider = () => {
                                     {slide.buttonText || 'Shop now'}
                                 </button>
                                 <Link href="/all-products" className="group flex items-center gap-2 px-6 py-2.5 font-medium">
-                                    Find more
+                                    {slide.linkText || 'Find more'}
                                     <Image className="group-hover:translate-x-1 transition" src={assets.arrow_icon} alt="arrow_icon" />
                                 </Link>
                             </div>
