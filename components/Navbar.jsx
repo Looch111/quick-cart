@@ -10,6 +10,12 @@ const Navbar = () => {
   const { isSeller, router, getCartCount, getWishlistCount, handleLogout, userData, setShowLogin } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const handleLoginClick = () => {
+    setTimeout(() => {
+        setShowLogin(true);
+    }, 300);
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700 bg-white shadow-sm">
       <Image
@@ -66,7 +72,7 @@ const Navbar = () => {
                 )}
             </div>
         ) : (
-            <button onClick={()=> setShowLogin(true)} className="flex items-center gap-2 hover:text-gray-900 transition">
+            <button onClick={handleLoginClick} className="flex items-center gap-2 hover:text-gray-900 transition">
                 <Image src={assets.user_icon} alt="user icon" />
                 Account
             </button>
@@ -100,7 +106,7 @@ const Navbar = () => {
                 )}
             </div>
         ) : (
-             <button onClick={()=> setShowLogin(true)} className="flex items-center gap-2 hover:text-gray-900 transition">
+             <button onClick={handleLoginClick} className="flex items-center gap-2 hover:text-gray-900 transition">
                 <Image src={assets.user_icon} alt="user icon" />
             </button>
         )}
