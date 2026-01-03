@@ -14,15 +14,26 @@ const GoogleIcon = () => (
 const LoginPopup = () => {
     const { showLogin, setShowLogin } = useAppContext();
     const [isLogin, setIsLogin] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState('');
 
     if (!showLogin) {
         return null;
     }
 
+    const handleContinue = (e) => {
+        e.preventDefault();
+        if (isLogin && email) {
+            setShowPassword(true);
+        } else {
+            // Handle signup logic
+        }
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
             <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-lg relative">
-                <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <button onClick={() => {setShowLogin(false); setShowPassword(false);}} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -42,7 +53,7 @@ const LoginPopup = () => {
                     <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleContinue}>
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                         <input
@@ -50,10 +61,12 @@ const LoginPopup = () => {
                             className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
                             type="email"
                             placeholder="Enter your email address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
-                    {!isLogin && (
+                    {(!isLogin || showPassword) && (
                          <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                             <input
@@ -73,11 +86,11 @@ const LoginPopup = () => {
                 <div className="mt-4 text-center text-xs">
                     {isLogin ? (
                         <p className="text-gray-500">
-                            Don't have an account? <span onClick={() => setIsLogin(false)} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
+                            Don't have an account? <span onClick={() => {setIsLogin(false); setShowPassword(false);}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
                         </p>
                     ) : (
                         <p className="text-gray-500">
-                            Already have an account? <span onClick={() => setIsLogin(true)} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
+                            Already have an account? <span onClick={() => {setIsLogin(true); setShowPassword(false);}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
                         </p>
                     )}
                 </div>
