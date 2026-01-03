@@ -26,7 +26,7 @@ const Product = ({ params }) => {
         if (id && products.length > 0) {
             fetchProductData();
         }
-    }, [id, products.length]);
+    }, [id, products]);
 
     return productData ? (<>
         <Navbar />
