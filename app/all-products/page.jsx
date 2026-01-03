@@ -1,16 +1,25 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAppContext } from "@/context/AppContext";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 const AllProducts = () => {
 
     const { products } = useAppContext();
     const [searchTerm, setSearchTerm] = useState('');
+    const searchInputRef = useRef(null);
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (searchParams.get('focus') === 'search' && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [searchParams]);
 
     const filteredProducts = products.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -27,6 +36,7 @@ const AllProducts = () => {
 
                 <div className="relative w-full max-w-sm my-8">
                     <input
+                        ref={searchInputRef}
                         type="text"
                         placeholder="Search for products..."
                         className="w-full pl-4 pr-10 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500/50"
