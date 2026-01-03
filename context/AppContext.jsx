@@ -4,7 +4,7 @@ import { useAuth, useUser } from "@/src/firebase/auth/use-user";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import { useFirestore, useCollection, useDoc } from "@/src/firebase";
+import { useFirestore, useCollection } from "@/src/firebase";
 import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc } from "firebase/firestore";
 
 export const AppContext = createContext();

@@ -1,7 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useAppContext } from '@/context/AppContext';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirestore } from '@/src/firebase';
+import toast from 'react-hot-toast';
+
 
 const EditUserModal = ({ user, onSave, onCancel }) => {
+    const firestore = useFirestore();
     const [role, setRole] = useState(user?.role || 'buyer');
 
     useEffect(() => {
@@ -12,8 +18,16 @@ const EditUserModal = ({ user, onSave, onCancel }) => {
 
     if (!user) return null;
 
-    const handleSave = () => {
-        onSave({ ...user, role });
+    const handleSave = async () => {
+        const userRef = doc(firestore, 'users', user.id);
+        try {
+            await setDoc(userRef, { role: role }, { merge: true });
+            toast.success("User role updated successfully!");
+            onSave({ ...user, role });
+        } catch (error) {
+            toast.error("Failed to update user role.");
+            console.error("Error updating user role: ", error);
+        }
     };
 
     return (
@@ -26,7 +40,7 @@ const EditUserModal = ({ user, onSave, onCancel }) => {
                 </button>
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-800">Edit User</h1>
-                    <p className="text-gray-500 mt-2 text-sm">Editing user: {user.name}</p>
+                    <p className="text-gray-500 mt-2 text-sm">Editing user: {user.name || user.email}</p>
                 </div>
                 <div className="mt-6 space-y-4">
                     <div>

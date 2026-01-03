@@ -1,40 +1,34 @@
 'use client'
 import React, { useEffect, useState } from "react";
-import { userDummyData, assets } from "@/assets/assets";
+import { assets } from "@/assets/assets";
 import Image from "next/image";
 import Footer from "@/components/admin/Footer";
 import Loading from "@/components/Loading";
 import EditUserModal from "@/components/admin/EditUserModal";
+import { useCollection } from "@/src/firebase";
 
 const UserList = () => {
 
+    const { data: usersData, loading: usersLoading } = useCollection('users');
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [editingUser, setEditingUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
 
-    const fetchUsers = async () => {
-        // In a real app, you would fetch all users from your backend
-        const allUsers = [
-            userDummyData,
-            { ...userDummyData, _id: 'user_2', name: 'Jane Doe', email: 'jane@example.com', role: 'buyer' },
-            { ...userDummyData, _id: 'user_3', name: 'Admin User', email: 'admin@example.com', role: 'admin' },
-        ]
-        setUsers(allUsers)
-        setLoading(false)
-    }
-
     useEffect(() => {
-        fetchUsers();
-    }, [])
+        if (!usersLoading) {
+            setUsers(usersData || []);
+            setLoading(false);
+        }
+    }, [usersData, usersLoading]);
+
 
     const handleEditClick = (user) => {
         setEditingUser(user);
     };
 
     const handleSaveUser = (updatedUser) => {
-        // In a real app, you would send this to your backend
-        setUsers(users.map(u => (u._id === updatedUser._id ? updatedUser : u)));
+        // This will be handled by AppContext now
         setEditingUser(null);
     };
 
@@ -43,8 +37,8 @@ const UserList = () => {
     };
 
     const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
@@ -82,14 +76,14 @@ const UserList = () => {
                                 <tr key={index} className="border-t border-gray-500/20">
                                     <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
                                         <Image
-                                            src={user.imageUrl}
+                                            src={user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=random`}
                                             alt="user Image"
                                             className="w-10 h-10 rounded-full"
                                             width={40}
                                             height={40}
                                         />
                                         <span className="truncate w-full">
-                                            {user.name}
+                                            {user.name || user.email}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 max-sm:hidden">{user.email}</td>
