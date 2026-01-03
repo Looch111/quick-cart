@@ -1,14 +1,12 @@
 'use client';
 import { useState } from 'react';
-import Footer from '@/components/admin/Footer';
+import { useAppContext } from "@/context/AppContext";
 import toast from 'react-hot-toast';
 import { PlusCircle, Trash2, Upload } from 'lucide-react';
+import Footer from "@/components/admin/Footer";
 
 const MarketingPage = () => {
-    const [banners, setBanners] = useState([
-        { id: 1, title: 'Summer Sale', image: 'https://picsum.photos/seed/1/1200/400', link: '/all-products', status: 'active' },
-        { id: 2, title: 'New Arrivals', image: 'https://picsum.photos/seed/2/1200/400', link: '/all-products', status: 'inactive' },
-    ]);
+    const { banners, addBanner, deleteBanner } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
     const [newBanner, setNewBanner] = useState({ title: '', image: null, link: '' });
 
@@ -18,22 +16,13 @@ const MarketingPage = () => {
             toast.error("Please fill out all fields for the new banner.");
             return;
         }
-        const newBannerData = {
-            id: banners.length + 1,
-            title: newBanner.title,
-            image: URL.createObjectURL(newBanner.image),
-            link: newBanner.link,
-            status: 'active'
-        };
-        setBanners([...banners, newBannerData]);
+        addBanner(newBanner);
         setNewBanner({ title: '', image: null, link: '' });
         setIsAdding(false);
-        toast.success("Banner added successfully!");
     };
 
     const handleDeleteBanner = (id) => {
-        setBanners(banners.filter(b => b.id !== id));
-        toast.success("Banner deleted.");
+        deleteBanner(id);
     }
     
     return (

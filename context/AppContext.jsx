@@ -20,6 +20,27 @@ export const AppContextProvider = (props) => {
     const [cartItems, setCartItems] = useState({})
     const [wishlistItems, setWishlistItems] = useState({});
     const [showLogin, setShowLogin] = useState(false);
+    const [banners, setBanners] = useState([
+        { id: 1, title: 'Summer Sale', image: 'https://picsum.photos/seed/1/1200/400', link: '/all-products', status: 'active' },
+        { id: 2, title: 'New Arrivals', image: 'https://picsum.photos/seed/2/1200/400', link: '/all-products', status: 'inactive' },
+    ]);
+
+    const addBanner = (newBanner) => {
+        const newBannerData = {
+            id: banners.length + 1,
+            title: newBanner.title,
+            image: URL.createObjectURL(newBanner.image),
+            link: newBanner.link,
+            status: 'active'
+        };
+        setBanners([...banners, newBannerData]);
+        toast.success("Banner added successfully!");
+    }
+
+    const deleteBanner = (id) => {
+        setBanners(banners.filter(b => b.id !== id));
+        toast.success("Banner deleted.");
+    }
 
     const fetchProductData = async () => {
         setProducts(productsDummyData)
@@ -129,7 +150,8 @@ export const AppContextProvider = (props) => {
         wishlistItems, toggleWishlist,
         getWishlistCount,
         handleLogout,
-        showLogin, setShowLogin
+        showLogin, setShowLogin,
+        banners, addBanner, deleteBanner,
     }
 
     return (
