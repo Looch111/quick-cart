@@ -19,6 +19,7 @@ export const AppContextProvider = (props) => {
 
     const [products, setProducts] = useState(productsDummyData)
     const [userData, setUserData] = useState(null)
+    const [isSeller, setIsSeller] = useState(false);
     const [cartItems, setCartItems] = useState({})
     const [wishlistItems, setWishlistItems] = useState({});
     const [showLogin, setShowLogin] = useState(false);
@@ -154,9 +155,11 @@ export const AppContextProvider = (props) => {
     }
 
     const updateCartQuantity = (itemId, quantity) => {
+        let message = "";
         if (quantity <= 0) {
-            toast.success("Item removed from cart");
+            message = "Item removed from cart";
         }
+    
         setCartItems(prev => {
             const newCart = { ...prev };
             if (quantity <= 0) {
@@ -169,6 +172,10 @@ export const AppContextProvider = (props) => {
             }
             return newCart;
         });
+
+        if(message) {
+            toast.success(message);
+        }
     }
 
     const getCartCount = () => {
@@ -194,19 +201,25 @@ export const AppContextProvider = (props) => {
 
     const toggleWishlist = (productId) => {
         const isWishlisted = !!wishlistItems[productId];
-        
-        const newWishlist = { ...wishlistItems };
-        if (isWishlisted) {
-            delete newWishlist[productId];
-            toast.success("Removed from wishlist");
-        } else {
-            newWishlist[productId] = true;
-            toast.success("Added to wishlist");
-        }
-
-        setWishlistItems(newWishlist);
-        if (isBrowser) {
-            localStorage.setItem('wishlistItems', JSON.stringify(newWishlist));
+        let message;
+    
+        setWishlistItems(prev => {
+            const newWishlist = { ...prev };
+            if (isWishlisted) {
+                delete newWishlist[productId];
+                message = "Removed from wishlist";
+            } else {
+                newWishlist[productId] = true;
+                message = "Added to wishlist";
+            }
+            if (isBrowser) {
+                localStorage.setItem('wishlistItems', JSON.stringify(newWishlist));
+            }
+            return newWishlist;
+        });
+    
+        if (message) {
+            toast.success(message);
         }
     }
 
@@ -219,6 +232,7 @@ export const AppContextProvider = (props) => {
             localStorage.setItem('userData', JSON.stringify(userDummyData));
         }
         setUserData(userDummyData);
+        setIsSeller(userDummyData.role === 'seller');
         fetchUserAddresses();
         setShowLogin(false);
         toast.success(`Welcome back, ${userDummyData.name}!`);
@@ -227,9 +241,9 @@ export const AppContextProvider = (props) => {
     const handleLogout = () => {
         if (isBrowser) {
             localStorage.removeItem('userData');
-            // We keep cart and wishlist so they can log back in and have them
         }
         setUserData(null);
+        setIsSeller(false);
         toast.success("Logged out successfully");
         router.push('/');
     }
@@ -241,7 +255,11 @@ export const AppContextProvider = (props) => {
         if (storedProducts) setProducts(JSON.parse(storedProducts));
 
         const storedUserData = localStorage.getItem('userData');
-        if (storedUserData) setUserData(JSON.parse(storedUserData));
+        if (storedUserData) {
+            const user = JSON.parse(storedUserData);
+            setUserData(user);
+            setIsSeller(user.role === 'seller');
+        }
 
         const storedCart = localStorage.getItem('cartItems');
         if (storedCart) setCartItems(JSON.parse(storedCart));
@@ -254,7 +272,7 @@ export const AppContextProvider = (props) => {
 
     const value = {
         currency, router,
-        userData, setUserData,
+        userData, setUserData, isSeller,
         products, setProducts, addProduct, updateProduct, deleteProduct,
         cartItems, setCartItems,
         addToCart, updateCartQuantity,
