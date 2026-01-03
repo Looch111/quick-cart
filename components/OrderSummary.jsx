@@ -87,7 +87,7 @@ const OrderSummary = () => {
               placeholder="Enter promo code"
               className="flex-grow w-full outline-none p-2.5 text-gray-600 border"
             />
-            <button className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700">
+            <button className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700 rounded-full">
               Apply
             </button>
           </div>
