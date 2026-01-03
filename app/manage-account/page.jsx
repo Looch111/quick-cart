@@ -8,15 +8,13 @@ import { User, Mail, Key, Save, PlusCircle, Home, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 const ManageAccount = () => {
-    const { userData, setUserData, setShowLogin, userAddresses, router } = useAppContext();
+    const { userData, setShowLogin, userAddresses, router, updateUserField } = useAppContext();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
 
     useEffect(() => {
         if (userData) {
-            setName(userData.name);
+            setName(userData.name || '');
             setEmail(userData.email);
         } else {
            router.push('/');
@@ -26,21 +24,10 @@ const ManageAccount = () => {
 
     const handleSaveChanges = (e) => {
         e.preventDefault();
-        if (password && password !== confirmPassword) {
-            toast.error("Passwords do not match.");
-            return;
-        }
-
-        // In a real app, you would send this to your backend
-        const updatedUserData = { ...userData, name, email };
-        setUserData(updatedUserData);
-        toast.success("Account details updated successfully!");
-
-        if (password) {
-            // "Update" password
-            setPassword('');
-            setConfirmPassword('');
-            toast.success("Password updated!");
+        
+        if (name !== userData.name) {
+            updateUserField('name', name);
+            toast.success("Account details updated successfully!");
         }
     };
 
@@ -72,7 +59,7 @@ const ManageAccount = () => {
                                         )}
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-semibold text-gray-900">{name}</h2>
+                                        <h2 className="text-2xl font-semibold text-gray-900">{name || 'New User'}</h2>
                                         <p className="text-sm text-gray-500">{email}</p>
                                     </div>
                                 </div>
@@ -90,7 +77,7 @@ const ManageAccount = () => {
                                             className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            required
+                                            placeholder="Enter your full name"
                                         />
                                     </div>
                                 </div>
@@ -105,43 +92,9 @@ const ManageAccount = () => {
                                             type="email"
                                             className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md bg-gray-50"
                                             value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
+                                            readOnly
                                             disabled
                                         />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Key className="w-5 h-5 text-gray-400" />
-                                            </div>
-                                            <input
-                                                type="password"
-                                                placeholder="Leave blank to keep current"
-                                                className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Key className="w-5 h-5 text-gray-400" />
-                                            </div>
-                                            <input
-                                                type="password"
-                                                placeholder="Confirm new password"
-                                                className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                            />
-                                        </div>
                                     </div>
                                 </div>
 

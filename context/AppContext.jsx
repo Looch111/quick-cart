@@ -422,6 +422,7 @@ export const AppContextProvider = (props) => {
         walletBalance, fundWallet, walletTransactions,
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct,
+        updateUserField,
     }
 
     return (
