@@ -1,6 +1,7 @@
 
 'use client'
 import { assets, productsDummyData, userDummyData, addressDummyData, orderDummyData } from "@/assets/assets";
+import { useAuth, useUser } from "@/firebase/auth/use-user";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
@@ -17,6 +18,8 @@ export const AppContextProvider = (props) => {
 
     const currency = '$';
     const router = useRouter()
+    const { user: firebaseUser, loading: authLoading } = useUser();
+    const { signOut } = useAuth();
 
     const [products, setProducts] = useState(productsDummyData)
     const [userData, setUserData] = useState(null)
@@ -33,6 +36,28 @@ export const AppContextProvider = (props) => {
     const [allOrders, setAllOrders] = useState([]);
     const [walletBalance, setWalletBalance] = useState(0);
     const [walletTransactions, setWalletTransactions] = useState([]);
+
+    useEffect(() => {
+        if (!authLoading) {
+            if (firebaseUser) {
+                // A simplified mapping from Firebase user to your app's user data structure
+                const appUser = {
+                    _id: firebaseUser.uid,
+                    name: firebaseUser.displayName || "User",
+                    email: firebaseUser.email,
+                    imageUrl: firebaseUser.photoURL || userDummyData.imageUrl, // Fallback to dummy
+                    role: 'buyer', // Default role, you'll need to manage roles in Firestore
+                };
+                setUserData(appUser);
+                setIsSeller(appUser.role === 'seller');
+                setShowLogin(false);
+            } else {
+                setUserData(null);
+                setIsSeller(false);
+            }
+        }
+    }, [firebaseUser, authLoading]);
+
 
     const fundWallet = (amount) => {
         const newBalance = walletBalance + amount;
@@ -293,22 +318,20 @@ export const AppContextProvider = (props) => {
     }
     
     const handleLogin = () => {
-        if (isBrowser) {
-            localStorage.setItem('userData', JSON.stringify(userDummyData));
-        }
-        setUserData(userDummyData);
-        setIsSeller(userDummyData.role === 'seller');
-        fetchUserAddresses();
-        setShowLogin(false);
-        toast.success(`Welcome back, ${userDummyData.name}!`);
+        // This function will now be handled by the LoginPopup component
+        setShowLogin(true);
     }
 
-    const handleLogout = () => {
-        if (isBrowser) {
-            localStorage.removeItem('userData');
-        }
+    const handleLogout = async () => {
+        await signOut();
         setUserData(null);
         setIsSeller(false);
+        setCartItems({});
+        setWishlistItems({});
+        if (isBrowser) {
+            localStorage.removeItem('cartItems');
+            localStorage.removeItem('wishlistItems');
+        }
         toast.success("Logged out successfully");
         router.push('/');
     }
@@ -318,13 +341,6 @@ export const AppContextProvider = (props) => {
 
         const storedProducts = localStorage.getItem('products');
         if (storedProducts) setProducts(JSON.parse(storedProducts));
-
-        const storedUserData = localStorage.getItem('userData');
-        if (storedUserData) {
-            const user = JSON.parse(storedUserData);
-            setUserData(user);
-            setIsSeller(user.role === 'seller');
-        }
 
         const storedCart = localStorage.getItem('cartItems');
         if (storedCart) setCartItems(JSON.parse(storedCart));

@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Auth."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["buyer", "seller", "admin"],
+          "description": "The role of the user."
+        },
+        "cartItems": {
+            "type": "object",
+            "description": "A map of product IDs to quantities in the user's cart."
+        },
+        "wishlistItems": {
+            "type": "object",
+            "description": "A map of product IDs in the user's wishlist."
+        },
+        "walletBalance": {
+          "type": "number",
+          "description": "The user's current wallet balance."
+        }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "An item available for sale in the store.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "offerPrice": { "type": "number" },
+        "image": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "category": { "type": "string" },
+        "stock": { "type": "number" },
+        "sizes": { "type": "array", "items": { "type": "string" } },
+        "userId": { "type": "string", "description": "The UID of the seller who owns this product." },
+        "flashSaleEndDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "offerPrice", "image", "category", "stock", "userId"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "An order placed by a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "quantity": { "type": "number" }
+            }
+          }
+        },
+        "amount": { "type": "number" },
+        "address": { "$ref": "#/entities/address" },
+        "status": { "type": "string", "enum": ["Order Placed", "Processing", "Shipped", "Delivered"] },
+        "date": { "type": "string", "format": "date-time" },
+        "paymentMethod": { "type": "string", "enum": ["cod", "wallet"] }
+      },
+      "required": ["userId", "items", "amount", "address", "status", "date"]
+    },
+    "address": {
+      "title": "Address",
+      "description": "A shipping address for a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "pincode": { "type": "string" },
+        "area": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" }
+      },
+      "required": ["userId", "fullName", "phoneNumber", "pincode", "area", "city", "state"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/user" },
+      "description": "Stores public profiles for all users."
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/product" },
+      "description": "Stores all products available in the store."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/order" },
+      "description": "Stores all orders placed by users."
+    },
+    "/users/{userId}/addresses/{addressId}": {
+        "schema": { "$ref": "#/entities/address" },
+        "description": "Stores shipping addresses for a specific user."
+    }
+  }
+}

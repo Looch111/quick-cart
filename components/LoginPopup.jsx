@@ -1,6 +1,7 @@
 'use client'
 import { useState } from "react";
 import { useAppContext } from "@/context/AppContext";
+import { useAuth } from "@/firebase/auth/use-user";
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -12,23 +13,40 @@ const GoogleIcon = () => (
 );
 
 const LoginPopup = () => {
-    const { showLogin, setShowLogin, handleLogin } = useAppContext();
+    const { showLogin, setShowLogin } = useAppContext();
+    const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     if (!showLogin) {
         return null;
     }
 
-    const handleContinue = (e) => {
-        e.preventDefault();
-        if (isLogin) {
-            handleLogin(); // Mock login
-        } else {
-            // Handle signup logic
-            handleLogin(); // Mock signup/login
+    const handleGoogleSignIn = async () => {
+        try {
+            await signInWithGoogle();
+            setShowLogin(false);
+        } catch (err) {
+            setError(err.message);
         }
-    }
+    };
+
+    const handleEmailAuth = async (e) => {
+        e.preventDefault();
+        setError('');
+        try {
+            if (isLogin) {
+                await signInWithEmail(email, password);
+            } else {
+                await signUpWithEmail(email, password);
+            }
+            setShowLogin(false);
+        } catch (err) {
+            setError(err.message);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
@@ -43,7 +61,7 @@ const LoginPopup = () => {
                     <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with QuickCart"}</p>
                 </div>
                 <div className="mt-6">
-                    <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
+                    <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
                         <GoogleIcon />
                         <span className="text-gray-700 font-medium text-sm">Continue with Google</span>
                     </button>
@@ -53,7 +71,8 @@ const LoginPopup = () => {
                     <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
-                <form className="space-y-4" onSubmit={handleContinue}>
+                {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
+                <form className="space-y-4" onSubmit={handleEmailAuth}>
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                         <input
@@ -73,6 +92,8 @@ const LoginPopup = () => {
                             className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
                             type="password"
                             placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
@@ -84,11 +105,11 @@ const LoginPopup = () => {
                 <div className="mt-4 text-center text-xs">
                     {isLogin ? (
                         <p className="text-gray-500">
-                            Don't have an account? <span onClick={() => {setIsLogin(false)}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
+                            Don't have an account? <span onClick={() => {setIsLogin(false); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
                         </p>
                     ) : (
                         <p className="text-gray-500">
-                            Already have an account? <span onClick={() => {setIsLogin(true)}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
+                            Already have an account? <span onClick={() => {setIsLogin(true); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
                         </p>
                     )}
                 </div>
