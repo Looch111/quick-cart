@@ -43,14 +43,14 @@ const Navbar = () => {
       <Link href="/">
         <Image className='w-28 lg:w-32 cursor-pointer' src={assets.logo} alt="" />
       </Link>
-      <div className='flex items-center gap-4 md:gap-8'>
+      <div className='hidden lg:flex items-center gap-4 md:gap-8'>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
           return (
-            <Link href={item.path} key={item.name} className={`relative hover:text-gray-900 transition ${isActive ? "text-orange-600 font-medium" : ""}`}>
+            <Link href={item.path} key={item.name} className={`relative hover:text-gray-900 transition px-2 py-1 rounded-md ${isActive ? "bg-orange-100 text-orange-600 font-medium" : ""}`}>
               {item.name}
               {item.notification && (
-                <span className="absolute top-0 right-[-10px] w-2 h-2 bg-red-500 rounded-full blinking-dot"></span>
+                <span className="absolute top-0 right-[-2px] w-2 h-2 bg-red-500 rounded-full blinking-dot"></span>
               )}
             </Link>
           )
