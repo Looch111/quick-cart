@@ -63,7 +63,6 @@ const Navbar = () => {
             <div className="relative">
                 <button onClick={() => setIsDropdownOpen(prev => !prev)} className="flex items-center gap-2 hover:text-gray-900 transition">
                     <Image src={assets.user_icon} alt="user icon" />
-                    Account
                 </button>
                 {isDropdownOpen && (
                     <ul className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
@@ -79,7 +78,6 @@ const Navbar = () => {
         ) : (
             <button onClick={handleLoginClick} className="flex items-center gap-2 hover:text-gray-900 transition">
                 <Image src={assets.user_icon} alt="user icon" />
-                Account
             </button>
         )}
       </ul>
