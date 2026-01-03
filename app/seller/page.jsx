@@ -11,6 +11,7 @@ const AddProduct = () => {
   const [category, setCategory] = useState('Earphone');
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
+  const [sizes, setSizes] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,6 +94,7 @@ const AddProduct = () => {
               <option value="Laptop">Laptop</option>
               <option value="Camera">Camera</option>
               <option value="Accessories">Accessories</option>
+              <option value="Clothes">Clothes</option>
             </select>
           </div>
           <div className="flex flex-col gap-1 w-32">
@@ -123,6 +125,19 @@ const AddProduct = () => {
               required
             />
           </div>
+        </div>
+         <div className="flex flex-col gap-1 max-w-md">
+          <label className="text-base font-medium" htmlFor="product-sizes">
+            Sizes (comma-separated)
+          </label>
+          <input
+            id="product-sizes"
+            type="text"
+            placeholder="e.g. S, M, L, XL"
+            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+            onChange={(e) => setSizes(e.target.value)}
+            value={sizes}
+          />
         </div>
         <button type="submit" className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded">
           ADD

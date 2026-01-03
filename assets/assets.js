@@ -164,6 +164,21 @@ export const productsDummyData = [
     "date": 1738667310300,
     "__v": 0
   },
+    {
+    "_id": "tshirt_01",
+    "userId": "user_2sZFHS1UIIysJyDVzCpQhUhTIhw",
+    "name": "Classic Crew Neck T-Shirt",
+    "description": "A timeless classic, this crew neck t-shirt is made from 100% premium cotton for ultimate comfort and breathability. Perfect for layering or wearing on its own.",
+    "price": 29.99,
+    "offerPrice": 19.99,
+    "image": [
+      "https://raw.githubusercontent.com/avinashdm/gs-images/main/quickcart/zarda-tshirt.png"
+    ],
+    "category": "Clothes",
+    "sizes": ["S", "M", "L", "XL"],
+    "date": 1738667366224,
+    "__v": 0
+  },
   {
     "_id": "67a1f5663f34a77b6dde914c",
     "userId": "user_2sZFHS1UIIysJyDVzCpQhUhTIhw",

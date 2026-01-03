@@ -16,10 +16,14 @@ const Product = ({ params }) => {
 
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
+    const [selectedSize, setSelectedSize] = useState(null);
 
     const fetchProductData = async () => {
         const product = products.find(product => product._id === id);
         setProductData(product);
+        if (product?.sizes?.length > 0) {
+            setSelectedSize(product.sizes[0]);
+        }
     }
 
     useEffect(() => {
@@ -90,6 +94,22 @@ const Product = ({ params }) => {
                             ${productData.price}
                         </span>
                     </p>
+                    {productData.sizes && productData.sizes.length > 0 && (
+                        <div className="mt-6">
+                            <p className="text-gray-600 font-medium mb-2">Size:</p>
+                            <div className="flex gap-2">
+                                {productData.sizes.map(size => (
+                                    <button 
+                                        key={size}
+                                        onClick={() => setSelectedSize(size)}
+                                        className={`px-4 py-2 border rounded-md ${selectedSize === size ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700'}`}
+                                    >
+                                        {size}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <hr className="bg-gray-600 my-6" />
                     <div className="overflow-x-auto">
                         <table className="table-auto border-collapse w-full max-w-72">

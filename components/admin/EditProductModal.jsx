@@ -7,14 +7,22 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
     const [productData, setProductData] = useState({ ...product });
 
     useEffect(() => {
-        setProductData({ ...product });
+        const data = { ...product };
+        if (data.sizes && Array.isArray(data.sizes)) {
+            data.sizes = data.sizes.join(', ');
+        }
+        setProductData(data);
     }, [product]);
 
     if (!product) return null;
 
     const handleSave = () => {
-        updateProduct(productData);
-        onSave(productData);
+        const dataToSave = { ...productData };
+        if (typeof dataToSave.sizes === 'string') {
+            dataToSave.sizes = dataToSave.sizes.split(',').map(s => s.trim()).filter(s => s);
+        }
+        updateProduct(dataToSave);
+        onSave(dataToSave);
     };
 
     const handleChange = (e) => {
@@ -68,6 +76,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                 <option value="Laptop">Laptop</option>
                                 <option value="Camera">Camera</option>
                                 <option value="Accessories">Accessories</option>
+                                <option value="Clothes">Clothes</option>
                             </select>
                         </div>
                          <div>
@@ -90,6 +99,17 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                 onChange={handleChange}
                             />
                         </div>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sizes (comma-separated)</label>
+                        <input
+                            type="text"
+                            name="sizes"
+                            placeholder="e.g. S, M, L, XL"
+                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value={productData.sizes}
+                            onChange={handleChange}
+                        />
                     </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
