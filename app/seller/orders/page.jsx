@@ -7,16 +7,17 @@ import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
 
 const Orders = () => {
-    const { currency, userData, allOrders, fetchAllOrders } = useAppContext();
+    const { currency, userData, allOrders } = useAppContext();
     const [sellerOrders, setSellerOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const filterSellerOrders = useCallback(() => {
         if (userData && allOrders.length > 0) {
             const filteredOrders = allOrders.map(order => {
-                const sellerItems = order.items.filter(item => item.product.userId === userData._id);
+                const sellerItems = order.items.filter(item => item.userId === userData._id);
                 if (sellerItems.length > 0) {
-                    return { ...order, items: sellerItems };
+                    const sellerAmount = sellerItems.reduce((sum, item) => sum + item.offerPrice * item.quantity, 0);
+                    return { ...order, items: sellerItems, amount: sellerAmount };
                 }
                 return null;
             }).filter(order => order !== null);
@@ -25,17 +26,12 @@ const Orders = () => {
     }, [userData, allOrders]);
 
     useEffect(() => {
-        setLoading(true);
-        fetchAllOrders().then(() => {
+        if (allOrders) {
             setLoading(false);
-        });
-    }, [fetchAllOrders]);
-
-    useEffect(() => {
-        if (!loading) {
             filterSellerOrders();
         }
-    }, [loading, filterSellerOrders]);
+    }, [allOrders, filterSellerOrders]);
+
 
     return (
         <div className="flex-1 h-screen overflow-scroll flex flex-col justify-between text-sm">
@@ -52,7 +48,7 @@ const Orders = () => {
                                 />
                                 <p className="flex flex-col gap-3">
                                     <span className="font-medium">
-                                        {order.items.map((item) => item.product.name + ` x ${item.quantity}`).join(", ")}
+                                        {order.items.map((item) => item.name + ` x ${item.quantity}`).join(", ")}
                                     </span>
                                     <span>Items : {order.items.reduce((sum, item) => sum + item.quantity, 0)}</span>
                                 </p>
@@ -68,10 +64,10 @@ const Orders = () => {
                                     <span>{order.address.phoneNumber}</span>
                                 </p>
                             </div>
-                            <p className="font-medium my-auto">{currency}{order.items.reduce((sum, item) => sum + item.product.offerPrice * item.quantity, 0).toFixed(2)}</p>
+                            <p className="font-medium my-auto">{currency}{order.amount.toFixed(2)}</p>
                             <div>
                                 <p className="flex flex-col">
-                                    <span>Method : COD</span>
+                                    <span>Method : {order.paymentMethod.toUpperCase()}</span>
                                     <span>Date : {new Date(order.date).toLocaleDateString()}</span>
                                     <span className="text-green-600 font-medium">{order.status}</span>
                                 </p>

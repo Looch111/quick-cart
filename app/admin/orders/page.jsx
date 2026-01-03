@@ -1,40 +1,31 @@
 'use client';
 import React, { useEffect, useState } from "react";
-import { assets } from "@/assets/assets";
-import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Loading from "@/components/Loading";
 import toast from "react-hot-toast";
-import { Truck } from "lucide-react";
 
 const Orders = () => {
 
-    const { currency, updateOrderStatus, fetchAllOrders } = useAppContext();
+    const { currency, updateOrderStatus, allOrders } = useAppContext();
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchOrders = async () => {
-        const response = await fetchAllOrders();
-        if (response.success) {
-            setOrders(response.orders.sort((a, b) => new Date(b.date) - new Date(a.date)));
+    useEffect(() => {
+        if (allOrders) {
+            setOrders(allOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
+            setLoading(false);
         }
-        setLoading(false);
-    }
+    }, [allOrders]);
 
     const handleStatusChange = async (orderId, newStatus) => {
         const response = await updateOrderStatus(orderId, newStatus);
         if (response.success) {
             toast.success("Order status updated");
-            await fetchOrders();
         } else {
             toast.error("Failed to update status");
         }
     }
-
-    useEffect(() => {
-        fetchOrders();
-    }, []);
 
     const getStatusClass = (status) => {
         switch (status) {

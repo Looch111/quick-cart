@@ -10,30 +10,20 @@ import { Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const MyOrders = () => {
-    const { currency, fetchUserOrders, userData } = useAppContext();
+    const { currency, userData, userOrders } = useAppContext();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            if (userData?._id) {
-                const response = await fetchUserOrders();
-                if (response.success) {
-                    setOrders(response.orders.sort((a, b) => new Date(b.date) - new Date(a.date)));
-                }
-                setLoading(false);
-            }
-        };
-
         if (userData === null) {
             setLoading(false);
         }
-
-        if (userData) {
-            fetchOrders();
+        if (userOrders) {
+            setOrders(userOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
+            setLoading(false);
         }
-    }, [userData, fetchUserOrders]);
+    }, [userData, userOrders]);
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -104,16 +94,16 @@ const MyOrders = () => {
                                         {order.items.map((item, itemIndex) => (
                                             <div key={itemIndex} className="flex items-start gap-4">
                                                 <Image
-                                                    src={item.product.image[0]}
-                                                    alt={item.product.name}
+                                                    src={item.image[0]}
+                                                    alt={item.name}
                                                     width={80}
                                                     height={80}
                                                     className="w-20 h-20 object-contain rounded-md border bg-gray-50"
                                                 />
                                                 <div className="flex-grow">
-                                                    <p className="font-semibold text-gray-800">{item.product.name}</p>
+                                                    <p className="font-semibold text-gray-800">{item.name}</p>
                                                     <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                                                    <p className="text-sm font-medium text-gray-700">{currency}{item.product.offerPrice.toFixed(2)}</p>
+                                                    <p className="text-sm font-medium text-gray-700">{currency}{item.offerPrice.toFixed(2)}</p>
                                                 </div>
                                             </div>
                                         ))}
