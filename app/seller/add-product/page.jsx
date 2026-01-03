@@ -25,10 +25,18 @@ const AddProduct = () => {
   };
   
   const getImageUrl = (url) => {
-    if (url && url.startsWith('https://i.imgur.com/') && !url.endsWith('.png') && !url.endsWith('.jpg') && !url.endsWith('.jpeg') && !url.endsWith('.gif')) {
-      return `${url}.png`;
+    if (!url) return assets.upload_area;
+    
+    let correctedUrl = url;
+    if (correctedUrl.includes('imgur.com') && !correctedUrl.includes('i.imgur.com')) {
+      correctedUrl = correctedUrl.replace('imgur.com', 'i.imgur.com');
     }
-    return url || assets.upload_area;
+
+    if (correctedUrl.startsWith('https://i.imgur.com/') && !/\.(png|jpg|jpeg|gif)$/.test(correctedUrl)) {
+      return `${correctedUrl}.png`;
+    }
+    
+    return correctedUrl;
   };
 
   return (
