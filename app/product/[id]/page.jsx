@@ -5,14 +5,12 @@ import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
-import { useParams } from "next/navigation";
 import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
 
-const Product = () => {
-
-    const { id } = useParams();
+const Product = ({ params }) => {
+    const { id } = params;
 
     const { products, router, addToCart } = useAppContext()
 
@@ -25,8 +23,10 @@ const Product = () => {
     }
 
     useEffect(() => {
-        fetchProductData();
-    }, [id, products.length])
+        if (id && products.length > 0) {
+            fetchProductData();
+        }
+    }, [id, products.length]);
 
     return productData ? (<>
         <Navbar />
