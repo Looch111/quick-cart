@@ -38,7 +38,7 @@ const HeaderSlider = () => {
                         key={slide.id}
                         className="flex flex-col-reverse md:flex-row items-center justify-between bg-[#E6E9F2] py-8 md:px-14 px-5 mt-6 rounded-xl min-w-full"
                     >
-                        <div className="md:pl-8 mt-10 md:mt-0">
+                        <div className="md:pl-8 mt-6 md:mt-0">
                             <p className="md:text-base text-orange-600 pb-1">Limited Time Offer</p>
                             <h1 className="max-w-lg md:text-[40px] md:leading-[48px] text-2xl font-semibold">
                                 {slide.title}
