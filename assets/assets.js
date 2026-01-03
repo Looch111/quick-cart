@@ -132,6 +132,12 @@ export const HomeIcon = () => (
   </svg>
 );
 
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+
+const nextWeek = new Date();
+nextWeek.setDate(nextWeek.getDate() + 7);
+
 export const productsDummyData = [
   {
     "_id": "67a1f4e43f34a77b6dde9144",
@@ -149,6 +155,7 @@ export const productsDummyData = [
     "category": "Earphone",
     "stock": 15,
     "date": 1738667236865,
+    "flashSaleEndDate": tomorrow.toISOString(),
     "__v": 0
   },
   {
@@ -164,6 +171,7 @@ export const productsDummyData = [
     "category": "Headphone",
     "stock": 10,
     "date": 1738667310300,
+    "flashSaleEndDate": nextWeek.toISOString(),
     "__v": 0
   },
     {
@@ -225,6 +233,7 @@ export const productsDummyData = [
     "category": "Accessories",
     "stock": 5,
     "date": 1738667503075,
+    "flashSaleEndDate": tomorrow.toISOString(),
     "__v": 0
   },
   {
@@ -458,4 +467,5 @@ export const addressDummyData = [
 
   
 
+    
     

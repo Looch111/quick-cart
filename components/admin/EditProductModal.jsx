@@ -11,6 +11,13 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         if (data.sizes && Array.isArray(data.sizes)) {
             data.sizes = data.sizes.join(', ');
         }
+        if (data.flashSaleEndDate) {
+            // Format for datetime-local input
+            const d = new Date(data.flashSaleEndDate);
+            data.flashSaleEndDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        } else {
+            data.flashSaleEndDate = '';
+        }
         setProductData(data);
     }, [product]);
 
@@ -20,6 +27,9 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         const dataToSave = { ...productData };
         if (typeof dataToSave.sizes === 'string') {
             dataToSave.sizes = dataToSave.sizes.split(',').map(s => s.trim()).filter(s => s);
+        }
+        if (!dataToSave.flashSaleEndDate) {
+            dataToSave.flashSaleEndDate = null;
         }
         updateProduct(dataToSave);
         onSave(dataToSave);
@@ -118,6 +128,16 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                             placeholder="e.g. S, M, L, XL"
                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
                             value={productData.sizes}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Flash Sale End Date</label>
+                        <input
+                            type="datetime-local"
+                            name="flashSaleEndDate"
+                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value={productData.flashSaleEndDate || ''}
                             onChange={handleChange}
                         />
                     </div>

@@ -1,13 +1,66 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { assets } from '@/assets/assets'
 import Image from 'next/image';
 import { useAppContext } from '@/context/AppContext';
+
+const CountdownTimer = ({ endDate }) => {
+    const [timeLeft, setTimeLeft] = useState({
+        days: '00',
+        hours: '00',
+        minutes: '00',
+        seconds: '00',
+    });
+
+    useEffect(() => {
+        if (!endDate) return;
+
+        const interval = setInterval(() => {
+            const now = new Date();
+            const end = new Date(endDate);
+            const distance = end - now;
+
+            if (distance < 0) {
+                clearInterval(interval);
+                setTimeLeft(null);
+            } else {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                setTimeLeft({ days, hours, minutes, seconds });
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [endDate]);
+
+    if (!timeLeft) {
+        return null;
+    }
+
+    return (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[95%] bg-white/80 backdrop-blur-sm rounded-md p-1.5 text-xs">
+            <p className='text-center font-medium text-red-600 mb-1'>Sale Ends In:</p>
+            <div className="flex items-center justify-center gap-1 text-gray-800">
+                <div className='flex flex-col items-center'><span className='font-bold'>{timeLeft.days}</span><span className='text-[10px]'>d</span></div>
+                <div>:</div>
+                <div className='flex flex-col items-center'><span className='font-bold'>{timeLeft.hours}</span><span className='text-[10px]'>h</span></div>
+                <div>:</div>
+                <div className='flex flex-col items-center'><span className='font-bold'>{timeLeft.minutes}</span><span className='text-[10px]'>m</span></div>
+                <div>:</div>
+                <div className='flex flex-col items-center'><span className='font-bold'>{timeLeft.seconds}</span><span className='text-[10px]'>s</span></div>
+            </div>
+        </div>
+    );
+};
+
 
 const ProductCard = ({ product }) => {
 
     const { currency, router, wishlistItems, toggleWishlist, addToCart } = useAppContext()
     const isWishlisted = wishlistItems[product._id];
     const isOutOfStock = product.stock === 0;
+    const isFlashSale = product.flashSaleEndDate && new Date(product.flashSaleEndDate) > new Date();
 
     const handleWishlistClick = (e) => {
         e.stopPropagation();
@@ -45,6 +98,7 @@ const ProductCard = ({ product }) => {
                         Out of Stock
                     </div>
                 )}
+                {isFlashSale && <CountdownTimer endDate={product.flashSaleEndDate} />}
             </div>
 
             <p className="md:text-base font-medium pt-2 w-full truncate">{product.name}</p>
@@ -68,7 +122,10 @@ const ProductCard = ({ product }) => {
             </div>
 
             <div className="flex items-end justify-between w-full mt-1">
-                <p className="text-base font-medium">{currency}{product.offerPrice}</p>
+                <div className="flex items-end gap-2">
+                    <p className="text-base font-medium text-orange-600">{currency}{product.offerPrice}</p>
+                    {product.price > product.offerPrice && <p className="text-sm line-through text-gray-400">{currency}{product.price}</p>}
+                </div>
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={handleAddToCartClick} 
@@ -91,3 +148,5 @@ const ProductCard = ({ product }) => {
 }
 
 export default ProductCard
+
+    

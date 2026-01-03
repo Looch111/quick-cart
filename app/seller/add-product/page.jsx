@@ -17,6 +17,7 @@ const AddProduct = () => {
   const [offerPrice, setOfferPrice] = useState('');
   const [sizes, setSizes] = useState('');
   const [stock, setStock] = useState('');
+  const [flashSaleEndDate, setFlashSaleEndDate] = useState('');
 
   const handleImageUrlChange = (index, value) => {
     const newImageUrls = [...imageUrls];
@@ -35,6 +36,7 @@ const AddProduct = () => {
         image: imageUrls.filter(url => url).map(url => getImageUrl(url)),
         stock: Number(stock),
         sizes: sizes.split(',').map(s => s.trim()).filter(s => s),
+        flashSaleEndDate: flashSaleEndDate || null,
     }
 
     if(productData.image.length === 0) {
@@ -53,6 +55,7 @@ const AddProduct = () => {
     setOfferPrice('');
     setSizes('');
     setStock('');
+    setFlashSaleEndDate('');
   };
   
   const getImageUrl = (url) => {
@@ -191,6 +194,18 @@ const AddProduct = () => {
               required
             />
           </div>
+           <div className="flex flex-col gap-1 w-32">
+            <label className="text-base font-medium" htmlFor="flash-sale-date">
+              Flash Sale End
+            </label>
+            <input
+              id="flash-sale-date"
+              type="datetime-local"
+              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+              onChange={(e) => setFlashSaleEndDate(e.target.value)}
+              value={flashSaleEndDate}
+            />
+          </div>
         </div>
          <div className="flex flex-col gap-1 max-w-md">
           <label className="text-base font-medium" htmlFor="product-sizes">
@@ -215,3 +230,5 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+
+    
