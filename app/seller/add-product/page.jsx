@@ -2,8 +2,12 @@
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useAppContext } from "@/context/AppContext";
+import toast from "react-hot-toast";
 
 const AddProduct = () => {
+
+  const { addProduct } = useAppContext()
 
   const [imageUrls, setImageUrls] = useState(['', '', '', '']);
   const [name, setName] = useState('');
@@ -22,6 +26,33 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const productData = {
+        name,
+        description,
+        category,
+        price: Number(price),
+        offerPrice: Number(offerPrice),
+        image: imageUrls.filter(url => url).map(url => getImageUrl(url)),
+        stock: Number(stock),
+        sizes: sizes.split(',').map(s => s.trim()).filter(s => s),
+    }
+
+    if(productData.image.length === 0) {
+        toast.error("Please provide at least one image URL.");
+        return;
+    }
+
+    addProduct(productData);
+
+    // Reset form
+    setImageUrls(['', '', '', '']);
+    setName('');
+    setDescription('');
+    setCategory('Earphone');
+    setPrice('');
+    setOfferPrice('');
+    setSizes('');
+    setStock('');
   };
   
   const getImageUrl = (url) => {

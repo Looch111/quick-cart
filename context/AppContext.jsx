@@ -57,6 +57,17 @@ export const AppContextProvider = (props) => {
         setBanners(banners.map(b => (b.id === updatedBanner.id ? updatedBanner : b)));
         toast.success("Banner updated successfully!");
     }
+    
+    const addProduct = (productData) => {
+        const newProduct = {
+            ...productData,
+            _id: `prod_${Date.now()}`,
+            userId: userData?._id || 'user_2sZFHS1UIIysJyDVzCpQhUhTIhw', // Assign to current user
+            date: Date.now()
+        };
+        setProducts(prevProducts => [newProduct, ...prevProducts]);
+        toast.success("Product added successfully!");
+    }
 
     const updateProduct = (updatedProduct) => {
         setProducts(products.map(p => (p._id === updatedProduct._id ? updatedProduct : p)));
@@ -181,7 +192,7 @@ export const AppContextProvider = (props) => {
     const value = {
         currency, router,
         userData, fetchUserData, setUserData,
-        products, fetchProductData, setProducts, updateProduct, deleteProduct,
+        products, fetchProductData, setProducts, addProduct, updateProduct, deleteProduct,
         cartItems, setCartItems,
         addToCart, updateCartQuantity,
         getCartCount, getCartAmount,
