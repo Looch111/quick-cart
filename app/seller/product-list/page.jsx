@@ -45,7 +45,6 @@ const ProductList = () => {
   const handleDeleteClick = (productId) => {
     if(confirm('Are you sure you want to delete this product?')) {
       deleteProduct(productId);
-      toast.success("Product deleted.");
     }
   }
 
