@@ -44,7 +44,7 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const SellerDashboard = () => {
-  const { allOrders, products, userData, currency, productsLoading } = useAppContext();
+  const { allOrders, products, userData, currency, productsLoading, platformSettings } = useAppContext();
   const [sellerStats, setSellerStats] = useState({
     totalEarnings: 0,
     productsSold: 0,
@@ -55,17 +55,18 @@ const SellerDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userData && allOrders && products && !productsLoading) {
+    if (userData && allOrders && products && !productsLoading && platformSettings) {
       const sellerProducts = products.filter(p => p.userId === userData._id);
       const sellerProductIds = sellerProducts.map(p => p._id);
+      const commissionRate = (platformSettings.commission || 0) / 100;
       
-      let totalEarnings = 0;
+      let totalSales = 0;
       let productsSold = 0;
       const recentOrders = [];
       const monthlySalesData = [...salesData].map(item => ({...item})); // Deep copy
 
       allOrders.forEach(order => {
-        let orderEarnings = 0;
+        let orderSales = 0;
         let sellerItemsInOrder = 0;
         
         const sellerOrderItems = order.items.filter(item => sellerProductIds.includes(item._id));
@@ -73,7 +74,7 @@ const SellerDashboard = () => {
         if (sellerOrderItems.length > 0) {
           sellerOrderItems.forEach(item => {
             const itemTotal = item.offerPrice * item.quantity;
-            orderEarnings += itemTotal;
+            orderSales += itemTotal;
             sellerItemsInOrder += item.quantity;
 
             const orderMonth = new Date(order.date).getMonth();
@@ -82,15 +83,17 @@ const SellerDashboard = () => {
             }
           });
 
-          totalEarnings += orderEarnings;
+          totalSales += orderSales;
           productsSold += sellerItemsInOrder;
           
           recentOrders.push({
             ...order,
-            amount: orderEarnings, // Show only seller's earnings for this order
+            amount: orderSales, // Show only seller's gross sales for this order
           });
         }
       });
+
+      const totalEarnings = totalSales * (1 - commissionRate);
       
       setSellerStats({
         totalEarnings,
@@ -109,7 +112,7 @@ const SellerDashboard = () => {
       }));
       setLoading(false);
     }
-  }, [userData, allOrders, products, productsLoading]);
+  }, [userData, allOrders, products, productsLoading, platformSettings]);
   
   if (loading || productsLoading) {
     return <Loading />;
@@ -150,7 +153,7 @@ const SellerDashboard = () => {
                   <tr>
                     <th scope="col" className="px-6 py-3">Order ID</th>
                     <th scope="col" className="px-6 py-3">Customer</th>
-                    <th scope="col" className="px-6 py-3">Amount</th>
+                    <th scope="col" className="px-6 py-3">Sale Amount</th>
                     <th scope="col" className="px-6 py-3">Date</th>
                     <th scope="col" className="px-6 py-3">Status</th>
                   </tr>
