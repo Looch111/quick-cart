@@ -76,7 +76,7 @@ const UserList = () => {
                                 <tr key={index} className="border-t border-gray-500/20">
                                     <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
                                         <Image
-                                            src={user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=random`}
+                                            src={user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.email}`}
                                             alt="user Image"
                                             className="w-10 h-10 rounded-full"
                                             width={40}

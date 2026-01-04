@@ -35,7 +35,7 @@ const ManageAccount = () => {
     const generateNewAvatar = () => {
         if (!userData) return;
         const randomSeed = Math.random().toString(36).substring(7);
-        const newAvatarUrl = `https://ui-avatars.com/api/?name=${userData.name || userData.email}&background=random&seed=${randomSeed}`;
+        const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${randomSeed}`;
         updateUserField('photoURL', newAvatarUrl);
         toast.success("New avatar generated!");
     }
