@@ -24,8 +24,12 @@ export const AppContextProvider = (props) => {
     // App Data
     const { data: productsData, loading: productsLoading } = useCollection('products');
     const { data: ordersData, loading: ordersLoading } = useCollection('orders');
+    const { data: bannersData, loading: bannersLoading } = useCollection('banners');
+    const { data: promotionsData, loading: promotionsLoading } = useCollection('promotions');
     const [products, setProducts] = useState([]);
     const [allOrders, setAllOrders] = useState([]);
+    const [banners, setBanners] = useState([]);
+    const [promotions, setPromotions] = useState([]);
 
     // User-specific Data
     const [userData, setUserData] = useState(null);
@@ -35,18 +39,6 @@ export const AppContextProvider = (props) => {
     const [isSeller, setIsSeller] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
-
-    // Static Banners
-    const [banners, setBanners] = useState([
-        { id: 'slide1', title: 'The Latest Collection of Headphones', image: assets.header_headphone_image.src, link: '/all-products', status: 'active', buttonText: 'Buy now', linkText: 'Find more' },
-        { id: 'slide2', title: 'Experience Gaming Like Never Before', image: assets.header_playstation_image.src, link: '/all-products', status: 'active', buttonText: 'Shop now', linkText: 'Explore Deals' },
-        { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: assets.header_macbook_image.src, link: '/all-products', status: 'active', buttonText: 'Order now', linkText: 'Learn More' },
-    ]);
-    const [promotions, setPromotions] = useState([
-        { id: 1, code: 'SUMMER20', type: 'percentage', value: 20, status: 'active', expiryDate: '2024-12-31' },
-        { id: 2, code: 'FREESHIP', type: 'shipping', value: 0, status: 'active', expiryDate: '2025-01-31' },
-        { id: 3, code: 'SAVE10', type: 'fixed', value: 10, status: 'expired', expiryDate: '2024-06-01' },
-    ]);
     
     // Derived state from userData
     const cartItems = userData?.cartItems || {};
@@ -67,6 +59,20 @@ export const AppContextProvider = (props) => {
              setAllOrders(ordersData.map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) })));
         }
     }, [ordersData, ordersLoading]);
+
+    // Update banners state when data loads
+    useEffect(() => {
+        if (!bannersLoading) {
+            setBanners(bannersData.map(b => ({ ...b, id: b.id })));
+        }
+    }, [bannersData, bannersLoading]);
+
+    // Update promotions state when data loads
+    useEffect(() => {
+        if (!promotionsLoading) {
+            setPromotions(promotionsData.map(p => ({ ...p, id: p.id })));
+        }
+    }, [promotionsData, promotionsLoading]);
 
 
     // Effect to handle user authentication state changes
@@ -151,26 +157,25 @@ export const AppContextProvider = (props) => {
 
     // --- DATA MUTATION FUNCTIONS ---
 
-    const addPromotion = (newPromo) => {
+    const addPromotion = async (newPromo) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
-        const newPromotion = {
-            id: promotions.length + 1,
+        const promotionsCollectionRef = collection(firestore, 'promotions');
+        await addDoc(promotionsCollectionRef, {
             ...newPromo,
-            status: new Date(newPromo.expiryDate) > new Date() ? 'active' : 'expired'
-        };
-        setPromotions([...promotions, newPromotion]);
+            value: Number(newPromo.value)
+        });
         toast.success("Promotion added successfully!");
     };
 
-    const deletePromotion = (id) => {
+    const deletePromotion = async (id) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
-        setPromotions(promotions.filter(p => p.id !== id));
+        await deleteDoc(doc(firestore, 'promotions', id));
         toast.success("Promotion deleted.");
     };
 
@@ -210,39 +215,39 @@ export const AppContextProvider = (props) => {
         router.back(); 
     }
 
-    const addBanner = (newBanner) => {
+    const addBanner = async (newBanner) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
-        const newBannerData = {
-            id: `banner_${Date.now()}`,
+        const bannersCollectionRef = collection(firestore, 'banners');
+        await addDoc(bannersCollectionRef, {
             title: newBanner.title,
-            image: assets.jbl_soundbox_image.src, 
+            image: "https://i.imgur.com/gB343so.png", // placeholder image
             link: newBanner.link,
             status: 'active',
             buttonText: newBanner.buttonText,
             linkText: newBanner.linkText
-        };
-        setBanners([...banners, newBannerData]);
+        });
         toast.success("Banner added successfully!");
     }
 
-    const deleteBanner = (id) => {
+    const deleteBanner = async (id) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
-        setBanners(banners.filter(b => b.id !== id));
+        await deleteDoc(doc(firestore, 'banners', id));
         toast.success("Banner deleted.");
     }
 
-    const updateBanner = (updatedBanner) => {
+    const updateBanner = async (updatedBanner) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
-        setBanners(banners.map(b => (b.id === updatedBanner.id ? updatedBanner : b)));
+        const bannerDocRef = doc(firestore, 'banners', updatedBanner.id);
+        await setDoc(bannerDocRef, updatedBanner, { merge: true });
         toast.success("Banner updated successfully!");
     }
     
