@@ -7,11 +7,13 @@ import toast from 'react-hot-toast';
 import { User, Mail, Save, PlusCircle, Home, Phone, Edit } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import AvatarSelectionModal from '@/components/AvatarSelectionModal';
 
 const ManageAccount = () => {
     const { userData, setShowLogin, userAddresses, router, updateUserField } = useAppContext();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
     useEffect(() => {
         if (userData) {
@@ -32,13 +34,12 @@ const ManageAccount = () => {
         }
     };
 
-    const generateNewAvatar = () => {
+    const handleAvatarSave = (newAvatarUrl) => {
         if (!userData) return;
-        const randomSeed = Math.random().toString(36).substring(7);
-        const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${randomSeed}`;
         updateUserField('photoURL', newAvatarUrl);
-        toast.success("New avatar generated!");
-    }
+        setIsAvatarModalOpen(false);
+        toast.success("Avatar updated!");
+    };
 
     if (!userData) {
         return null; // Or a loading spinner, while redirecting to login
@@ -70,7 +71,7 @@ const ManageAccount = () => {
                                                 <User className="w-10 h-10 text-gray-500" />
                                             )}
                                         </div>
-                                         <button type="button" onClick={generateNewAvatar} className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full border shadow-sm hover:bg-gray-100">
+                                         <button type="button" onClick={() => setIsAvatarModalOpen(true)} className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full border shadow-sm hover:bg-gray-100">
                                             <Edit className="w-4 h-4 text-orange-600" />
                                         </button>
                                     </div>
@@ -153,6 +154,13 @@ const ManageAccount = () => {
                 </div>
             </div>
             <Footer />
+            {isAvatarModalOpen && (
+                <AvatarSelectionModal
+                    currentAvatar={userData.photoURL}
+                    onSave={handleAvatarSave}
+                    onCancel={() => setIsAvatarModalOpen(false)}
+                />
+            )}
         </>
     );
 };
