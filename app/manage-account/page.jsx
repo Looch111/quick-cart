@@ -71,7 +71,7 @@ const ManageAccount = () => {
                                             )}
                                         </div>
                                          <button type="button" onClick={generateNewAvatar} className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full border shadow-sm hover:bg-gray-100">
-                                            <Edit className="w-4 h-4 text-gray-600" />
+                                            <Edit className="w-4 h-4 text-orange-600" />
                                         </button>
                                     </div>
                                     <div>
