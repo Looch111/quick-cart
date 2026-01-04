@@ -1,16 +1,18 @@
 'use client'
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { assets } from '../../assets/assets'
 import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 
 const Navbar = () => {
 
   const { router, handleLogout } = useAppContext()
   const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const menuItems = [
     { name: 'Dashboard', path: '/seller' },
@@ -25,12 +27,24 @@ const Navbar = () => {
     router.push('/');
   }
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuRef]);
+
   return (
-    <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b'>
+    <div ref={menuRef} className='flex items-center px-4 md:px-8 py-3 justify-between border-b relative'>
       <Link href="/">
         <Image className='w-28 lg:w-32 cursor-pointer' src={assets.logo} alt="" />
       </Link>
-      <div className='flex items-center gap-4 md:gap-8'>
+      
+      {/* Desktop Menu */}
+      <div className='hidden md:flex items-center gap-4 lg:gap-8'>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
           return (
@@ -40,10 +54,39 @@ const Navbar = () => {
           )
         })}
       </div>
-      <button onClick={onLogout} className='flex items-center gap-2 bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>
-        <LogOut className="w-4 h-4" />
-        Logout
-      </button>
+
+      <div className='flex items-center gap-4'>
+        <button onClick={onLogout} className='flex items-center gap-2 bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>
+          <LogOut className="w-4 h-4" />
+          <span className='hidden sm:inline'>Logout</span>
+        </button>
+
+        {/* Mobile Menu Button */}
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 rounded-md hover:bg-gray-100">
+          {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="absolute top-full left-0 w-full bg-white shadow-lg md:hidden z-40 border-t">
+            <div className='flex flex-col p-4 gap-2'>
+            {menuItems.map((item) => {
+              const isActive = pathname === item.path;
+              return (
+                <Link 
+                  href={item.path} 
+                  key={item.name} 
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`hover:text-gray-900 transition px-3 py-2 rounded-md text-base ${isActive ? "bg-orange-100 text-orange-600 font-medium" : ""}`}
+                >
+                  {item.name}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
