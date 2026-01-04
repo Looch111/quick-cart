@@ -11,17 +11,17 @@ import toast from "react-hot-toast";
 
 const ProductList = () => {
 
-  const { router, products, deleteProduct } = useAppContext()
+  const { router, products, deleteProduct, productsLoading } = useAppContext()
 
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (products.length > 0) {
+    if (!productsLoading) {
       setLoading(false);
     }
-  }, [products])
+  }, [productsLoading])
 
   const handleEditClick = (product) => {
     setEditingProduct(product);
