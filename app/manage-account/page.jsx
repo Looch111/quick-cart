@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { User, Mail, Save, PlusCircle, Home, Phone, RefreshCw } from 'lucide-react';
+import { User, Mail, Save, PlusCircle, Home, Phone, Edit } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -71,7 +71,7 @@ const ManageAccount = () => {
                                             )}
                                         </div>
                                          <button type="button" onClick={generateNewAvatar} className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 rounded-full transition-opacity">
-                                            <RefreshCw className="w-6 h-6" />
+                                            <Edit className="w-6 h-6" />
                                         </button>
                                     </div>
                                     <div>
