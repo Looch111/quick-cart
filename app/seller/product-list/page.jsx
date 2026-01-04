@@ -8,6 +8,7 @@ import Loading from "@/components/Loading";
 import { Edit, Trash2 } from "lucide-react";
 import EditProductModal from "@/components/admin/EditProductModal";
 import toast from "react-hot-toast";
+import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
 
 const ProductList = () => {
 
@@ -17,6 +18,8 @@ const ProductList = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sellerProducts, setSellerProducts] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   useEffect(() => {
     if (userData && products.length > 0) {
@@ -43,31 +46,22 @@ const ProductList = () => {
   };
 
   const handleDeleteClick = (productId) => {
-    toast((t) => (
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium">Are you sure you want to delete this product?</p>
-        <div className="flex gap-2">
-          <button
-            className="w-full px-3 py-1.5 bg-red-600 text-white rounded-md text-sm"
-            onClick={() => {
-              deleteProduct(productId);
-              toast.dismiss(t.id);
-            }}
-          >
-            Delete
-          </button>
-          <button
-            className="w-full px-3 py-1.5 bg-gray-200 text-gray-800 rounded-md text-sm"
-            onClick={() => toast.dismiss(t.id)}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    ), {
-      duration: 6000,
-    });
+    setProductToDelete(productId);
+    setShowDeleteModal(true);
   }
+
+  const confirmDelete = () => {
+    if (productToDelete) {
+      deleteProduct(productToDelete);
+    }
+    setShowDeleteModal(false);
+    setProductToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setProductToDelete(null);
+  };
 
   const filteredProducts = sellerProducts.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -159,6 +153,12 @@ const ProductList = () => {
               onSave={handleSaveProduct}
               onCancel={handleCancelEdit}
           />
+      )}
+      {showDeleteModal && (
+        <DeleteConfirmationModal
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
       )}
     </div>
   );

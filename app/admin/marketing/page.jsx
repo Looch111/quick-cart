@@ -6,12 +6,15 @@ import { PlusCircle, Trash2, Edit } from 'lucide-react';
 import Footer from "@/components/admin/Footer";
 import EditBannerModal from '@/components/admin/EditBannerModal';
 import Image from 'next/image';
+import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal';
 
 const MarketingPage = () => {
     const { banners, addBanner, deleteBanner, updateBanner } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
     const [newBanner, setNewBanner] = useState({ title: '', link: '', buttonText: '', linkText: '' });
     const [editingBanner, setEditingBanner] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [bannerToDelete, setBannerToDelete] = useState(null);
 
     const handleAddBanner = (e) => {
         e.preventDefault();
@@ -24,9 +27,23 @@ const MarketingPage = () => {
         setIsAdding(false);
     };
 
-    const handleDeleteBanner = (id) => {
-        deleteBanner(id);
-    }
+    const handleDeleteClick = (bannerId) => {
+        setBannerToDelete(bannerId);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = () => {
+        if (bannerToDelete) {
+            deleteBanner(bannerToDelete);
+        }
+        setShowDeleteModal(false);
+        setBannerToDelete(null);
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteModal(false);
+        setBannerToDelete(null);
+    };
 
     const handleEditClick = (banner) => {
         setEditingBanner(banner);
@@ -127,7 +144,7 @@ const MarketingPage = () => {
                                             <button onClick={() => handleEditClick(banner)} className="text-blue-500 hover:text-blue-700 p-1.5">
                                                 <Edit className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => handleDeleteBanner(banner.id)} className="text-red-500 hover:text-red-700 p-1.5">
+                                            <button onClick={() => handleDeleteClick(banner.id)} className="text-red-500 hover:text-red-700 p-1.5">
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -167,7 +184,7 @@ const MarketingPage = () => {
                                                 <button onClick={() => handleEditClick(banner)} className="text-blue-500 hover:text-blue-700">
                                                     <Edit className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => handleDeleteBanner(banner.id)} className="text-red-500 hover:text-red-700">
+                                                <button onClick={() => handleDeleteClick(banner.id)} className="text-red-500 hover:text-red-700">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </td>
@@ -185,6 +202,12 @@ const MarketingPage = () => {
                     banner={editingBanner}
                     onSave={handleSaveBanner}
                     onCancel={() => setEditingBanner(null)}
+                />
+            )}
+            {showDeleteModal && (
+                <DeleteConfirmationModal
+                    onConfirm={confirmDelete}
+                    onCancel={cancelDelete}
                 />
             )}
         </>
