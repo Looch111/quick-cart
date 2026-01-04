@@ -9,19 +9,21 @@ const HeaderSlider = () => {
     const { banners, router } = useAppContext();
     const [currentSlide, setCurrentSlide] = useState(0);
 
+    const activeBanners = banners.filter(b => b.status === 'active');
+
     useEffect(() => {
-        if (banners.length === 0) return;
+        if (activeBanners.length === 0) return;
         const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % banners.length);
+            setCurrentSlide((prev) => (prev + 1) % activeBanners.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, [banners.length]);
+    }, [activeBanners.length]);
 
     const handleSlideChange = (index) => {
         setCurrentSlide(index);
     };
 
-    if (banners.length === 0) {
+    if (activeBanners.length === 0) {
         return null;
     }
 
@@ -33,7 +35,7 @@ const HeaderSlider = () => {
                     transform: `translateX(-${currentSlide * 100}%)`,
                 }}
             >
-                {banners.map((slide, index) => (
+                {activeBanners.map((slide, index) => (
                     <div
                         key={slide.id}
                         className="flex flex-col-reverse md:flex-row items-center justify-between bg-[#E6E9F2] py-8 md:px-14 px-5 mt-6 rounded-xl min-w-full"
@@ -67,7 +69,7 @@ const HeaderSlider = () => {
             </div>
 
             <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2">
-                {banners.map((_, index) => (
+                {activeBanners.map((_, index) => (
                     <div
                         key={index}
                         onClick={() => handleSlideChange(index)}

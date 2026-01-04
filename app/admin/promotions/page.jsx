@@ -6,8 +6,17 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal';
 import { useAppContext } from '@/context/AppContext';
 
+const Switch = ({ checked, onChange }) => {
+    return (
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-orange-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+        </label>
+    );
+};
+
 const PromotionsPage = () => {
-    const { promotions, addPromotion, deletePromotion } = useAppContext();
+    const { promotions, addPromotion, deletePromotion, updatePromotionStatus } = useAppContext();
     const [newPromo, setNewPromo] = useState({ code: '', type: 'percentage', value: '', expiryDate: '' });
     const [isAdding, setIsAdding] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -45,8 +54,14 @@ const PromotionsPage = () => {
     const getPromoValue = (promo) => {
         if (promo.type === 'percentage') return `${promo.value}%`;
         if (promo.type === 'fixed') return `$${promo.value}`;
+        if (promo.type === 'shipping') return 'Free Shipping';
         return 'N/A';
     }
+
+    const handleStatusToggle = (id, currentStatus) => {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        updatePromotionStatus(id, newStatus);
+    };
 
     return (
         <>
@@ -131,16 +146,17 @@ const PromotionsPage = () => {
                                             <h4 className="font-bold text-lg text-gray-800 bg-gray-100 px-2 py-1 inline-block rounded">{promo.code}</h4>
                                             <p className="text-sm text-gray-600 mt-2"><span className="font-medium">Type:</span> {promo.type}</p>
                                             <p className="text-sm text-gray-600"><span className="font-medium">Value:</span> {getPromoValue(promo)}</p>
-                                            <p className="text-sm text-gray-600"><span className="font-medium">Expires:</span> {promo.expiryDate}</p>
+                                            <p className="text-sm text-gray-600"><span className="font-medium">Expires:</span> {new Date(promo.expiryDate).toLocaleDateString()}</p>
                                         </div>
                                         <button onClick={() => handleDeleteClick(promo.id)} className="text-red-500 hover:text-red-700 p-1.5">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t">
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${new Date(promo.expiryDate) > new Date() ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                            {new Date(promo.expiryDate) > new Date() ? 'Active' : 'Expired'}
+                                    <div className="mt-3 pt-3 border-t flex justify-between items-center">
+                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${promo.status === 'active' && new Date(promo.expiryDate) > new Date() ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                            {promo.status === 'active' && new Date(promo.expiryDate) > new Date() ? 'Active' : 'Inactive/Expired'}
                                         </span>
+                                        <Switch checked={promo.status === 'active'} onChange={() => handleStatusToggle(promo.id, promo.status)} />
                                     </div>
                                 </div>
                             ))}
@@ -165,11 +181,14 @@ const PromotionsPage = () => {
                                             <td className="px-6 py-4 font-medium text-gray-900">{promo.code}</td>
                                             <td className="px-6 py-4 capitalize">{promo.type}</td>
                                             <td className="px-6 py-4">{getPromoValue(promo)}</td>
-                                            <td className="px-6 py-4">{promo.expiryDate}</td>
+                                            <td className="px-6 py-4">{new Date(promo.expiryDate).toLocaleDateString()}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${new Date(promo.expiryDate) > new Date() ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {new Date(promo.expiryDate) > new Date() ? 'Active' : 'Expired'}
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <Switch checked={promo.status === 'active'} onChange={() => handleStatusToggle(promo.id, promo.status)} />
+                                                     <span className={`text-xs font-medium ${promo.status === 'active' ? 'text-green-800' : 'text-gray-600'}`}>
+                                                        {promo.status === 'active' ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <button onClick={() => handleDeleteClick(promo.id)} className="text-red-500 hover:text-red-700">

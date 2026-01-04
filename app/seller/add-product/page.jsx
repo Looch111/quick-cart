@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 const AddProduct = () => {
 
-  const { addProduct } = useAppContext()
+  const { addProduct, isAdmin } = useAppContext()
 
   const [imageUrls, setImageUrls] = useState(['', '', '', '']);
   const [name, setName] = useState('');
@@ -221,14 +221,11 @@ const AddProduct = () => {
           />
         </div>
         <button type="submit" className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded">
-          ADD
+          {isAdmin ? 'Add & Approve Product' : 'Submit for Approval'}
         </button>
       </form>
-      {/* <Footer /> */}
     </div>
   );
 };
 
 export default AddProduct;
-
-    

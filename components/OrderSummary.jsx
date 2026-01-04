@@ -31,9 +31,9 @@ const OrderSummary = () => {
         toast.error("Please enter a promo code.");
         return;
     }
-    const promo = promotions.find(p => p.code.toLowerCase() === promoCode.toLowerCase());
+    const promo = promotions.find(p => p.code.toLowerCase() === promoCode.toLowerCase() && p.status === 'active');
     if (!promo) {
-        toast.error("Invalid promo code.");
+        toast.error("Invalid or inactive promo code.");
         setDiscount(0);
         setAppliedPromo(null);
         return;
@@ -47,6 +47,8 @@ const OrderSummary = () => {
 
     let calculatedDiscount = 0;
     const cartAmount = getCartAmount();
+    const deliveryFee = getCartAmount() > (platformSettings.freeShippingThreshold || 50) ? 0 : (platformSettings.shippingFee || 5);
+
     if (promo.type === 'percentage') {
         calculatedDiscount = (cartAmount * promo.value) / 100;
     } else if (promo.type === 'fixed') {
@@ -90,7 +92,6 @@ const OrderSummary = () => {
     }
 
     await placeOrder(selectedAddress, paymentMethod, totalAmount);
-    router.push("/order-placed");
   }
 
   return (

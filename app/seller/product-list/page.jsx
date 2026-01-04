@@ -5,14 +5,31 @@ import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, CheckCircle, XCircle, Clock } from "lucide-react";
 import EditProductModal from "@/components/admin/EditProductModal";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
 
+const StatusBadge = ({ status }) => {
+    const statusMap = {
+        approved: { icon: <CheckCircle className="w-3 h-3 text-green-600" />, text: 'Approved', bg: 'bg-green-100', text_color: 'text-green-800' },
+        pending: { icon: <Clock className="w-3 h-3 text-yellow-600" />, text: 'Pending', bg: 'bg-yellow-100', text_color: 'text-yellow-800' },
+        rejected: { icon: <XCircle className="w-3 h-3 text-red-600" />, text: 'Rejected', bg: 'bg-red-100', text_color: 'text-red-800' },
+    };
+
+    const currentStatus = statusMap[status] || { icon: null, text: 'Unknown', bg: 'bg-gray-100', text_color: 'text-gray-800' };
+
+    return (
+        <span className={`flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full ${currentStatus.bg} ${currentStatus.text_color}`}>
+            {currentStatus.icon}
+            {currentStatus.text}
+        </span>
+    );
+};
+
 const ProductList = () => {
 
-  const { router, products, userData, deleteProduct } = useAppContext()
+  const { router, allRawProducts, userData, deleteProduct, productsLoading } = useAppContext()
 
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -22,22 +39,19 @@ const ProductList = () => {
   const [productToDelete, setProductToDelete] = useState(null);
 
   useEffect(() => {
-    if (userData && products.length > 0) {
-      setSellerProducts(products.filter(p => p.userId === userData._id));
+    if (userData && !productsLoading) {
+      setSellerProducts(allRawProducts.filter(p => p.userId === userData._id));
       setLoading(false);
-    } else if (!userData) {
-      setLoading(true);
-    } else {
-        setLoading(false);
+    } else if (userData === null && !productsLoading) {
+      setLoading(false);
     }
-  }, [products, userData])
+  }, [allRawProducts, userData, productsLoading])
 
   const handleEditClick = (product) => {
     setEditingProduct(product);
   };
 
   const handleSaveProduct = (updatedProduct) => {
-    // This will be handled by AppContext
     setEditingProduct(null);
   };
 
@@ -87,53 +101,50 @@ const ProductList = () => {
             />
           </div>
         </div>
-        <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-          <table className=" table-auto w-full overflow-hidden">
-            <thead className="text-gray-900 text-sm text-left">
+        <div className="overflow-x-auto rounded-md bg-white border border-gray-200 shadow-sm">
+          <table className="min-w-full table-auto text-sm">
+            <thead className="text-gray-700 bg-gray-50 text-left">
               <tr>
-                <th className="w-2/3 md:w-2/5 px-4 py-3 font-medium truncate">Product</th>
-                <th className="px-4 py-3 font-medium truncate max-sm:hidden">Category</th>
-                <th className="px-4 py-3 font-medium truncate">
-                  Price
-                </th>
-                <th className="px-4 py-3 font-medium truncate max-sm:hidden">
-                  Stock
-                </th>
-                <th className="px-4 py-3 font-medium truncate">Action</th>
+                <th className="px-4 py-3 font-medium">Product</th>
+                <th className="px-4 py-3 font-medium hidden md:table-cell">Category</th>
+                <th className="px-4 py-3 font-medium hidden sm:table-cell">Price</th>
+                <th className="px-4 py-3 font-medium hidden md:table-cell">Stock</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Action</th>
               </tr>
             </thead>
-            <tbody className="text-sm text-gray-500">
+            <tbody className="text-gray-600">
               {filteredProducts.map((product, index) => (
-                <tr key={index} className="border-t border-gray-500/20">
-                  <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
-                    <div className="bg-gray-500/10 rounded p-2">
+                <tr key={index} className="border-t border-gray-200">
+                  <td className="px-4 py-3 flex items-center gap-3">
+                    <div className="bg-gray-100 rounded p-1 flex-shrink-0">
                       <Image
                         src={product.image[0]}
-                        alt="product Image"
-                        className="w-16"
-                        width={1280}
-                        height={720}
+                        alt={product.name}
+                        className="w-12 h-12 object-contain"
+                        width={48}
+                        height={48}
                       />
                     </div>
-                    <span className="truncate w-full">
-                      {product.name}
-                    </span>
+                    <span className="font-medium text-gray-800 truncate">{product.name}</span>
                   </td>
-                  <td className="px-4 py-3 max-sm:hidden">{product.category}</td>
-                  <td className="px-4 py-3">${product.offerPrice}</td>
-                  <td className="px-4 py-3 max-sm:hidden">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">{product.category}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell">${product.offerPrice}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
+                  <td className="px-4 py-3">
+                      <StatusBadge status={product.status} />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                       <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700">
+                       <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700 p-1.5 rounded-full hover:bg-blue-50">
                           <Edit className="w-4 h-4" />
                        </button>
-                       <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700">
+                       <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50">
                           <Trash2 className="w-4 h-4" />
                        </button>
-                      <button onClick={() => router.push(`/product/${product._id}`)} className="flex items-center gap-1 px-1.5 md:px-3.5 py-2 bg-orange-600 text-white rounded-md text-xs">
-                        <span className="hidden md:block">Visit</span>
+                      <button onClick={() => router.push(`/product/${product._id}`)} className="p-1.5 text-gray-500 rounded-full hover:bg-gray-100">
                         <Image
-                          className="h-3.5"
+                          className="h-4 w-4"
                           src={assets.redirect_icon}
                           alt="redirect_icon"
                         />

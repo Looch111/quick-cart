@@ -8,8 +8,17 @@ import EditBannerModal from '@/components/admin/EditBannerModal';
 import Image from 'next/image';
 import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal';
 
+const Switch = ({ checked, onChange }) => {
+    return (
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-orange-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+        </label>
+    );
+};
+
 const MarketingPage = () => {
-    const { banners, addBanner, deleteBanner, updateBanner } = useAppContext();
+    const { banners, addBanner, deleteBanner, updateBanner, updateBannerStatus } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
     const [newBanner, setNewBanner] = useState({ title: '', link: '', buttonText: '', linkText: '' });
     const [editingBanner, setEditingBanner] = useState(null);
@@ -53,6 +62,11 @@ const MarketingPage = () => {
         updateBanner(updatedBanner);
         setEditingBanner(null);
     }
+
+    const handleStatusToggle = (id, currentStatus) => {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        updateBannerStatus(id, newStatus);
+    };
     
     return (
         <>
@@ -133,7 +147,10 @@ const MarketingPage = () => {
                                 <div key={banner.id} className="border rounded-lg p-4">
                                     <Image src={banner.image} alt={banner.title} width={500} height={300} className="w-full h-auto rounded-md mb-3" />
                                     <h4 className="font-semibold text-gray-800">{banner.title}</h4>
+                                    <div className='flex items-center justify-between'>
                                     <p className="text-xs text-gray-500"><strong>Link:</strong> {banner.link}</p>
+                                    <Switch checked={banner.status === 'active'} onChange={() => handleStatusToggle(banner.id, banner.status)} />
+                                    </div>
                                     <p className="text-xs text-gray-500"><strong>Button:</strong> {banner.buttonText}</p>
                                     <p className="text-xs text-gray-500"><strong>Link Text:</strong> {banner.linkText}</p>
                                     <div className="flex items-center justify-between mt-3 pt-3 border-t">
@@ -161,8 +178,6 @@ const MarketingPage = () => {
                                         <th scope="col" className="px-6 py-3">Title</th>
                                         <th scope="col" className="px-6 py-3">Image</th>
                                         <th scope="col" className="px-6 py-3">Link</th>
-                                        <th scope="col" className="px-6 py-3">Button Text</th>
-                                        <th scope="col" className="px-6 py-3">Link Text</th>
                                         <th scope="col" className="px-6 py-3">Status</th>
                                         <th scope="col" className="px-6 py-3">Actions</th>
                                     </tr>
@@ -173,18 +188,19 @@ const MarketingPage = () => {
                                             <td className="px-6 py-4 font-medium text-gray-900">{banner.title}</td>
                                             <td className="px-6 py-4"><Image src={banner.image} alt={banner.title} width={128} height={72} className="w-32 h-auto rounded"/></td>
                                             <td className="px-6 py-4">{banner.link}</td>
-                                            <td className="px-6 py-4">{banner.buttonText}</td>
-                                            <td className="px-6 py-4">{banner.linkText}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${banner.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {banner.status}
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <Switch checked={banner.status === 'active'} onChange={() => handleStatusToggle(banner.id, banner.status)} />
+                                                    <span className={`text-xs font-medium ${banner.status === 'active' ? 'text-green-800' : 'text-gray-600'}`}>
+                                                        {banner.status === 'active' ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 flex items-center gap-2">
-                                                <button onClick={() => handleEditClick(banner)} className="text-blue-500 hover:text-blue-700">
+                                                <button onClick={() => handleEditClick(banner)} className="text-blue-500 hover:text-blue-700 p-2 rounded-full hover:bg-blue-50">
                                                     <Edit className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => handleDeleteClick(banner.id)} className="text-red-500 hover:text-red-700">
+                                                <button onClick={() => handleDeleteClick(banner.id)} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </td>

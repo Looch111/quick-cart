@@ -70,9 +70,14 @@
         "stock": { "type": "number" },
         "sizes": { "type": "array", "items": { "type": "string" } },
         "userId": { "type": "string", "description": "The UID of the seller who owns this product." },
-        "flashSaleEndDate": { "type": "string", "format": "date-time" }
+        "flashSaleEndDate": { "type": "string", "format": "date-time" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "The approval status of the product."
+        }
       },
-      "required": ["name", "price", "offerPrice", "image", "category", "stock", "userId"]
+      "required": ["name", "price", "offerPrice", "image", "category", "stock", "userId", "status"]
     },
     "order": {
       "title": "Order",
@@ -135,9 +140,10 @@
             "code": { "type": "string" },
             "type": { "type": "string", "enum": ["percentage", "fixed", "shipping"] },
             "value": { "type": "number" },
-            "expiryDate": { "type": "string", "format": "date" }
+            "expiryDate": { "type": "string", "format": "date" },
+            "status": { "type": "string", "enum": ["active", "inactive"] }
         },
-        "required": ["code", "type", "value", "expiryDate"]
+        "required": ["code", "type", "value", "expiryDate", "status"]
     },
     "settings": {
       "title": "Platform Settings",

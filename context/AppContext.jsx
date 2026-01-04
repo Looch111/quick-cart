@@ -35,7 +35,7 @@ export const AppContextProvider = (props) => {
     const [platformSettings, setPlatformSettings] = useState({});
 
     // User-specific Data
-    const [userData, setUserData] = useState(null);
+    const [userData, setUserData] = useState(undefined);
     const [userAddresses, setUserAddresses] = useState([]);
     const [userOrders, setUserOrders] = useState([]);
 
@@ -71,6 +71,9 @@ export const AppContextProvider = (props) => {
               setUserData({ ...dbUser, _id: snapshot.id });
               setIsSeller(dbUser.role === 'seller');
               setIsAdmin(dbUser.role === 'admin');
+            } else {
+              // This case handles when a user is deleted from Firestore but still logged in.
+              setUserData(null);
             }
           });
     
@@ -80,14 +83,16 @@ export const AppContextProvider = (props) => {
             const newUser = {
               email: currentUser.email,
               name: currentUser.displayName || '',
-              photoURL: currentUser.photoURL || '',
+              photoURL: currentUser.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${currentUser.email}`,
               role: 'buyer',
               cartItems: {},
               wishlistItems: {},
               walletBalance: 0,
               walletTransactions: [],
+              createdAt: serverTimestamp()
             };
             await setDoc(userDocRef, newUser);
+             setUserData({ ...newUser, _id: currentUser.uid });
           }
     
           setShowLogin(false);
@@ -153,7 +158,8 @@ export const AppContextProvider = (props) => {
         const promotionsCollectionRef = collection(firestore, 'promotions');
         await addDoc(promotionsCollectionRef, {
             ...newPromo,
-            value: Number(newPromo.value)
+            value: Number(newPromo.value),
+            status: 'active'
         });
         toast.success("Promotion added successfully!");
     };
@@ -166,6 +172,16 @@ export const AppContextProvider = (props) => {
         await deleteDoc(doc(firestore, 'promotions', id));
         toast.success("Promotion deleted.");
     };
+
+    const updatePromotionStatus = async (id, status) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const promoDocRef = doc(firestore, 'promotions', id);
+        await setDoc(promoDocRef, { status }, { merge: true });
+        toast.success(`Promotion ${status}.`);
+    }
 
     const fundWallet = async (amount) => {
         if (!userData) {
@@ -238,6 +254,16 @@ export const AppContextProvider = (props) => {
         await setDoc(bannerDocRef, updatedBanner, { merge: true });
         toast.success("Banner updated successfully!");
     }
+
+    const updateBannerStatus = async (id, status) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const bannerDocRef = doc(firestore, 'banners', id);
+        await setDoc(bannerDocRef, { status }, { merge: true });
+        toast.success(`Banner ${status}.`);
+    }
     
     const addProduct = async (productData) => {
         if (!userData) {
@@ -253,9 +279,10 @@ export const AppContextProvider = (props) => {
         await addDoc(productsCollectionRef, {
             ...productData,
             userId: userData._id,
-            date: serverTimestamp()
+            date: serverTimestamp(),
+            status: isAdmin ? 'approved' : 'pending'
         });
-        toast.success("Product added successfully!");
+        toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
     }
 
     const updateProduct = async (updatedProduct) => {
@@ -272,9 +299,24 @@ export const AppContextProvider = (props) => {
         }
 
         const productDocRef = doc(firestore, 'products', updatedProduct._id);
-        await setDoc(productDocRef, updatedProduct, { merge: true });
-        toast.success("Product updated successfully!");
+        const dataToUpdate = { ...updatedProduct };
+        // If a seller updates a product, it should go back to pending for re-approval
+        if (isSeller && !isAdmin) {
+            dataToUpdate.status = 'pending';
+        }
+        await setDoc(productDocRef, dataToUpdate, { merge: true });
+        toast.success(isSeller && !isAdmin ? "Product updated and sent for re-approval." : "Product updated successfully!");
     }
+
+    const updateProductStatus = async (productId, status) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const productDocRef = doc(firestore, 'products', productId);
+        await setDoc(productDocRef, { status }, { merge: true });
+        toast.success(`Product status updated to ${status}.`);
+    };
 
     const deleteProduct = async (productId) => {
         if (!userData) {
@@ -319,12 +361,22 @@ export const AppContextProvider = (props) => {
         const newOrderRef = doc(collection(firestore, 'orders'));
         const orderItems = Object.entries(cartItems).map(([itemId, quantity]) => {
             const product = products.find(p => p._id === itemId);
+            if (product.stock < quantity) {
+                throw new Error(`Not enough stock for ${product.name}`);
+            }
             return {
                 ...product, 
                 productId: itemId,
                 quantity,
             };
         });
+
+        // Decrement stock
+        for (const item of orderItems) {
+            const productRef = doc(firestore, 'products', item.productId);
+            const newStock = item.stock - item.quantity;
+            batch.update(productRef, { stock: newStock });
+        }
 
         batch.set(newOrderRef, {
             userId: userData._id,
@@ -356,7 +408,13 @@ export const AppContextProvider = (props) => {
         
         batch.update(userDocRef, userUpdates);
 
-        await batch.commit();
+        try {
+            await batch.commit();
+            router.push("/order-placed");
+        } catch (error) {
+            toast.error(error.message);
+            // Optionally, you could try to revert stock changes here if needed
+        }
     }
 
     const processSellerPayouts = async (order) => {
@@ -421,6 +479,7 @@ export const AppContextProvider = (props) => {
                 await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
             }
         }
+        toast.success(`Order status updated to ${newStatus}`)
         return true;
     }
 
@@ -508,10 +567,13 @@ export const AppContextProvider = (props) => {
         router.push('/');
     }
 
+    const approvedProducts = products.filter(p => p.status === 'approved');
+
     const value = {
         currency, router,
         userData, setUserData, isSeller, isAdmin,
-        products: products || [], 
+        products: isAdmin ? products : approvedProducts,
+        allRawProducts: products, // For admin/seller views
         productsLoading,
         cartItems,
         addToCart, updateCartQuantity,
@@ -520,14 +582,14 @@ export const AppContextProvider = (props) => {
         getWishlistCount,
         handleLogout,
         showLogin, setShowLogin,
-        banners, addBanner, deleteBanner, updateBanner,
-        promotions, addPromotion, deletePromotion,
+        banners, addBanner, deleteBanner, updateBanner, updateBannerStatus,
+        promotions, addPromotion, deletePromotion, updatePromotionStatus,
         userAddresses, addAddress,
         allOrders,
         placeOrder, userOrders,
         walletBalance, fundWallet, walletTransactions,
         updateOrderStatus,
-        addProduct, updateProduct, deleteProduct,
+        addProduct, updateProduct, deleteProduct, updateProductStatus,
         updateUserField,
         platformSettings, updateSettings, settingsLoading
     }
