@@ -39,7 +39,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b'>
+    <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b fixed top-0 left-0 w-full bg-white z-50'>
       <Link href="/">
         <Image className='w-28 lg:w-32 cursor-pointer' src={assets.logo} alt="" />
       </Link>
