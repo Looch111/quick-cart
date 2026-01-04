@@ -12,15 +12,9 @@ const Layout = ({ children }) => {
     return <Loading />;
   }
 
-  // Determine which navbar to show.
-  // If the user is an admin and not a seller, show the admin navbar.
-  // This allows admins to access seller pages like 'add-product' without being a seller.
-  // Otherwise, default to the seller navbar.
-  const NavbarToShow = isAdmin && !isSeller ? AdminNavbar : SellerNavbar;
-
   return (
     <div>
-      <NavbarToShow />
+      <SellerNavbar />
       <div className='w-full'>
         {children}
       </div>
