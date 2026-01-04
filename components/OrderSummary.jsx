@@ -24,8 +24,7 @@ const OrderSummary = () => {
   };
 
   const deliveryFee = getCartAmount() > 50 ? 0 : 5;
-  const tax = Math.floor(getCartAmount() * 0.02);
-  const totalAmount = getCartAmount() + tax + deliveryFee;
+  const totalAmount = getCartAmount() + deliveryFee;
 
   const handlePlaceOrder = async () => {
     if (!userData) {
@@ -146,10 +145,6 @@ const OrderSummary = () => {
           <div className="flex justify-between">
             <p className="text-gray-600">Shipping Fee</p>
             <p className="font-medium text-gray-800">{deliveryFee === 0 ? 'Free' : `${currency}${deliveryFee.toFixed(2)}`}</p>
-          </div>
-          <div className="flex justify-between">
-            <p className="text-gray-600">Tax (2%)</p>
-            <p className="font-medium text-gray-800">{currency}{tax.toFixed(2)}</p>
           </div>
           <div className="flex justify-between text-lg md:text-xl font-medium border-t pt-3">
             <p>Total</p>
