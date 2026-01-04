@@ -26,6 +26,7 @@ const Navbar = () => {
     { name: 'Dashboard', path: '/admin' },
     { name: 'Users', path: '/admin/users' },
     { name: 'Products', path: '/admin/products' },
+    { name: 'Add Product', path: '/seller/add-product' },
     { name: 'Orders', path: '/admin/orders', notification: hasNewOrders },
     { name: 'Promotions', path: '/admin/promotions' },
     { name: 'Marketing', path: '/admin/marketing' },
