@@ -86,53 +86,93 @@ const ProductList = () => {
             />
           </div>
         </div>
-        <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-          <table className=" table-auto w-full overflow-hidden">
-            <thead className="text-gray-900 text-sm text-left">
+        
+        {/* Mobile View: Cards */}
+        <div className="md:hidden space-y-4">
+            {filteredProducts.map(product => (
+                <div key={product._id} className="bg-white border rounded-lg p-4 shadow-sm">
+                    <div className="flex gap-4">
+                        <Image
+                            src={product.image[0]}
+                            alt={product.name}
+                            width={80}
+                            height={80}
+                            className="w-20 h-20 object-contain rounded-md bg-gray-100"
+                        />
+                        <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800">{product.name}</h3>
+                            <p className="text-xs text-gray-500">{product.category}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                                <p className="text-sm font-semibold text-orange-600">${product.offerPrice}</p>
+                                <p className="text-xs text-gray-400 line-through">${product.price}</p>
+                            </div>
+                            <p className={`text-xs font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                {product.stock > 0 ? `${product.stock} in stock` : 'Out of Stock'}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex justify-end items-center gap-2 mt-3 pt-3 border-t">
+                        <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700 p-2">
+                            <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700 p-2">
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => router.push(`/product/${product._id}`)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-md text-xs">
+                            Visit
+                            <Image
+                                className="h-3 w-3"
+                                src={assets.redirect_icon}
+                                alt="redirect_icon"
+                            />
+                        </button>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto rounded-md bg-white border border-gray-500/20">
+          <table className="min-w-full table-auto">
+            <thead className="text-gray-900 text-sm text-left bg-gray-50">
               <tr>
-                <th className="w-2/3 md:w-2/5 px-4 py-3 font-medium truncate">Product</th>
-                <th className="px-4 py-3 font-medium truncate max-sm:hidden">Category</th>
-                <th className="px-4 py-3 font-medium truncate">
-                  Price
-                </th>
-                <th className="px-4 py-3 font-medium truncate max-sm:hidden">
-                  Stock
-                </th>
-                <th className="px-4 py-3 font-medium truncate">Action</th>
+                <th className="px-4 py-3 font-medium">Product</th>
+                <th className="px-4 py-3 font-medium">Category</th>
+                <th className="px-4 py-3 font-medium">Price</th>
+                <th className="px-4 py-3 font-medium">Stock</th>
+                <th className="px-4 py-3 font-medium">Action</th>
               </tr>
             </thead>
             <tbody className="text-sm text-gray-500">
               {filteredProducts.map((product, index) => (
                 <tr key={index} className="border-t border-gray-500/20">
-                  <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
-                    <div className="bg-gray-500/10 rounded p-2">
+                  <td className="px-4 py-3 flex items-center space-x-3">
+                    <div className="bg-gray-100 rounded p-2 flex-shrink-0">
                       <Image
                         src={product.image[0]}
                         alt="product Image"
-                        className="w-16"
-                        width={1280}
-                        height={720}
+                        className="w-16 h-16 object-contain"
+                        width={64}
+                        height={64}
                       />
                     </div>
-                    <span className="truncate w-full">
-                      {product.name}
-                    </span>
+                    <span className="font-medium text-gray-800">{product.name}</span>
                   </td>
-                  <td className="px-4 py-3 max-sm:hidden">{product.category}</td>
+                  <td className="px-4 py-3">{product.category}</td>
                   <td className="px-4 py-3">${product.offerPrice}</td>
-                  <td className="px-4 py-3 max-sm:hidden">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
+                  <td className="px-4 py-3">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                       <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700">
+                       <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700 p-2">
                           <Edit className="w-4 h-4" />
                        </button>
-                       <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700">
+                       <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700 p-2">
                           <Trash2 className="w-4 h-4" />
                        </button>
-                      <button onClick={() => router.push(`/product/${product._id}`)} className="flex items-center gap-1 px-1.5 md:px-3.5 py-2 bg-orange-600 text-white rounded-md text-xs">
-                        <span className="hidden md:block">Visit</span>
+                      <button onClick={() => router.push(`/product/${product._id}`)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-md text-xs">
+                        Visit
                         <Image
-                          className="h-3.5"
+                          className="h-3"
                           src={assets.redirect_icon}
                           alt="redirect_icon"
                         />
