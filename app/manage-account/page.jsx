@@ -58,7 +58,7 @@ const ManageAccount = () => {
                         <div className="lg:col-span-2 bg-white p-8 rounded-lg shadow-md border border-gray-200">
                             <form onSubmit={handleSaveChanges} className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="relative group">
+                                    <div className="relative">
                                         <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                             {userData.photoURL ? (
                                                 <Image src={userData.photoURL} alt={userData.name || 'User Avatar'} width={80} height={80} className="object-cover" />
@@ -70,8 +70,8 @@ const ManageAccount = () => {
                                                 <User className="w-10 h-10 text-gray-500" />
                                             )}
                                         </div>
-                                         <button type="button" onClick={generateNewAvatar} className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 rounded-full transition-opacity">
-                                            <Edit className="w-6 h-6" />
+                                         <button type="button" onClick={generateNewAvatar} className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full border shadow-sm hover:bg-gray-100">
+                                            <Edit className="w-4 h-4 text-gray-600" />
                                         </button>
                                     </div>
                                     <div>
