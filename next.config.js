@@ -27,7 +27,8 @@ const nextConfig = {
                 hostname: 'ui-avatars.com',
             },
             {
-                protocol: 'https',
+                protocol: 'https'
+                ,
                 hostname: 'api.dicebear.com',
             }
         ],
