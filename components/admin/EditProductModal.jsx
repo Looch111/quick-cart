@@ -1,10 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
+import Image from 'next/image';
+import { assets } from '@/assets/assets';
 
 const EditProductModal = ({ product, onSave, onCancel }) => {
     const { updateProduct } = useAppContext();
     const [productData, setProductData] = useState({ ...product });
+    const [imageUrls, setImageUrls] = useState(['', '', '', '']);
 
     useEffect(() => {
         const data = { ...product };
@@ -18,10 +21,35 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         } else {
             data.flashSaleEndDate = '';
         }
+        if (data.image && Array.isArray(data.image)) {
+            const urls = [...data.image];
+            while (urls.length < 4) {
+                urls.push('');
+            }
+            setImageUrls(urls.slice(0,4));
+        }
         setProductData(data);
     }, [product]);
 
     if (!product) return null;
+
+    const getImageUrl = (url) => {
+        if (!url) return assets.upload_area;
+        let correctedUrl = url;
+        if (correctedUrl.includes('imgur.com') && !correctedUrl.includes('i.imgur.com')) {
+          correctedUrl = correctedUrl.replace('imgur.com', 'i.imgur.com');
+        }
+        if (correctedUrl.startsWith('https://i.imgur.com/') && !/\.(png|jpg|jpeg|gif)$/.test(correctedUrl)) {
+          return `${correctedUrl}.png`;
+        }
+        return correctedUrl;
+    };
+    
+    const handleImageUrlChange = (index, value) => {
+        const newImageUrls = [...imageUrls];
+        newImageUrls[index] = value;
+        setImageUrls(newImageUrls);
+    };
 
     const handleSave = () => {
         const dataToSave = { ...productData };
@@ -31,6 +59,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         if (!dataToSave.flashSaleEndDate) {
             dataToSave.flashSaleEndDate = null;
         }
+        dataToSave.image = imageUrls.map(url => getImageUrl(url)).filter(url => url !== assets.upload_area);
         updateProduct(dataToSave);
         onSave(dataToSave);
     };
@@ -50,6 +79,30 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                 </button>
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">Edit Product</h1>
                 <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Image URLs</label>
+                        <div className="flex flex-col gap-3 mt-2">
+                            {[...Array(4)].map((_, index) => (
+                                <div key={index} className="flex items-center gap-3">
+                                <Image
+                                    className="w-24 h-24 object-contain border rounded bg-gray-100"
+                                    src={getImageUrl(imageUrls[index])}
+                                    alt={`Product image ${index + 1}`}
+                                    width={100}
+                                    height={100}
+                                    onError={(e) => e.currentTarget.src = assets.upload_area.src}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder={`Image URL ${index + 1}`}
+                                    className="outline-none w-full md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                                    onChange={(e) => handleImageUrlChange(index, e.target.value)}
+                                    value={imageUrls[index]}
+                                />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input
@@ -156,5 +209,3 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 };
 
 export default EditProductModal;
-
-    
