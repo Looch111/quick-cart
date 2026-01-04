@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "user": {
@@ -99,7 +100,7 @@
         "address": { "$ref": "#/entities/address" },
         "status": { "type": "string", "enum": ["Order Placed", "Processing", "Shipped", "Delivered"] },
         "date": { "type": "string", "format": "date-time" },
-        "paymentMethod": { "type": "string", "enum": ["cod", "wallet"] }
+        "paymentMethod": { "type": "string", "enum": ["cod", "wallet", "online"] }
       },
       "required": ["userId", "items", "amount", "address", "status", "date"]
     },
