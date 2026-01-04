@@ -79,9 +79,11 @@ const Navbar = () => {
         </Link>
 
         <div className="relative" ref={dropdownRef}>
-          <button onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+          <button onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition overflow-hidden">
             {userData ? (
-                userData.name ? (
+                userData.photoURL ? (
+                    <Image src={userData.photoURL} alt={userData.name || 'User Avatar'} width={32} height={32} className="object-cover" />
+                ) : userData.name ? (
                     <span className="text-gray-600 font-medium">{userData.name[0].toUpperCase()}</span>
                 ) : userData.email ? (
                     <span className="text-gray-600 font-medium">{userData.email[0].toUpperCase()}</span>
@@ -97,8 +99,10 @@ const Navbar = () => {
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200/80 py-2 z-50">
               <div className="px-4 py-2 border-b border-gray-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    {userData.name ? (
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                    {userData.photoURL ? (
+                        <Image src={userData.photoURL} alt={userData.name || 'User Avatar'} width={40} height={40} className="object-cover" />
+                    ) : userData.name ? (
                         <span className="text-lg font-medium text-gray-600">{userData.name[0].toUpperCase()}</span>
                     ) : userData.email ? (
                         <span className="text-lg font-medium text-gray-600">{userData.email[0].toUpperCase()}</span>

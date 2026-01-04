@@ -4,8 +4,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { User, Mail, Save, PlusCircle, Home, Phone } from 'lucide-react';
+import { User, Mail, Save, PlusCircle, Home, Phone, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const ManageAccount = () => {
     const { userData, setShowLogin, userAddresses, router, updateUserField } = useAppContext();
@@ -31,6 +32,14 @@ const ManageAccount = () => {
         }
     };
 
+    const generateNewAvatar = () => {
+        if (!userData) return;
+        const randomSeed = Math.random().toString(36).substring(7);
+        const newAvatarUrl = `https://ui-avatars.com/api/?name=${userData.name || userData.email}&background=random&seed=${randomSeed}`;
+        updateUserField('photoURL', newAvatarUrl);
+        toast.success("New avatar generated!");
+    }
+
     if (!userData) {
         return null; // Or a loading spinner, while redirecting to login
     }
@@ -49,18 +58,26 @@ const ManageAccount = () => {
                         <div className="lg:col-span-2 bg-white p-8 rounded-lg shadow-md border border-gray-200">
                             <form onSubmit={handleSaveChanges} className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-                                        {userData.name ? (
-                                            <span className="text-3xl font-medium text-gray-600">{userData.name[0].toUpperCase()}</span>
-                                        ) : userData.email ? (
-                                            <span className="text-3xl font-medium text-gray-600">{userData.email[0].toUpperCase()}</span>
-                                        ) : (
-                                            <User className="w-10 h-10 text-gray-500" />
-                                        )}
+                                    <div className="relative group">
+                                        <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                            {userData.photoURL ? (
+                                                <Image src={userData.photoURL} alt={userData.name || 'User Avatar'} width={80} height={80} className="object-cover" />
+                                            ) : userData.name ? (
+                                                <span className="text-3xl font-medium text-gray-600">{userData.name[0].toUpperCase()}</span>
+                                            ) : userData.email ? (
+                                                <span className="text-3xl font-medium text-gray-600">{userData.email[0].toUpperCase()}</span>
+                                            ) : (
+                                                <User className="w-10 h-10 text-gray-500" />
+                                            )}
+                                        </div>
+                                         <button type="button" onClick={generateNewAvatar} className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 rounded-full transition-opacity">
+                                            <RefreshCw className="w-6 h-6" />
+                                        </button>
                                     </div>
                                     <div>
                                         <h2 className="text-2xl font-semibold text-gray-900">{name || ''}</h2>
                                         <p className="text-sm text-gray-500">{email}</p>
+                                        <button type="button" onClick={generateNewAvatar} className="mt-1 text-xs text-orange-600 hover:underline">Generate New Avatar</button>
                                     </div>
                                 </div>
                                 
