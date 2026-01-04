@@ -65,7 +65,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
-       <div className="w-full md:p-10 p-4">
+       <div className="w-full p-4 md:p-10">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Dashboard</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -76,7 +76,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Sales Overview</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={salesData}>
@@ -89,7 +89,7 @@ const AdminDashboard = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">User Growth</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={userData}>
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Recent Orders</h3>
             
             {/* Mobile View */}
