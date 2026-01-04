@@ -13,10 +13,10 @@ const Orders = () => {
 
     const filterSellerOrders = useCallback(() => {
         if (userData && allOrders.length > 0 && products.length > 0) {
-            const sellerProductIds = products.filter(p => p.userId === userData._id).map(p => p.id);
+            const sellerProductIds = products.filter(p => p.userId === userData._id).map(p => p._id);
             
             const filteredOrders = allOrders.map(order => {
-                const sellerItems = order.items.filter(item => sellerProductIds.includes(item.id));
+                const sellerItems = order.items.filter(item => sellerProductIds.includes(item._id));
                 if (sellerItems.length > 0) {
                     const sellerAmount = sellerItems.reduce((sum, item) => sum + item.offerPrice * item.quantity, 0);
                     return { ...order, items: sellerItems, amount: sellerAmount };

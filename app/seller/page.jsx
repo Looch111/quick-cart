@@ -16,12 +16,18 @@ import { useEffect, useState } from 'react';
 import Loading from '@/components/Loading';
 
 const salesData = [
-  { name: 'Jan', sales: 2200 },
-  { name: 'Feb', sales: 1800 },
-  { name: 'Mar', sales: 3200 },
-  { name: 'Apr', sales: 2800 },
-  { name: 'May', sales: 4100 },
-  { name: 'Jun', sales: 3900 },
+  { name: 'Jan', sales: 0 },
+  { name: 'Feb', sales: 0 },
+  { name: 'Mar', sales: 0 },
+  { name: 'Apr', sales: 0 },
+  { name: 'May', sales: 0 },
+  { name: 'Jun', sales: 0 },
+  { name: 'Jul', sales: 0 },
+  { name: 'Aug', sales: 0 },
+  { name: 'Sep', sales: 0 },
+  { name: 'Oct', sales: 0 },
+  { name: 'Nov', sales: 0 },
+  { name: 'Dec', sales: 0 },
 ];
 
 const Card = ({ title, value, icon, change }) => (
@@ -44,17 +50,19 @@ const SellerDashboard = () => {
     productsSold: 0,
     activeListings: 0,
     recentOrders: [],
+    monthlySales: salesData,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userData && allOrders.length > 0 && products.length > 0) {
+    if (userData && allOrders && products && !productsLoading) {
       const sellerProducts = products.filter(p => p.userId === userData._id);
       const sellerProductIds = sellerProducts.map(p => p._id);
       
       let totalEarnings = 0;
       let productsSold = 0;
       const recentOrders = [];
+      const monthlySalesData = [...salesData].map(item => ({...item})); // Deep copy
 
       allOrders.forEach(order => {
         let orderEarnings = 0;
@@ -64,8 +72,14 @@ const SellerDashboard = () => {
 
         if (sellerOrderItems.length > 0) {
           sellerOrderItems.forEach(item => {
-            orderEarnings += item.offerPrice * item.quantity;
+            const itemTotal = item.offerPrice * item.quantity;
+            orderEarnings += itemTotal;
             sellerItemsInOrder += item.quantity;
+
+            const orderMonth = new Date(order.date).getMonth();
+            if (monthlySalesData[orderMonth]) {
+                monthlySalesData[orderMonth].sales += itemTotal;
+            }
           });
 
           totalEarnings += orderEarnings;
@@ -83,10 +97,11 @@ const SellerDashboard = () => {
         productsSold,
         activeListings: sellerProducts.length,
         recentOrders: recentOrders.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5),
+        monthlySales: monthlySalesData,
       });
 
       setLoading(false);
-    } else if (userData) {
+    } else if (userData && !productsLoading) {
       const sellerProducts = products.filter(p => p.userId === userData._id);
        setSellerStats(prev => ({
         ...prev,
@@ -94,7 +109,7 @@ const SellerDashboard = () => {
       }));
       setLoading(false);
     }
-  }, [userData, allOrders, products]);
+  }, [userData, allOrders, products, productsLoading]);
   
   if (loading || productsLoading) {
     return <Loading />;
@@ -115,7 +130,7 @@ const SellerDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Sales</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salesData}>
+              <BarChart data={sellerStats.monthlySales}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
