@@ -45,7 +45,40 @@ const Orders = () => {
             <>
                 <h1 className="text-2xl font-bold text-gray-800 mb-6">Orders</h1>
                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="overflow-x-auto">
+                    {/* Mobile View */}
+                    <div className="md:hidden">
+                        <div className="p-4 bg-gray-50 font-medium text-gray-600">All Orders</div>
+                        {orders.map((order) => (
+                            <div key={order._id} className="border-t p-4">
+                                <div className="flex justify-between items-center mb-2">
+                                    <p className="font-medium text-gray-800">#{order._id.slice(-8)}</p>
+                                    <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClass(order.status)}`}>
+                                        {order.status}
+                                    </span>
+                                </div>
+                                <div className="text-sm text-gray-600 space-y-1">
+                                    <p><span className="font-medium text-gray-700">Customer:</span> {order.address.fullName}</p>
+                                    <p><span className="font-medium text-gray-700">Date:</span> {new Date(order.date).toLocaleDateString()}</p>
+                                    <p><span className="font-medium text-gray-700">Total:</span> {currency}{order.amount.toFixed(2)}</p>
+                                </div>
+                                <div className="mt-3">
+                                     <select 
+                                        onChange={(e) => handleStatusChange(order._id, e.target.value)} 
+                                        value={order.status} 
+                                        className="w-full border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-sm"
+                                    >
+                                        <option value="Order Placed">Order Placed</option>
+                                        <option value="Processing">Processing</option>
+                                        <option value="Shipped">Shipped</option>
+                                        <option value="Delivered">Delivered</option>
+                                    </select>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-500">
                              <thead className="bg-gray-50 text-gray-600 text-sm text-left uppercase">
                                 <tr>
