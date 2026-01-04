@@ -4,13 +4,10 @@ import Footer from '@/components/admin/Footer';
 import toast from 'react-hot-toast';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal';
+import { useAppContext } from '@/context/AppContext';
 
 const PromotionsPage = () => {
-    const [promotions, setPromotions] = useState([
-        { id: 1, code: 'SUMMER20', type: 'percentage', value: 20, status: 'active', expiryDate: '2024-12-31' },
-        { id: 2, code: 'FREESHIP', type: 'shipping', value: 0, status: 'active', expiryDate: '2025-01-31' },
-        { id: 3, code: 'SAVE10', type: 'fixed', value: 10, status: 'expired', expiryDate: '2024-06-01' },
-    ]);
+    const { promotions, addPromotion, deletePromotion } = useAppContext();
     const [newPromo, setNewPromo] = useState({ code: '', type: 'percentage', value: '', expiryDate: '' });
     const [isAdding, setIsAdding] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -22,15 +19,9 @@ const PromotionsPage = () => {
             toast.error("Please fill out all fields for the new promotion.");
             return;
         }
-        const newPromotion = {
-            id: promotions.length + 1,
-            ...newPromo,
-            status: new Date(newPromo.expiryDate) > new Date() ? 'active' : 'expired'
-        };
-        setPromotions([...promotions, newPromotion]);
+        addPromotion(newPromo);
         setNewPromo({ code: '', type: 'percentage', value: '', expiryDate: '' });
         setIsAdding(false);
-        toast.success("Promotion added successfully!");
     };
 
     const handleDeleteClick = (promoId) => {
@@ -40,8 +31,7 @@ const PromotionsPage = () => {
 
     const confirmDelete = () => {
         if (promoToDelete) {
-            setPromotions(promotions.filter(p => p.id !== promoToDelete));
-            toast.success("Promotion deleted.");
+            deletePromotion(promoToDelete);
         }
         setShowDeleteModal(false);
         setPromoToDelete(null);

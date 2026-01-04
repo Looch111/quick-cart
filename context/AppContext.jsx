@@ -42,6 +42,11 @@ export const AppContextProvider = (props) => {
         { id: 'slide2', title: 'Experience Gaming Like Never Before', image: assets.header_playstation_image.src, link: '/all-products', status: 'active', buttonText: 'Shop now', linkText: 'Explore Deals' },
         { id: 'slide3', title: 'High-Performance Laptops for Every Need', image: assets.header_macbook_image.src, link: '/all-products', status: 'active', buttonText: 'Order now', linkText: 'Learn More' },
     ]);
+    const [promotions, setPromotions] = useState([
+        { id: 1, code: 'SUMMER20', type: 'percentage', value: 20, status: 'active', expiryDate: '2024-12-31' },
+        { id: 2, code: 'FREESHIP', type: 'shipping', value: 0, status: 'active', expiryDate: '2025-01-31' },
+        { id: 3, code: 'SAVE10', type: 'fixed', value: 10, status: 'expired', expiryDate: '2024-06-01' },
+    ]);
     
     // Derived state from userData
     const cartItems = userData?.cartItems || {};
@@ -145,6 +150,29 @@ export const AppContextProvider = (props) => {
     }, [userData, firestore]);
 
     // --- DATA MUTATION FUNCTIONS ---
+
+    const addPromotion = (newPromo) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const newPromotion = {
+            id: promotions.length + 1,
+            ...newPromo,
+            status: new Date(newPromo.expiryDate) > new Date() ? 'active' : 'expired'
+        };
+        setPromotions([...promotions, newPromotion]);
+        toast.success("Promotion added successfully!");
+    };
+
+    const deletePromotion = (id) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        setPromotions(promotions.filter(p => p.id !== id));
+        toast.success("Promotion deleted.");
+    };
 
     const fundWallet = async (amount) => {
         if (!userData) {
@@ -448,6 +476,7 @@ export const AppContextProvider = (props) => {
         handleLogout,
         showLogin, setShowLogin,
         banners, addBanner, deleteBanner, updateBanner,
+        promotions, addPromotion, deletePromotion,
         userAddresses, addAddress,
         allOrders,
         placeOrder, userOrders,
