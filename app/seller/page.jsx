@@ -38,7 +38,7 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const SellerDashboard = () => {
-  const { allOrders, products, userData, currency } = useAppContext();
+  const { allOrders, products, userData, currency, productsLoading } = useAppContext();
   const [sellerStats, setSellerStats] = useState({
     totalEarnings: 0,
     productsSold: 0,
@@ -50,7 +50,7 @@ const SellerDashboard = () => {
   useEffect(() => {
     if (userData && allOrders.length > 0 && products.length > 0) {
       const sellerProducts = products.filter(p => p.userId === userData._id);
-      const sellerProductIds = sellerProducts.map(p => p.id);
+      const sellerProductIds = sellerProducts.map(p => p._id);
       
       let totalEarnings = 0;
       let productsSold = 0;
@@ -60,7 +60,7 @@ const SellerDashboard = () => {
         let orderEarnings = 0;
         let sellerItemsInOrder = 0;
         
-        const sellerOrderItems = order.items.filter(item => sellerProductIds.includes(item.id));
+        const sellerOrderItems = order.items.filter(item => sellerProductIds.includes(item._id));
 
         if (sellerOrderItems.length > 0) {
           sellerOrderItems.forEach(item => {
@@ -87,11 +87,16 @@ const SellerDashboard = () => {
 
       setLoading(false);
     } else if (userData) {
+      const sellerProducts = products.filter(p => p.userId === userData._id);
+       setSellerStats(prev => ({
+        ...prev,
+        activeListings: sellerProducts.length,
+      }));
       setLoading(false);
     }
   }, [userData, allOrders, products]);
   
-  if (loading) {
+  if (loading || productsLoading) {
     return <Loading />;
   }
 
