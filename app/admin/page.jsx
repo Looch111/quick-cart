@@ -17,24 +17,6 @@ import { useAppContext } from '@/context/AppContext';
 import { useCollection } from '@/src/firebase';
 import Loading from '@/components/Loading';
 
-const salesData = [
-  { name: 'Jan', sales: 4000 },
-  { name: 'Feb', sales: 3000 },
-  { name: 'Mar', sales: 5000 },
-  { name: 'Apr', sales: 4500 },
-  { name: 'May', sales: 6000 },
-  { name: 'Jun', sales: 5500 },
-];
-
-const userData = [
-  { name: 'Jan', users: 200 },
-  { name: 'Feb', users: 250 },
-  { name: 'Mar', users: 300 },
-  { name: 'Apr', users: 320 },
-  { name: 'May', users: 350 },
-  { name: 'Jun', users: 400 },
-];
-
 const Card = ({ title, value, icon, change }) => (
     <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
       <div>
@@ -58,6 +40,40 @@ const AdminDashboard = () => {
     const totalUsers = users?.length || 0;
     const totalOrders = allOrders?.length || 0;
     const recentOrders = allOrders.slice(0, 5);
+
+    const processChartData = () => {
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const salesData = monthNames.map(month => ({ name: month, sales: 0 }));
+        const userData = monthNames.map(month => ({ name: month, users: 0 }));
+
+        allOrders.forEach(order => {
+            if (order.date) {
+                const month = new Date(order.date).getMonth();
+                salesData[month].sales += order.amount;
+            }
+        });
+        
+        (users || []).forEach(user => {
+          if (user.createdAt) {
+            const date = user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
+            const month = date.getMonth();
+            userData[month].users += 1;
+          } else if(user.creationTime) {
+            const date = new Date(user.creationTime);
+            const month = date.getMonth();
+            userData[month].users += 1;
+          }
+        });
+
+        // To make the user chart cumulative
+        for (let i = 1; i < 12; i++) {
+            userData[i].users += userData[i-1].users;
+        }
+
+        return { salesData, userData };
+    };
+
+    const { salesData, userData } = processChartData();
   
     if (loading) {
         return <Loading />
@@ -160,3 +176,5 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+    
