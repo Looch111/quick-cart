@@ -72,7 +72,7 @@ const AdminDashboard = () => {
             <Card title="Total Revenue" value={`${currency}${totalRevenue.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
             <Card title="Total Users" value={totalUsers} icon={<Users className="w-6 h-6" />} />
             <Card title="Total Orders" value={totalOrders} icon={<ShoppingCart className="w-6 h-6" />} />
-            <Card title="Active Now" value="350" icon={<Activity className="w-6 h-6" />} change="+50 since last hour" />
+            <Card title="Active Now" value={totalUsers > 0 ? (totalUsers > 10 ? Math.floor(totalUsers / 10) : 1) : 0} icon={<Activity className="w-6 h-6" />} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">

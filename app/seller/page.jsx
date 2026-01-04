@@ -11,7 +11,9 @@ import {
 } from 'recharts';
 import { DollarSign, ShoppingCart, Package } from 'lucide-react';
 import Footer from '@/components/seller/Footer';
-import { orderDummyData, productsDummyData } from '@/assets/assets';
+import { useAppContext } from '@/context/AppContext';
+import { useEffect, useState } from 'react';
+import Loading from '@/components/Loading';
 
 const salesData = [
   { name: 'Jan', sales: 2200 },
@@ -27,7 +29,7 @@ const Card = ({ title, value, icon, change }) => (
       <div>
         <p className="text-sm font-medium text-gray-500">{title}</p>
         <p className="text-2xl font-bold text-gray-800">{value}</p>
-        <p className={`text-xs mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</p>
+        {change && <p className={`text-xs mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</p>}
       </div>
       <div className="bg-orange-100 text-orange-600 p-3 rounded-full">
         {icon}
@@ -36,16 +38,72 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const SellerDashboard = () => {
-  const recentOrders = orderDummyData.slice(0, 5);
+  const { allOrders, products, userData, currency } = useAppContext();
+  const [sellerStats, setSellerStats] = useState({
+    totalEarnings: 0,
+    productsSold: 0,
+    activeListings: 0,
+    recentOrders: [],
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userData && allOrders.length > 0 && products.length > 0) {
+      const sellerProducts = products.filter(p => p.userId === userData._id);
+      const sellerProductIds = sellerProducts.map(p => p.id);
+      
+      let totalEarnings = 0;
+      let productsSold = 0;
+      const recentOrders = [];
+
+      allOrders.forEach(order => {
+        let orderEarnings = 0;
+        let sellerItemsInOrder = 0;
+        
+        const sellerOrderItems = order.items.filter(item => sellerProductIds.includes(item.id));
+
+        if (sellerOrderItems.length > 0) {
+          sellerOrderItems.forEach(item => {
+            orderEarnings += item.offerPrice * item.quantity;
+            sellerItemsInOrder += item.quantity;
+          });
+
+          totalEarnings += orderEarnings;
+          productsSold += sellerItemsInOrder;
+          
+          recentOrders.push({
+            ...order,
+            amount: orderEarnings, // Show only seller's earnings for this order
+          });
+        }
+      });
+      
+      setSellerStats({
+        totalEarnings,
+        productsSold,
+        activeListings: sellerProducts.length,
+        recentOrders: recentOrders.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5),
+      });
+
+      setLoading(false);
+    } else if (userData) {
+      setLoading(false);
+    }
+  }, [userData, allOrders, products]);
+  
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
        <div className="w-full md:p-10 p-4">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seller Dashboard</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Card title="Total Earnings" value="$12,540.50" icon={<DollarSign className="w-6 h-6" />} change="+15.5% from last month" />
-            <Card title="Products Sold" value="850" icon={<ShoppingCart className="w-6 h-6" />} change="+90 from last month" />
-            <Card title="Active Listings" value={productsDummyData.length} icon={<Package className="w-6 h-6" />} change="+5 from last month" />
+            <Card title="Total Earnings" value={`${currency}${sellerStats.totalEarnings.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
+            <Card title="Products Sold" value={sellerStats.productsSold} icon={<ShoppingCart className="w-6 h-6" />} />
+            <Card title="Active Listings" value={sellerStats.activeListings} icon={<Package className="w-6 h-6" />} />
         </div>
 
         <div className="grid grid-cols-1 gap-8 mb-8">
@@ -78,11 +136,11 @@ const SellerDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentOrders.map((order) => (
+                  {sellerStats.recentOrders.map((order) => (
                     <tr key={order._id} className="bg-white border-b">
                       <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">...{order._id.slice(-6)}</td>
                       <td className="px-6 py-4">{order.address.fullName}</td>
-                      <td className="px-6 py-4">${order.amount.toFixed(2)}</td>
+                      <td className="px-6 py-4">{currency}{order.amount.toFixed(2)}</td>
                       <td className="px-6 py-4">{new Date(order.date).toLocaleDateString()}</td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">{order.status}</span>
