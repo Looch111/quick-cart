@@ -8,8 +8,10 @@ import Image from "next/image";
 import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
+import { useParams } from "next/navigation";
 
-const Product = ({ params }) => {
+const Product = () => {
+    const params = useParams();
     const { products, router, addToCart } = useAppContext()
 
     const [mainImage, setMainImage] = useState(null);
@@ -28,8 +30,9 @@ const Product = ({ params }) => {
     }
 
     useEffect(() => {
-        if (params.id && products.length > 0) {
-            fetchProductData(params.id);
+        const productId = params.id;
+        if (productId && products.length > 0) {
+            fetchProductData(productId);
         }
     }, [params.id, products]);
 
