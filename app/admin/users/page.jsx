@@ -50,20 +50,51 @@ const UserList = () => {
                         />
                     </div>
                 </div>
-                <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-                    <table className=" table-fixed w-full overflow-hidden">
-                        <thead className="text-gray-900 text-sm text-left">
+
+                {/* Mobile View: Cards */}
+                <div className="md:hidden space-y-4">
+                    {filteredUsers.length > 0 ? filteredUsers.map(user => (
+                        <div key={user.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <Image
+                                    src={user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.email}`}
+                                    alt="user Image"
+                                    className="w-12 h-12 rounded-full"
+                                    width={48}
+                                    height={48}
+                                />
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-800 truncate">{user.name || 'No Name'}</h3>
+                                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                    <p className="text-xs font-medium text-gray-600 capitalize mt-1">Role: <span className="font-bold">{user.role}</span></p>
+                                </div>
+                            </div>
+                             <div className="flex justify-end items-center gap-2 mt-3 pt-3 border-t">
+                                <button onClick={() => handleEditClick(user)} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-xs">
+                                    Edit Role
+                                </button>
+                            </div>
+                        </div>
+                    )) : (
+                        <div className="text-center py-10 text-gray-500">No users found.</div>
+                    )}
+                </div>
+
+                {/* Desktop View: Table */}
+                <div className="hidden md:block overflow-x-auto rounded-md bg-white border border-gray-500/20">
+                    <table className="min-w-full table-auto">
+                        <thead className="text-gray-900 text-sm text-left bg-gray-50">
                             <tr>
-                                <th className="w-2/5 px-4 py-3 font-medium truncate">User</th>
-                                <th className="px-4 py-3 font-medium truncate max-sm:hidden">Email</th>
-                                <th className="px-4 py-3 font-medium truncate">Role</th>
-                                <th className="px-4 py-3 font-medium truncate max-sm:hidden">Actions</th>
+                                <th className="px-4 py-3 font-medium">User</th>
+                                <th className="px-4 py-3 font-medium">Email</th>
+                                <th className="px-4 py-3 font-medium">Role</th>
+                                <th className="px-4 py-3 font-medium">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="text-sm text-gray-500">
-                            {filteredUsers.length > 0 ? filteredUsers.map((user, index) => (
-                                <tr key={index} className="border-t border-gray-500/20">
-                                    <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
+                            {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                                <tr key={user.id} className="border-t border-gray-500/20">
+                                    <td className="px-4 py-3 flex items-center space-x-3">
                                         <Image
                                             src={user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.email}`}
                                             alt="user Image"
@@ -71,13 +102,11 @@ const UserList = () => {
                                             width={40}
                                             height={40}
                                         />
-                                        <span className="truncate w-full">
-                                            {user.name || user.email}
-                                        </span>
+                                        <span className="font-medium text-gray-800">{user.name || user.email}</span>
                                     </td>
-                                    <td className="px-4 py-3 max-sm:hidden">{user.email}</td>
+                                    <td className="px-4 py-3">{user.email}</td>
                                     <td className="px-4 py-3 capitalize">{user.role}</td>
-                                    <td className="px-4 py-3 max-sm:hidden">
+                                    <td className="px-4 py-3">
                                         <button onClick={() => handleEditClick(user)} className="px-3.5 py-2 bg-gray-100 text-gray-700 rounded-md text-xs">
                                             Edit
                                         </button>
