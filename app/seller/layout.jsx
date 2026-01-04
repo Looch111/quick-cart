@@ -11,7 +11,7 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     // If userData is loaded and the user is neither a seller nor an admin, redirect them.
-    if (userData !== undefined && userData !== null && !isSeller && !isAdmin) {
+    if (userData !== undefined && !isSeller && !isAdmin) {
       router.push('/');
     }
   }, [userData, isSeller, isAdmin, router]);
@@ -21,12 +21,7 @@ const Layout = ({ children }) => {
     return <Loading />;
   }
 
-  // If user is not logged in at all
-  if (!userData) {
-      router.push('/');
-      return <Loading />;
-  }
-
+  // If user has the correct role, show the layout
   return (
     <div>
       <SellerNavbar />

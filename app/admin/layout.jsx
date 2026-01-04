@@ -11,22 +11,17 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     // If userData is loaded and the user is not an admin, redirect them.
-    if (userData !== undefined && userData !== null && !isAdmin) {
+    if (userData !== undefined && !isAdmin) {
       router.push('/');
     }
   }, [userData, isAdmin, router]);
 
-  // If user data is not yet loaded, show a loading state
+  // If user data is not yet loaded, or if they don't have the right role, show a loading state
   if (userData === undefined || (userData && !isAdmin)) {
     return <Loading />;
   }
 
-  // If user is not logged in at all
-  if (!userData) {
-      router.push('/');
-      return <Loading />;
-  }
-
+  // If user is logged in and is an admin, show the layout
   return (
     <div>
       <Navbar />
