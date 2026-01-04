@@ -1,14 +1,17 @@
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Wallet } from "lucide-react";
+import { Wallet, X } from "lucide-react";
 
 const OrderSummary = () => {
 
-  const { currency, router, getCartCount, getCartAmount, userAddresses, placeOrder, userData, setShowLogin, walletBalance } = useAppContext()
+  const { currency, router, getCartCount, getCartAmount, userAddresses, placeOrder, userData, setShowLogin, walletBalance, promotions } = useAppContext()
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   useEffect(() => {
     if (userAddresses.length > 0) {
@@ -22,9 +25,50 @@ const OrderSummary = () => {
     setSelectedAddress(address);
     setIsDropdownOpen(false);
   };
+  
+  const handleApplyPromo = () => {
+    if (!promoCode) {
+        toast.error("Please enter a promo code.");
+        return;
+    }
+    const promo = promotions.find(p => p.code.toLowerCase() === promoCode.toLowerCase());
+    if (!promo) {
+        toast.error("Invalid promo code.");
+        setDiscount(0);
+        setAppliedPromo(null);
+        return;
+    }
+    if (new Date(promo.expiryDate) < new Date()) {
+        toast.error("This promo code has expired.");
+        setDiscount(0);
+        setAppliedPromo(null);
+        return;
+    }
+
+    let calculatedDiscount = 0;
+    const cartAmount = getCartAmount();
+    if (promo.type === 'percentage') {
+        calculatedDiscount = (cartAmount * promo.value) / 100;
+    } else if (promo.type === 'fixed') {
+        calculatedDiscount = promo.value;
+    } else if (promo.type === 'shipping') {
+        calculatedDiscount = deliveryFee;
+    }
+    
+    setDiscount(calculatedDiscount > cartAmount ? cartAmount : calculatedDiscount);
+    setAppliedPromo(promo);
+    toast.success(`Promo code "${promo.code}" applied successfully!`);
+  };
+  
+  const handleRemovePromo = () => {
+    setDiscount(0);
+    setPromoCode('');
+    setAppliedPromo(null);
+    toast.success("Promo code removed.");
+  };
 
   const deliveryFee = getCartAmount() > 50 ? 0 : 5;
-  const totalAmount = getCartAmount() + deliveryFee;
+  const totalAmount = getCartAmount() + deliveryFee - discount;
 
   const handlePlaceOrder = async () => {
     if (!userData) {
@@ -127,9 +171,12 @@ const OrderSummary = () => {
             <input
               type="text"
               placeholder="Enter promo code"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
               className="flex-grow w-full outline-none p-2.5 text-gray-600 border rounded-md"
+              disabled={!!appliedPromo}
             />
-            <button className="bg-orange-600 text-white px-9 py-2.5 hover:bg-orange-700 rounded-full text-sm">
+            <button onClick={handleApplyPromo} className="bg-orange-600 text-white px-9 py-2.5 hover:bg-orange-700 rounded-full text-sm disabled:bg-orange-300" disabled={!!appliedPromo}>
               Apply
             </button>
           </div>
@@ -146,6 +193,17 @@ const OrderSummary = () => {
             <p className="text-gray-600">Shipping Fee</p>
             <p className="font-medium text-gray-800">{deliveryFee === 0 ? 'Free' : `${currency}${deliveryFee.toFixed(2)}`}</p>
           </div>
+          {appliedPromo && (
+              <div className="flex justify-between text-green-600">
+                <div className="flex items-center gap-2">
+                  <p>Discount ({appliedPromo.code})</p>
+                  <button onClick={handleRemovePromo} className="text-red-500 hover:text-red-700">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="font-medium">-{currency}{discount.toFixed(2)}</p>
+              </div>
+            )}
           <div className="flex justify-between text-lg md:text-xl font-medium border-t pt-3">
             <p>Total</p>
             <p>{currency}{totalAmount.toFixed(2)}</p>
