@@ -3,9 +3,22 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { X, Check } from 'lucide-react';
 
-const avatarSeeds = [
-    'Gizmo', 'Leo', 'Shadow', 'Misty', 'Jasper', 'Zoe', 'Cali',
-    'Max', 'Coco', 'Oscar', 'Loki', 'Toby', 'Rocky', 'Bandit', 'Milo'
+const avatarUrls = [
+    'https://i.imgur.com/mT0eFvJ.png',
+    'https://i.imgur.com/0UeLAy7.png',
+    'https://i.imgur.com/8OByMYe.png',
+    'https://i.imgur.com/Qn6fihu.png',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Leo',
+    'https_//api.dicebear.com/7.x/adventurer/svg?seed=Misty',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jasper',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Zoe',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Max',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Coco',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Oscar',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Loki',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Toby',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Rocky',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Bandit',
 ];
 
 const AvatarSelectionModal = ({ currentAvatar, onSave, onCancel }) => {
@@ -25,18 +38,17 @@ const AvatarSelectionModal = ({ currentAvatar, onSave, onCancel }) => {
                 <p className="text-gray-500 mb-6 text-sm">Select an avatar that best describes you.</p>
 
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 max-h-[60vh] overflow-y-auto p-2">
-                    {avatarSeeds.map(seed => {
-                        const avatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+                    {avatarUrls.map((avatarUrl, index) => {
                         const isSelected = selectedAvatar === avatarUrl;
                         return (
                             <div
-                                key={seed}
+                                key={index}
                                 className={`relative rounded-full cursor-pointer border-4 ${isSelected ? 'border-orange-500' : 'border-transparent'}`}
                                 onClick={() => setSelectedAvatar(avatarUrl)}
                             >
                                 <Image
                                     src={avatarUrl}
-                                    alt={`Avatar ${seed}`}
+                                    alt={`Avatar ${index + 1}`}
                                     width={100}
                                     height={100}
                                     className="rounded-full bg-gray-100"
