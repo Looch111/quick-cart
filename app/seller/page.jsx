@@ -100,7 +100,7 @@ const SellerDashboard = () => {
        <div className="w-full md:p-10 p-4">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seller Dashboard</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card title="Total Earnings" value={`${currency}${sellerStats.totalEarnings.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
             <Card title="Products Sold" value={sellerStats.productsSold} icon={<ShoppingCart className="w-6 h-6" />} />
             <Card title="Active Listings" value={sellerStats.activeListings} icon={<Package className="w-6 h-6" />} />
