@@ -66,42 +66,58 @@ export const AppContextProvider = (props) => {
 
     // Effect to handle user authentication state changes
     useEffect(() => {
+        let unsubscribeUser;
+    
+        const manageUser = async (currentUser) => {
+          const userDocRef = doc(firestore, 'users', currentUser.uid);
+          
+          // Set up the real-time listener for user data
+          unsubscribeUser = onSnapshot(userDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+              const dbUser = snapshot.data();
+              setUserData({ ...dbUser, _id: snapshot.id });
+              setIsSeller(dbUser.role === 'seller');
+              setIsAdmin(dbUser.role === 'admin');
+            }
+          });
+    
+          // Check if the user document exists. If not, create it.
+          // This check is outside the listener to prevent race conditions.
+          const userDocSnap = await getDoc(userDocRef);
+          if (!userDocSnap.exists()) {
+            const newUser = {
+              email: currentUser.email,
+              name: currentUser.displayName || '',
+              photoURL: currentUser.photoURL || '',
+              role: 'buyer',
+              cartItems: {},
+              wishlistItems: {},
+              walletBalance: 0,
+              walletTransactions: [],
+            };
+            // Set the document. The onSnapshot listener will then pick up this new data.
+            await setDoc(userDocRef, newUser);
+          }
+    
+          setShowLogin(false);
+        };
+    
         if (!authLoading && firebaseUser) {
-            const userDocRef = doc(firestore, 'users', firebaseUser.uid);
-            const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const dbUser = snapshot.data();
-                    setUserData({ ...dbUser, _id: snapshot.id });
-                    setIsSeller(dbUser.role === 'seller');
-                    setIsAdmin(dbUser.role === 'admin');
-                } else {
-                    // Create user document if it doesn't exist
-                    const newUser = {
-                        email: firebaseUser.email,
-                        name: firebaseUser.displayName || '',
-                        photoURL: firebaseUser.photoURL || '',
-                        role: 'buyer',
-                        cartItems: {},
-                        wishlistItems: {},
-                        walletBalance: 0,
-                        walletTransactions: [],
-                    };
-                    setDoc(userDocRef, newUser).then(() => {
-                        setUserData({ ...newUser, _id: firebaseUser.uid });
-                        setIsSeller(false);
-                        setIsAdmin(false);
-                    });
-                }
-            });
-            setShowLogin(false);
-            return () => unsubscribe();
-
+          manageUser(firebaseUser);
         } else if (!authLoading && !firebaseUser) {
-            setUserData(null);
-            setIsSeller(false);
-            setIsAdmin(false);
+          // User is logged out
+          setUserData(null);
+          setIsSeller(false);
+          setIsAdmin(false);
         }
-    }, [firebaseUser, authLoading, firestore]);
+    
+        // Cleanup function
+        return () => {
+          if (unsubscribeUser) {
+            unsubscribeUser();
+          }
+        };
+      }, [firebaseUser, authLoading, firestore]);
 
      // Effect to fetch user-specific sub-collections
     useEffect(() => {
