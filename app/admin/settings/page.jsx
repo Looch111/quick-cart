@@ -1,19 +1,37 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Footer from '@/components/admin/Footer';
 import toast from 'react-hot-toast';
+import { useAppContext } from '@/context/AppContext';
+import Loading from '@/components/Loading';
 
 const SettingsPage = () => {
-    const [commission, setCommission] = useState(15); // Default 15%
-    const [shippingFee, setShippingFee] = useState(5); // Default $5 shipping fee
-    const [freeShippingThreshold, setFreeShippingThreshold] = useState(50); // Default $50
+    const { platformSettings, updateSettings, settingsLoading } = useAppContext();
+    const [commission, setCommission] = useState(0);
+    const [shippingFee, setShippingFee] = useState(0);
+    const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
+
+    useEffect(() => {
+        if (platformSettings) {
+            setCommission(platformSettings.commission || 0);
+            setShippingFee(platformSettings.shippingFee || 0);
+            setFreeShippingThreshold(platformSettings.freeShippingThreshold || 0);
+        }
+    }, [platformSettings]);
 
     const handleSaveSettings = (e) => {
         e.preventDefault();
-        // In a real app, you would save this to your backend
-        console.log("Saving settings:", { commission, shippingFee, freeShippingThreshold });
-        toast.success("Settings saved successfully!");
+        const newSettings = {
+            commission: Number(commission),
+            shippingFee: Number(shippingFee),
+            freeShippingThreshold: Number(freeShippingThreshold)
+        };
+        updateSettings(newSettings);
     };
+
+    if (settingsLoading) {
+        return <Loading />
+    }
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">

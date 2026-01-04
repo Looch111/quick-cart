@@ -4,7 +4,7 @@ import { useAuth, useUser } from "@/src/firebase/auth/use-user";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import { useFirestore, useCollection } from "@/src/firebase";
+import { useFirestore, useCollection, useDoc } from "@/src/firebase";
 import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc } from "firebase/firestore";
 
 export const AppContext = createContext();
@@ -26,10 +26,13 @@ export const AppContextProvider = (props) => {
     const { data: ordersData, loading: ordersLoading } = useCollection('orders');
     const { data: bannersData, loading: bannersLoading } = useCollection('banners');
     const { data: promotionsData, loading: promotionsLoading } = useCollection('promotions');
+    const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
+
     const [products, setProducts] = useState([]);
     const [allOrders, setAllOrders] = useState([]);
     const [banners, setBanners] = useState([]);
     const [promotions, setPromotions] = useState([]);
+    const [platformSettings, setPlatformSettings] = useState({});
 
     // User-specific Data
     const [userData, setUserData] = useState(null);
@@ -46,33 +49,12 @@ export const AppContextProvider = (props) => {
     const walletBalance = userData?.walletBalance || 0;
     const walletTransactions = userData?.walletTransactions || [];
 
-     // Update products state when data loads
-    useEffect(() => {
-        if (!productsLoading) {
-            setProducts(productsData.map(p => ({ ...p, _id: p.id })));
-        }
-    }, [productsData, productsLoading]);
-
-    // Update orders state when data loads
-    useEffect(() => {
-        if (!ordersLoading) {
-             setAllOrders(ordersData.map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) })));
-        }
-    }, [ordersData, ordersLoading]);
-
-    // Update banners state when data loads
-    useEffect(() => {
-        if (!bannersLoading) {
-            setBanners(bannersData.map(b => ({ ...b, id: b.id })));
-        }
-    }, [bannersData, bannersLoading]);
-
-    // Update promotions state when data loads
-    useEffect(() => {
-        if (!promotionsLoading) {
-            setPromotions(promotionsData.map(p => ({ ...p, id: p.id })));
-        }
-    }, [promotionsData, promotionsLoading]);
+    // Update global state when data loads
+    useEffect(() => { if (!productsLoading) setProducts(productsData.map(p => ({ ...p, _id: p.id }))); }, [productsData, productsLoading]);
+    useEffect(() => { if (!ordersLoading) setAllOrders(ordersData.map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) }))); }, [ordersData, ordersLoading]);
+    useEffect(() => { if (!bannersLoading) setBanners(bannersData.map(b => ({ ...b, id: b.id }))); }, [bannersData, bannersLoading]);
+    useEffect(() => { if (!promotionsLoading) setPromotions(promotionsData.map(p => ({ ...p, id: p.id }))); }, [promotionsData, promotionsLoading]);
+    useEffect(() => { if (!settingsLoading && settingsData) setPlatformSettings(settingsData); }, [settingsData, settingsLoading]);
 
 
     // Effect to handle user authentication state changes
@@ -93,7 +75,6 @@ export const AppContextProvider = (props) => {
           });
     
           // Check if the user document exists. If not, create it.
-          // This check is outside the listener to prevent race conditions.
           const userDocSnap = await getDoc(userDocRef);
           if (!userDocSnap.exists()) {
             const newUser = {
@@ -106,7 +87,6 @@ export const AppContextProvider = (props) => {
               walletBalance: 0,
               walletTransactions: [],
             };
-            // Set the document. The onSnapshot listener will then pick up this new data.
             await setDoc(userDocRef, newUser);
           }
     
@@ -116,13 +96,11 @@ export const AppContextProvider = (props) => {
         if (!authLoading && firebaseUser) {
           manageUser(firebaseUser);
         } else if (!authLoading && !firebaseUser) {
-          // User is logged out
           setUserData(null);
           setIsSeller(false);
           setIsAdmin(false);
         }
     
-        // Cleanup function
         return () => {
           if (unsubscribeUser) {
             unsubscribeUser();
@@ -157,6 +135,16 @@ export const AppContextProvider = (props) => {
 
     // --- DATA MUTATION FUNCTIONS ---
 
+    const updateSettings = async (newSettings) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const settingsDocRef = doc(firestore, 'settings', 'platform');
+        await setDoc(settingsDocRef, newSettings, { merge: true });
+        toast.success("Platform settings updated successfully!");
+    };
+    
     const addPromotion = async (newPromo) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
@@ -328,12 +316,11 @@ export const AppContextProvider = (props) => {
 
         const batch = writeBatch(firestore);
         
-        // 1. Create the new order
         const newOrderRef = doc(collection(firestore, 'orders'));
         const orderItems = Object.entries(cartItems).map(([itemId, quantity]) => {
             const product = products.find(p => p._id === itemId);
             return {
-                ...product, // Embed product details
+                ...product, 
                 productId: itemId,
                 quantity,
             };
@@ -349,10 +336,9 @@ export const AppContextProvider = (props) => {
             paymentMethod: paymentMethod,
         });
 
-        // 2. Update user document
         const userDocRef = doc(firestore, 'users', userData._id);
         const userUpdates = {
-            cartItems: {} // Clear cart
+            cartItems: {} 
         };
 
         if (paymentMethod === 'wallet') {
@@ -370,7 +356,6 @@ export const AppContextProvider = (props) => {
         
         batch.update(userDocRef, userUpdates);
 
-        // 3. Commit the batch
         await batch.commit();
     }
 
@@ -489,6 +474,7 @@ export const AppContextProvider = (props) => {
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct,
         updateUserField,
+        platformSettings, updateSettings, settingsLoading
     }
 
     return (

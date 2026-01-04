@@ -5,7 +5,7 @@ import { Wallet, X } from "lucide-react";
 
 const OrderSummary = () => {
 
-  const { currency, router, getCartCount, getCartAmount, userAddresses, placeOrder, userData, setShowLogin, walletBalance, promotions } = useAppContext()
+  const { currency, router, getCartCount, getCartAmount, userAddresses, placeOrder, userData, setShowLogin, walletBalance, promotions, platformSettings } = useAppContext()
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
@@ -67,7 +67,7 @@ const OrderSummary = () => {
     toast.success("Promo code removed.");
   };
 
-  const deliveryFee = getCartAmount() > 50 ? 0 : 5;
+  const deliveryFee = getCartAmount() > (platformSettings.freeShippingThreshold || 50) ? 0 : (platformSettings.shippingFee || 5);
   const totalAmount = getCartAmount() + deliveryFee - discount;
 
   const handlePlaceOrder = async () => {

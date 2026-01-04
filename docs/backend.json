@@ -125,6 +125,16 @@
             "expiryDate": { "type": "string", "format": "date" }
         },
         "required": ["code", "type", "value", "expiryDate"]
+    },
+    "settings": {
+      "title": "Platform Settings",
+      "description": "Platform-wide settings like commission and shipping fees.",
+      "type": "object",
+      "properties": {
+        "commission": { "type": "number" },
+        "shippingFee": { "type": "number" },
+        "freeShippingThreshold": { "type": "number" }
+      }
     }
   },
   "auth": {
@@ -154,6 +164,10 @@
     "/promotions/{promotionId}": {
         "schema": { "$ref": "#/entities/promotion" },
         "description": "Stores promotional codes and discounts."
+    },
+    "/settings/platform": {
+        "schema": { "$ref": "#/entities/settings" },
+        "description": "Stores global platform settings."
     }
   }
 }
