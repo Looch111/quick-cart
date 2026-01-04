@@ -9,7 +9,7 @@ const avatarUrls = [
     'https://i.imgur.com/8OByMYe.png',
     'https://i.imgur.com/Qn6fihu.png',
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Leo',
-    'https_//api.dicebear.com/7.x/adventurer/svg?seed=Misty',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Misty',
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Jasper',
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Zoe',
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Max',
