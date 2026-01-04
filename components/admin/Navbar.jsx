@@ -24,12 +24,12 @@ const Navbar = () => {
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin' },
-    { name: 'Users', path: '/admin/users' },
+    { name: 'Orders', path: '/admin/orders', notification: hasNewOrders },
     { name: 'Products', path: '/admin/products' },
     { name: 'Add Product', path: '/admin/add-product' },
-    { name: 'Orders', path: '/admin/orders', notification: hasNewOrders },
-    { name: 'Promotions', path: '/admin/promotions' },
+    { name: 'Users', path: '/admin/users' },
     { name: 'Marketing', path: '/admin/marketing' },
+    { name: 'Promotions', path: '/admin/promotions' },
     { name: 'Settings', path: '/admin/settings' },
   ];
 
