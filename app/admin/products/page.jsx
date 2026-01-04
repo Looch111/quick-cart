@@ -36,9 +36,30 @@ const ProductList = () => {
   };
 
   const handleDeleteClick = (productId) => {
-    if(confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(productId);
-    }
+    toast((t) => (
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium">Are you sure you want to delete this product?</p>
+        <div className="flex gap-2">
+          <button
+            className="w-full px-3 py-1.5 bg-red-600 text-white rounded-md text-sm"
+            onClick={() => {
+              deleteProduct(productId);
+              toast.dismiss(t.id);
+            }}
+          >
+            Delete
+          </button>
+          <button
+            className="w-full px-3 py-1.5 bg-gray-200 text-gray-800 rounded-md text-sm"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 6000,
+    });
   }
 
   const filteredProducts = products.filter(product =>
