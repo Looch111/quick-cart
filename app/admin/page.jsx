@@ -106,7 +106,26 @@ const AdminDashboard = () => {
 
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Recent Orders</h3>
-            <div className="overflow-x-auto">
+            
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+              {recentOrders.map((order) => (
+                <div key={order._id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-medium text-gray-800">...{order._id.slice(-6)}</p>
+                    <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">{order.status}</span>
+                  </div>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><span className="font-medium text-gray-700">Customer:</span> {order.address.fullName}</p>
+                    <p><span className="font-medium text-gray-700">Date:</span> {new Date(order.date).toLocaleDateString()}</p>
+                    <p><span className="font-medium text-gray-700">Amount:</span> ${order.amount.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full text-sm text-left text-gray-500">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                   <tr>
