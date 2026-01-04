@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 const EditBannerModal = ({ banner, onSave, onCancel }) => {
     const [bannerData, setBannerData] = useState({ ...banner });
@@ -29,6 +30,9 @@ const EditBannerModal = ({ banner, onSave, onCancel }) => {
                 </button>
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">Edit Banner</h1>
                 <div className="space-y-4">
+                    <div className='flex justify-center'>
+                         <Image src={bannerData.image} alt={bannerData.title} width={200} height={200} className="w-auto h-32 object-contain rounded-md" />
+                    </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Banner Title</label>
                         <input

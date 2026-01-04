@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { PlusCircle, Trash2, Edit } from 'lucide-react';
 import Footer from "@/components/admin/Footer";
 import EditBannerModal from '@/components/admin/EditBannerModal';
+import Image from 'next/image';
 
 const MarketingPage = () => {
     const { banners, addBanner, deleteBanner, updateBanner } = useAppContext();
@@ -108,7 +109,35 @@ const MarketingPage = () => {
 
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h3 className="text-lg font-semibold text-gray-700 mb-4">Current Banners</h3>
-                        <div className="overflow-x-auto">
+                        
+                        {/* Mobile View */}
+                        <div className="md:hidden space-y-4">
+                            {banners.map((banner) => (
+                                <div key={banner.id} className="border rounded-lg p-4">
+                                    <Image src={banner.image} alt={banner.title} width={500} height={300} className="w-full h-auto rounded-md mb-3" />
+                                    <h4 className="font-semibold text-gray-800">{banner.title}</h4>
+                                    <p className="text-xs text-gray-500"><strong>Link:</strong> {banner.link}</p>
+                                    <p className="text-xs text-gray-500"><strong>Button:</strong> {banner.buttonText}</p>
+                                    <p className="text-xs text-gray-500"><strong>Link Text:</strong> {banner.linkText}</p>
+                                    <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${banner.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                            {banner.status}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => handleEditClick(banner)} className="text-blue-500 hover:text-blue-700 p-1.5">
+                                                <Edit className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => handleDeleteBanner(banner.id)} className="text-red-500 hover:text-red-700 p-1.5">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop View */}
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="min-w-full text-sm text-left text-gray-500">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
@@ -125,7 +154,7 @@ const MarketingPage = () => {
                                     {banners.map((banner) => (
                                         <tr key={banner.id} className="bg-white border-b">
                                             <td className="px-6 py-4 font-medium text-gray-900">{banner.title}</td>
-                                            <td className="px-6 py-4"><img src={banner.image} alt={banner.title} className="w-32 h-auto rounded"/></td>
+                                            <td className="px-6 py-4"><Image src={banner.image} alt={banner.title} width={128} height={72} className="w-32 h-auto rounded"/></td>
                                             <td className="px-6 py-4">{banner.link}</td>
                                             <td className="px-6 py-4">{banner.buttonText}</td>
                                             <td className="px-6 py-4">{banner.linkText}</td>
