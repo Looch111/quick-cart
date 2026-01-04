@@ -359,6 +359,54 @@ export const AppContextProvider = (props) => {
         await batch.commit();
     }
 
+    const processSellerPayouts = async (order) => {
+        const commissionRate = (platformSettings.commission || 0) / 100;
+        const sellerPayouts = {}; // { sellerId: amount }
+
+        order.items.forEach(item => {
+            const sellerId = item.userId;
+            if (sellerId) {
+                const earnings = item.offerPrice * item.quantity;
+                if (!sellerPayouts[sellerId]) {
+                    sellerPayouts[sellerId] = 0;
+                }
+                sellerPayouts[sellerId] += earnings;
+            }
+        });
+
+        const batch = writeBatch(firestore);
+
+        for (const sellerId in sellerPayouts) {
+            const sellerRef = doc(firestore, 'users', sellerId);
+            const sellerSnap = await getDoc(sellerRef);
+
+            if (sellerSnap.exists()) {
+                const sellerData = sellerSnap.data();
+                const grossSale = sellerPayouts[sellerId];
+                const netEarnings = grossSale * (1 - commissionRate);
+                const newBalance = (sellerData.walletBalance || 0) + netEarnings;
+
+                const newTransaction = {
+                    id: `txn_sale_${order._id.slice(-6)}_${Date.now()}`,
+                    type: 'Sale',
+                    amount: netEarnings,
+                    date: new Date().toISOString(),
+                    orderId: order._id,
+                };
+                
+                const updatedTransactions = [newTransaction, ...(sellerData.walletTransactions || [])];
+
+                batch.update(sellerRef, {
+                    walletBalance: newBalance,
+                    walletTransactions: updatedTransactions
+                });
+            }
+        }
+        await batch.commit();
+        toast.success("Seller payouts processed!");
+    };
+
+
     const updateOrderStatus = async (orderId, newStatus) => {
          if (!isAdmin) {
             toast.error("You are not authorized.");
@@ -366,6 +414,13 @@ export const AppContextProvider = (props) => {
         }
         const orderDocRef = doc(firestore, 'orders', orderId);
         await setDoc(orderDocRef, { status: newStatus }, { merge: true });
+
+        if (newStatus === "Delivered") {
+            const orderSnap = await getDoc(orderDocRef);
+            if (orderSnap.exists()) {
+                await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
+            }
+        }
         return true;
     }
 

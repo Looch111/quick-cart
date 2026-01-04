@@ -1,12 +1,14 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Footer from '@/components/seller/Footer';
 import toast from 'react-hot-toast';
 import { Wallet, Banknote, History } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
+import Loading from '@/components/Loading';
 
 const WalletPage = () => {
-    const [balance, setBalance] = useState(12540.50);
+    const { userData, walletBalance, walletTransactions, setShowLogin, router } = useAppContext();
     const [withdrawalAmount, setWithdrawalAmount] = useState('');
     const [bankDetails, setBankDetails] = useState({
         accountHolder: 'GreatStack',
@@ -14,12 +16,13 @@ const WalletPage = () => {
         bankName: 'Global Commerce Bank',
         ifscCode: 'GCB0001234'
     });
-    const [transactions, setTransactions] = useState([
-        { id: 1, type: 'Sale', amount: 150.00, date: '2024-07-20' },
-        { id: 2, type: 'Sale', amount: 75.50, date: '2024-07-19' },
-        { id: 3, type: 'Withdrawal', amount: -500.00, date: '2024-07-18' },
-        { id: 4, type: 'Sale', amount: 220.75, date: '2024-07-17' },
-    ]);
+
+    useEffect(() => {
+        if (!userData) {
+           router.push('/');
+           setShowLogin(true);
+        }
+    }, [userData, router, setShowLogin]);
 
     const handleWithdrawal = (e) => {
         e.preventDefault();
@@ -28,17 +31,20 @@ const WalletPage = () => {
             toast.error("Please enter a valid withdrawal amount.");
             return;
         }
-        if (amount > balance) {
+        if (amount > walletBalance) {
             toast.error("Insufficient balance.");
             return;
         }
 
-        // In a real app, you would process the withdrawal here
-        setBalance(prev => prev - amount);
-        setTransactions(prev => [{ id: Date.now(), type: 'Withdrawal', amount: -amount, date: new Date().toISOString().split('T')[0] }, ...prev]);
-        setWithdrawalAmount('');
+        // In a real app, you would process the withdrawal here and update the balance/transactions via context
+        console.log(`Withdrawal request for $${amount}`);
         toast.success(`Successfully requested withdrawal of $${amount.toFixed(2)}`);
+        setWithdrawalAmount('');
     };
+    
+    if (!userData) {
+        return <Loading />;
+    }
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
@@ -55,7 +61,7 @@ const WalletPage = () => {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-700">Current Balance</h3>
-                                    <p className="text-3xl font-bold text-gray-900">${balance.toFixed(2)}</p>
+                                    <p className="text-3xl font-bold text-gray-900">${walletBalance.toFixed(2)}</p>
                                 </div>
                             </div>
                             <form onSubmit={handleWithdrawal} className="mt-6 space-y-4">
@@ -99,9 +105,9 @@ const WalletPage = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {transactions.map(tx => (
+                                        {walletTransactions.map(tx => (
                                             <tr key={tx.id} className="bg-white border-b">
-                                                <td className="px-6 py-4">{tx.date}</td>
+                                                <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4">{tx.type}</td>
                                                 <td className={`px-6 py-4 font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                     {tx.amount > 0 ? `+$${tx.amount.toFixed(2)}` : `-$${Math.abs(tx.amount).toFixed(2)}`}

@@ -39,6 +39,19 @@
         "walletBalance": {
           "type": "number",
           "description": "The user's current wallet balance."
+        },
+        "walletTransactions": {
+            "type": "array",
+            "description": "An array of wallet transaction objects.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "type": { "type": "string", "enum": ["Top Up", "Payment", "Withdrawal", "Sale"] },
+                    "amount": { "type": "number" },
+                    "date": { "type": "string", "format": "date-time" }
+                }
+            }
         }
       },
       "required": ["uid", "email", "role"]
