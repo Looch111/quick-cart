@@ -21,8 +21,8 @@ const Orders = () => {
     }, [allOrders, productsLoading]);
 
     const handleStatusChange = async (orderId, newStatus) => {
-        const response = await updateOrderStatus(orderId, newStatus);
-        if (response.success) {
+        const success = await updateOrderStatus(orderId, newStatus);
+        if (success) {
             toast.success("Order status updated");
         } else {
             toast.error("Failed to update status");

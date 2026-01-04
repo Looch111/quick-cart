@@ -344,11 +344,11 @@ export const AppContextProvider = (props) => {
     const updateOrderStatus = async (orderId, newStatus) => {
          if (!isAdmin) {
             toast.error("You are not authorized.");
-            return { success: false };
+            return false;
         }
         const orderDocRef = doc(firestore, 'orders', orderId);
         await setDoc(orderDocRef, { status: newStatus }, { merge: true });
-        return { success: true };
+        return true;
     }
 
     const updateUserField = async (field, value) => {

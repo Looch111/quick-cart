@@ -9,26 +9,15 @@ import { useCollection } from "@/src/firebase";
 
 const UserList = () => {
 
-    const { data: usersData, loading: usersLoading } = useCollection('users');
-    const [users, setUsers] = useState([])
-    const [loading, setLoading] = useState(true)
+    const { data: users, loading: usersLoading } = useCollection('users');
     const [editingUser, setEditingUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
-
-    useEffect(() => {
-        if (!usersLoading) {
-            setUsers(usersData || []);
-            setLoading(false);
-        }
-    }, [usersData, usersLoading]);
-
 
     const handleEditClick = (user) => {
         setEditingUser(user);
     };
 
     const handleSaveUser = (updatedUser) => {
-        // This will be handled by AppContext now
         setEditingUser(null);
     };
 
@@ -36,14 +25,14 @@ const UserList = () => {
         setEditingUser(null);
     };
 
-    const filteredUsers = users.filter(user =>
+    const filteredUsers = (users || []).filter(user =>
         (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between">
-            {loading ? <Loading /> : <div className="w-full md:p-10 p-4">
+            {usersLoading ? <Loading /> : <div className="w-full md:p-10 p-4">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-medium">All Users</h2>
                     <div className="relative max-w-xs w-full">
@@ -72,7 +61,7 @@ const UserList = () => {
                             </tr>
                         </thead>
                         <tbody className="text-sm text-gray-500">
-                            {filteredUsers.map((user, index) => (
+                            {filteredUsers.length > 0 ? filteredUsers.map((user, index) => (
                                 <tr key={index} className="border-t border-gray-500/20">
                                     <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
                                         <Image
@@ -94,7 +83,11 @@ const UserList = () => {
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="4" className="text-center py-10 text-gray-500">No users found.</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

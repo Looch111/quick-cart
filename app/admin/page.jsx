@@ -13,8 +13,9 @@ import {
 } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import Footer from '@/components/admin/Footer';
-import { orderDummyData, assets } from '@/assets/assets';
-import Image from 'next/image';
+import { useAppContext } from '@/context/AppContext';
+import { useCollection } from '@/src/firebase';
+import Loading from '@/components/Loading';
 
 const salesData = [
   { name: 'Jan', sales: 4000 },
@@ -39,7 +40,7 @@ const Card = ({ title, value, icon, change }) => (
       <div>
         <p className="text-sm font-medium text-gray-500">{title}</p>
         <p className="text-2xl font-bold text-gray-800">{value}</p>
-        <p className={`text-xs mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</p>
+        {change && <p className={`text-xs mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</p>}
       </div>
       <div className="bg-orange-100 text-orange-600 p-3 rounded-full">
         {icon}
@@ -48,16 +49,29 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const AdminDashboard = () => {
-  const recentOrders = orderDummyData.slice(0, 5);
+    const { allOrders, currency, productsLoading } = useAppContext();
+    const { data: users, loading: usersLoading } = useCollection('users');
+
+    const loading = productsLoading || usersLoading;
+
+    const totalRevenue = allOrders.reduce((sum, order) => sum + order.amount, 0);
+    const totalUsers = users?.length || 0;
+    const totalOrders = allOrders?.length || 0;
+    const recentOrders = allOrders.slice(0, 5);
+  
+    if (loading) {
+        return <Loading />
+    }
+
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
        <div className="w-full md:p-10 p-4">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Dashboard</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card title="Total Revenue" value="$45,231.89" icon={<DollarSign className="w-6 h-6" />} change="+20.1% from last month" />
-            <Card title="Total Users" value="2,350" icon={<Users className="w-6 h-6" />} change="+180 from last month" />
-            <Card title="Total Orders" value="1,750" icon={<ShoppingCart className="w-6 h-6" />} change="+50 from last month" />
+            <Card title="Total Revenue" value={`${currency}${totalRevenue.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
+            <Card title="Total Users" value={totalUsers} icon={<Users className="w-6 h-6" />} />
+            <Card title="Total Orders" value={totalOrders} icon={<ShoppingCart className="w-6 h-6" />} />
             <Card title="Active Now" value="350" icon={<Activity className="w-6 h-6" />} change="+50 since last hour" />
         </div>
 
