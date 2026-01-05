@@ -21,7 +21,6 @@ const WalletPage = () => {
 
     const config = {
         public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-        tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         currency: 'NGN',
         payment_options: 'card,mobilemoney,ussd',
         customer: {
@@ -65,6 +64,7 @@ const WalletPage = () => {
                 closePaymentModal();
             },
             onClose: () => {},
+            tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             amount: Number(amount),
         });
     };
