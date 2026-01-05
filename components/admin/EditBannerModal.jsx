@@ -44,6 +44,16 @@ const EditBannerModal = ({ banner, onSave, onCancel }) => {
                         />
                     </div>
                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                        <input
+                            type="text"
+                            name="image"
+                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value={bannerData.image}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Offer Text</label>
                         <input
                             type="text"
