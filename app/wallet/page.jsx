@@ -18,26 +18,28 @@ const WalletPage = () => {
            setShowLogin(true);
         }
     }, [userData, router, setShowLogin]);
+    
+    // Moved hook logic into the handler
+    const HandleDeposit = () => {
+        const config = {
+            public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
+            tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            amount: Number(amount),
+            currency: 'NGN',
+            payment_options: 'card,mobilemoney,ussd',
+            customer: {
+                email: userData?.email,
+                name: userData?.name,
+            },
+            customizations: {
+                title: 'Wallet Deposit',
+                description: 'Add funds to your QuickCart wallet',
+                logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
+            },
+        };
 
-    const config = {
-        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-        currency: 'NGN',
-        payment_options: 'card,mobilemoney,ussd',
-        amount: Number(amount),
-        customer: {
-            email: userData?.email,
-            name: userData?.name,
-        },
-        customizations: {
-            title: 'Wallet Deposit',
-            description: 'Add funds to your QuickCart wallet',
-            logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
-        },
-    };
+        const handleFlutterwavePayment = useFlutterwave(config);
 
-    const handleFlutterwavePayment = useFlutterwave(config);
-
-    const handleDeposit = () => {
         if (!amount || Number(amount) <= 0) {
             toast.error('Please enter a valid amount.');
             return;
@@ -65,7 +67,6 @@ const WalletPage = () => {
                 closePaymentModal();
             },
             onClose: () => {},
-            tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         });
     };
 
@@ -119,7 +120,7 @@ const WalletPage = () => {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={handleDeposit}
+                                        onClick={HandleDeposit}
                                         className="w-full bg-orange-600 text-white py-2.5 rounded-md hover:bg-orange-700 transition font-semibold"
                                     >
                                         Deposit with Flutterwave
