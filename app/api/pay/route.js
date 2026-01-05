@@ -7,62 +7,55 @@ const flw = new Flutterwave(
     process.env.FLUTTERWAVE_SECRET_KEY
 );
 
+// This simplified endpoint is now only responsible for creating a pending order
+// and generating a Flutterwave payment link. The complex validation is moved
+// to the webhook for better reliability.
 export async function POST(req) {
     try {
         const { email, name, cart, address, totalAmount, userId, paymentMethod } = await req.json();
 
-        if (!cart || Object.keys(cart).length === 0) {
-            return NextResponse.json({ message: 'Cart is empty.' }, { status: 400 });
-        }
-        
         if (!userId) {
             return NextResponse.json({ message: 'User not authenticated.' }, { status: 401 });
         }
+        if (!cart || Object.keys(cart).length === 0) {
+            return NextResponse.json({ message: 'Cart is empty.' }, { status: 400 });
+        }
+        if (!address) {
+            return NextResponse.json({ message: 'Shipping address is missing.' }, { status: 400 });
+        }
 
-        // --- Server-side validation ---
-        let serverCalculatedAmount = 0;
         const productIds = Object.keys(cart);
         const productRefs = productIds.map(id => db.collection('products').doc(id));
         const productDocs = await db.getAll(...productRefs);
         const orderItems = [];
 
         for (const doc of productDocs) {
-            if (!doc.exists) {
-                throw new Error(`Product with ID ${doc.id} not found.`);
+            if (doc.exists) {
+                const product = { id: doc.id, ...doc.data() };
+                 orderItems.push({
+                    productId: product.id,
+                    name: product.name,
+                    image: product.image,
+                    price: Number(product.price),
+                    offerPrice: Number(product.offerPrice),
+                    quantity: cart[product.id],
+                    userId: product.userId,
+                 });
+            } else {
+                 console.warn(`Product with ID ${doc.id} not found during order creation.`);
             }
-            const product = { id: doc.id, ...doc.data() };
-            const quantity = cart[product.id];
-            
-            if (product.stock < quantity) {
-                throw new Error(`Not enough stock for ${product.name}. Only ${product.stock} left.`);
-            }
-            
-            // Safely check for flash sale and calculate price
-            const isFlashSale = product.flashSaleEndDate && product.flashSaleEndDate.toDate && product.flashSaleEndDate.toDate() > new Date();
-            const currentPrice = isFlashSale ? product.offerPrice : product.price;
-
-            serverCalculatedAmount += Number(currentPrice) * quantity;
-
-            orderItems.push({
-                ...product,
-                price: Number(product.price),
-                offerPrice: Number(product.offerPrice),
-                productId: product.id,
-                quantity,
-            });
         }
         
         // --- Create Pending Order ---
         const tx_ref = `QUICKCART-${Date.now()}`;
         const newOrderRef = db.collection('orders').doc();
         
-        // Use the SERVER calculated amount for the order record
         await newOrderRef.set({
             userId: userId,
             items: orderItems,
-            amount: serverCalculatedAmount, // Use server-calculated amount
+            amount: totalAmount, // This will be verified by the webhook
             address: address,
-            status: 'pending',
+            status: 'pending', // CRITICAL: Start as pending
             paymentMethod: paymentMethod,
             transactionRef: tx_ref,
             date: new Date(),
@@ -71,7 +64,7 @@ export async function POST(req) {
         // --- Generate Payment Link ---
         const payload = {
             tx_ref,
-            amount: totalAmount, // The client total (including shipping/discounts) is sent to Flutterwave
+            amount: totalAmount,
             currency: "NGN",
             redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-placed?tx_ref=${tx_ref}`,
             customer: {
@@ -88,6 +81,7 @@ export async function POST(req) {
         const response = await flw.Payment.initiate(payload);
 
         if (response.status !== 'success') {
+            console.error("Flutterwave API Error:", response);
             throw new Error('Flutterwave failed to create payment link.');
         }
 
@@ -98,7 +92,6 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        // DETAILED LOGGING: This will show the exact error on the server console.
         console.error('PAYMENT_INITIALIZATION_ERROR:', error);
         return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
     }

@@ -22,8 +22,7 @@ export async function POST(req) {
         // Check if the payment was successful
         if (payload.status === 'successful' || payload.event === 'charge.completed') {
             const tx_ref = payload.data?.tx_ref || payload.tx_ref;
-            const amount = payload.data?.amount || payload.amount;
-            const currency = payload.data?.currency || payload.currency;
+            const amountPaid = payload.data?.amount || payload.amount;
 
             if (!tx_ref) {
                  console.warn(`Webhook received without a transaction reference.`);
@@ -35,38 +34,42 @@ export async function POST(req) {
             const snapshot = await ordersRef.where('transactionRef', '==', tx_ref).where('status', '==', 'pending').limit(1).get();
 
             if (snapshot.empty) {
-                console.warn(`No pending order found for tx_ref: ${tx_ref}`);
+                console.warn(`No pending order found for tx_ref: ${tx_ref}. It might have been processed already.`);
                 // Acknowledge receipt to Flutterwave even if order not found
-                return NextResponse.json({ status: 'success', message: 'Acknowledged, but no order found.' });
+                return NextResponse.json({ status: 'success', message: 'Acknowledged, but no order found or already processed.' });
             }
 
             const orderDoc = snapshot.docs[0];
             const order = orderDoc.data();
 
-            // --- Security Verification ---
-            // Verify that the amount paid matches the order amount. Allow small tolerance.
-            if (Math.abs(order.amount - amount) > 0.01) {
-                console.error(`Amount mismatch for tx_ref: ${tx_ref}. Expected ${order.amount}, but got ${amount}.`);
-                // Optionally update order to 'failed'
+            // --- CRITICAL VERIFICATION ---
+            // Verify that the amount paid matches the order amount. Allow for small floating point discrepancies.
+            if (Math.abs(order.amount - amountPaid) > 0.01) {
+                console.error(`CRITICAL: Amount mismatch for tx_ref: ${tx_ref}. Expected ${order.amount}, but Flutterwave reported ${amountPaid}.`);
+                // Mark order as failed to prevent fulfillment and trigger manual review.
                 await orderDoc.ref.update({ status: 'failed', failureReason: 'Amount mismatch' });
                 return NextResponse.json({ message: 'Amount mismatch' }, { status: 400 });
             }
             
             // --- Finalize Order in a Transaction ---
             await db.runTransaction(async (transaction) => {
-                // Double check stock before committing
+                // Double check stock and product existence before committing
                 for (const item of order.items) {
                     const productRef = db.collection('products').doc(item.productId);
                     const productDoc = await transaction.get(productRef);
-                    if (!productDoc.exists) throw new Error(`Product ${item.productId} not found!`);
+                    if (!productDoc.exists) {
+                        throw new Error(`Product ${item.productId} not found during final transaction!`);
+                    }
                     
                     const newStock = productDoc.data().stock - item.quantity;
-                    if (newStock < 0) throw new Error(`Stock level error for ${item.productId}! Cannot fulfill order.`);
+                    if (newStock < 0) {
+                        throw new Error(`Stock level error for ${item.productId}! Cannot fulfill order.`);
+                    }
                     
                     transaction.update(productRef, { stock: newStock });
                 }
                 
-                // Update order status to 'Order Placed' and clear the cart
+                // Update order status to 'Order Placed' and clear the user's cart
                 transaction.update(orderDoc.ref, { status: 'Order Placed' });
 
                 if (order.userId) {
@@ -75,7 +78,7 @@ export async function POST(req) {
                 }
             });
 
-            console.log(`Order ${orderDoc.id} successfully processed for tx_ref: ${tx_ref}`);
+            console.log(`Order ${orderDoc.id} successfully processed and verified for tx_ref: ${tx_ref}`);
         } else {
             // Handle failed or abandoned transactions if needed
             const tx_ref = payload.data?.tx_ref || payload.tx_ref;
@@ -92,7 +95,8 @@ export async function POST(req) {
         // Acknowledge receipt to Flutterwave
         return NextResponse.json({ status: 'success' });
     } catch (error) {
-        console.error('FLUTTERWAVE_WEBHOOK_ERROR:', error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        console.error('FLUTTERWAVE_WEBHOOK_ERROR:', error.message);
+        // Return a 500 error to signal that something went wrong on our end
+        return NextResponse.json({ message: `Internal Server Error: ${error.message}` }, { status: 500 });
     }
 }
