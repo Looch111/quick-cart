@@ -9,6 +9,39 @@ import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
 import { useParams } from "next/navigation";
+import toast from "react-hot-toast";
+
+const StarRating = ({ rating, onRatingChange }) => {
+    const [hoverRating, setHoverRating] = useState(0);
+
+    const handleRating = (rate) => {
+        onRatingChange(rate);
+        toast.success(`You rated this product ${rate} stars. Thank you!`);
+    };
+
+    return (
+        <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                    key={star}
+                    onClick={() => handleRating(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="focus:outline-none"
+                >
+                    <Image
+                        className="h-5 w-5"
+                        src={(hoverRating || rating) >= star ? assets.star_icon : assets.star_dull_icon}
+                        alt="star icon"
+                        width={20}
+                        height={20}
+                    />
+                </button>
+            ))}
+        </div>
+    );
+};
+
 
 const Product = () => {
     const params = useParams();
@@ -17,6 +50,8 @@ const Product = () => {
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
+    const [userRating, setUserRating] = useState(4);
+
 
     const productId = params.id;
 
@@ -89,18 +124,8 @@ const Product = () => {
                         {productData.name}
                     </h1>
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-0.5">
-                            <Image className="h-4 w-4" src={assets.star_icon} alt="star_icon" />
-                            <Image className="h-4 w-4" src={assets.star_icon} alt="star_icon" />
-                            <Image className="h-4 w-4" src={assets.star_icon} alt="star_icon" />
-                            <Image className="h-4 w-4" src={assets.star_icon} alt="star_icon" />
-                            <Image
-                                className="h-4 w-4"
-                                src={assets.star_dull_icon}
-                                alt="star_dull_icon"
-                            />
-                        </div>
-                        <p>(4.5)</p>
+                        <StarRating rating={userRating} onRatingChange={setUserRating} />
+                        <p className="text-gray-600">({userRating}.0)</p>
                     </div>
                     <p className="text-gray-600 mt-3">
                         {productData.description}
