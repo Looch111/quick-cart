@@ -8,7 +8,7 @@ import { db } from '@/app/lib/firebase-admin';
 
 export async function POST(req) {
     try {
-        const { amount: clientAmount, email, name, cart, address, totalAmount, userId, paymentMethod } = await req.json();
+        const { email, name, cart, address, totalAmount, userId, paymentMethod } = await req.json();
 
         if (!cart || Object.keys(cart).length === 0) {
             return NextResponse.json({ message: 'Cart is empty.' }, { status: 400 });
@@ -56,10 +56,11 @@ export async function POST(req) {
         const tx_ref = `QUICKCART-${Date.now()}`;
         const newOrderRef = db.collection('orders').doc();
         
+        // Use the server-calculated total amount for the order record
         await newOrderRef.set({
             userId: userId,
             items: orderItems,
-            amount: totalAmount,
+            amount: totalAmount, // Use the client-side totalAmount which includes shipping and discounts for the final charge
             address: address,
             status: 'pending',
             paymentMethod: paymentMethod,
