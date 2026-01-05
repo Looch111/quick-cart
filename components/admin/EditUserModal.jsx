@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useAppContext } from '@/context/AppContext';
 import { doc, setDoc } from 'firebase/firestore';
 import { useFirestore } from '@/src/firebase';
 import toast from 'react-hot-toast';

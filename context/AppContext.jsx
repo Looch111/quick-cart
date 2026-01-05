@@ -29,6 +29,7 @@ export const AppContextProvider = (props) => {
     const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
 
     const [products, setProducts] = useState([]);
+    const [allRawProducts, setAllRawProducts] = useState([]);
     const [allOrders, setAllOrders] = useState([]);
     const [banners, setBanners] = useState([]);
     const [promotions, setPromotions] = useState([]);
@@ -50,7 +51,13 @@ export const AppContextProvider = (props) => {
     const walletTransactions = userData?.walletTransactions || [];
 
     // Update global state when data loads
-    useEffect(() => { if (!productsLoading) setProducts(productsData.map(p => ({ ...p, _id: p.id }))); }, [productsData, productsLoading]);
+    useEffect(() => { 
+        if (!productsLoading) {
+            const mappedProducts = productsData.map(p => ({ ...p, _id: p.id }));
+            setAllRawProducts(mappedProducts);
+            setProducts(mappedProducts.filter(p => p.status === 'approved'));
+        }
+    }, [productsData, productsLoading]);
     useEffect(() => { if (!ordersLoading) setAllOrders(ordersData.map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) }))); }, [ordersData, ordersLoading]);
     useEffect(() => { if (!bannersLoading) setBanners(bannersData.map(b => ({ ...b, id: b.id }))); }, [bannersData, bannersLoading]);
     useEffect(() => { if (!promotionsLoading) setPromotions(promotionsData.map(p => ({ ...p, id: p.id }))); }, [promotionsData, promotionsLoading]);
@@ -410,7 +417,7 @@ export const AppContextProvider = (props) => {
         
         try {
             const orderItems = Object.entries(cartItems).map(([itemId, quantity]) => {
-                const product = products.find(p => p._id === itemId);
+                const product = allRawProducts.find(p => p._id === itemId);
                 if (!product) {
                     throw new Error(`Product with ID ${itemId} not found. Please remove it from your cart.`);
                 }
@@ -587,10 +594,10 @@ export const AppContextProvider = (props) => {
 
     const getCartAmount = () => {
         let totalAmount = 0;
-        if (!products.length || !cartItems) return 0;
+        if (!allRawProducts.length || !cartItems) return 0;
         
         for (const itemId in cartItems) {
-            let itemInfo = products.find((product) => product._id === itemId);
+            let itemInfo = allRawProducts.find((product) => product._id === itemId);
             if (itemInfo && cartItems[itemId] > 0) {
                 totalAmount += itemInfo.offerPrice * cartItems[itemId];
             }
@@ -618,8 +625,7 @@ export const AppContextProvider = (props) => {
             wishlistItems: newWishlist
         }));
 
-        const userDocRef = doc(firestore, 'users', userData._id);
-        setDoc(userDocRef, { wishlistItems: newWishlist }, { merge: true });
+        updateUserField('wishlistItems', newWishlist);
     }
 
     const getWishlistCount = () => {
@@ -633,13 +639,11 @@ export const AppContextProvider = (props) => {
         router.push('/');
     }
 
-    const approvedProducts = products.filter(p => p.status === 'approved');
-
     const value = {
         currency, router,
         userData, setUserData, isSeller, isAdmin,
-        products: isAdmin ? products : approvedProducts,
-        allRawProducts: products, // For admin/seller views
+        products,
+        allRawProducts, // For admin/seller views
         productsLoading,
         cartItems,
         addToCart, updateCartQuantity,
