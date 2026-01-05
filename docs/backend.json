@@ -39,18 +39,38 @@
         },
         "walletBalance": {
           "type": "number",
-          "description": "The user's current wallet balance."
+          "description": "The user's current spending wallet balance."
         },
         "walletTransactions": {
             "type": "array",
-            "description": "An array of wallet transaction objects.",
+            "description": "An array of spending wallet transaction objects.",
             "items": {
                 "type": "object",
                 "properties": {
                     "id": { "type": "string" },
-                    "type": { "type": "string", "enum": ["Top Up", "Payment", "Withdrawal", "Sale"] },
+                    "type": { "type": "string", "enum": ["Top Up", "Payment"] },
                     "amount": { "type": "number" },
                     "date": { "type": "string", "format": "date-time" }
+                }
+            }
+        },
+        "sellerWallet": {
+            "type": "object",
+            "description": "The user's wallet for seller earnings.",
+            "properties": {
+                "balance": { "type": "number" },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "type": { "type": "string", "enum": ["Withdrawal", "Sale"] },
+                            "amount": { "type": "number" },
+                            "date": { "type": "string", "format": "date-time" },
+                            "orderId": { "type": "string" }
+                        }
+                    }
                 }
             }
         }

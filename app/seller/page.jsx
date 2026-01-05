@@ -44,9 +44,8 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const SellerDashboard = () => {
-  const { allOrders, products, userData, currency, productsLoading, platformSettings } = useAppContext();
+  const { allOrders, products, userData, currency, productsLoading, platformSettings, sellerWalletBalance } = useAppContext();
   const [sellerStats, setSellerStats] = useState({
-    totalEarnings: 0,
     productsSold: 0,
     activeListings: 0,
     recentOrders: [],
@@ -58,9 +57,7 @@ const SellerDashboard = () => {
     if (userData && allOrders && products && !productsLoading && platformSettings) {
       const sellerProducts = products.filter(p => p.userId === userData._id);
       const sellerProductIds = sellerProducts.map(p => p._id);
-      const commissionRate = (platformSettings.commission || 0) / 100;
       
-      let totalSales = 0;
       let productsSold = 0;
       const recentOrders = [];
       const monthlySalesData = [...salesData].map(item => ({...item})); // Deep copy
@@ -83,7 +80,6 @@ const SellerDashboard = () => {
             }
           });
 
-          totalSales += orderSales;
           productsSold += sellerItemsInOrder;
           
           recentOrders.push({
@@ -92,11 +88,8 @@ const SellerDashboard = () => {
           });
         }
       });
-
-      const totalEarnings = totalSales * (1 - commissionRate);
       
       setSellerStats({
-        totalEarnings,
         productsSold,
         activeListings: sellerProducts.length,
         recentOrders: recentOrders.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5),
@@ -124,7 +117,7 @@ const SellerDashboard = () => {
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seller Dashboard</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Card title="Total Earnings" value={`${currency}${sellerStats.totalEarnings.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
+            <Card title="Total Earnings" value={`${currency}${sellerWalletBalance.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
             <Card title="Products Sold" value={sellerStats.productsSold} icon={<ShoppingCart className="w-6 h-6" />} />
             <Card title="Active Listings" value={sellerStats.activeListings} icon={<Package className="w-6 h-6" />} />
         </div>

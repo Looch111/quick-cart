@@ -44,6 +44,8 @@ export const AppContextProvider = (props) => {
     const wishlistItems = userData?.wishlistItems || {};
     const walletBalance = userData?.walletBalance || 0;
     const walletTransactions = userData?.walletTransactions || [];
+    const sellerWalletBalance = userData?.sellerWallet?.balance || 0;
+    const sellerWalletTransactions = userData?.sellerWallet?.transactions || [];
 
     useEffect(() => { 
         if (!productsLoading) {
@@ -79,12 +81,16 @@ export const AppContextProvider = (props) => {
             const newUser = {
               email: currentUser.email,
               name: currentUser.displayName || '',
-              photoURL: currentUser.photoURL || null,
+              photoURL: null,
               role: 'buyer',
               cartItems: {},
               wishlistItems: {},
               walletBalance: 0,
               walletTransactions: [],
+              sellerWallet: {
+                balance: 0,
+                transactions: []
+              },
               createdAt: serverTimestamp()
             };
             await setDoc(userDocRef, newUser);
@@ -408,6 +414,7 @@ export const AppContextProvider = (props) => {
             batch.update(userDocRef, { cartItems: {} });
 
             await batch.commit();
+            router.push('/order-placed');
             return { success: true };
         } catch (error) {
             toast.error(error.message);
@@ -461,6 +468,7 @@ export const AppContextProvider = (props) => {
                 walletTransactions: arrayUnion(newTransaction)
             });
             await batch.commit();
+            router.push('/order-placed');
             return { success: true };
         } catch (error) {
             toast.error(error.message);
@@ -491,7 +499,6 @@ export const AppContextProvider = (props) => {
             const sellerSnap = await getDoc(sellerRef);
 
             if (sellerSnap.exists()) {
-                const sellerData = sellerSnap.data();
                 const grossSale = sellerPayouts[sellerId];
                 const netEarnings = grossSale * (1 - commissionRate);
                 
@@ -504,8 +511,8 @@ export const AppContextProvider = (props) => {
                 };
                 
                 batch.update(sellerRef, {
-                    walletBalance: increment(netEarnings),
-                    walletTransactions: arrayUnion(newTransaction)
+                    'sellerWallet.balance': increment(netEarnings),
+                    'sellerWallet.transactions': arrayUnion(newTransaction)
                 });
             }
         }
@@ -658,6 +665,7 @@ export const AppContextProvider = (props) => {
         allOrders,
         placeOrder, userOrders,
         walletBalance, walletTransactions,
+        sellerWalletBalance, sellerWalletTransactions,
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct, updateProductStatus,
         updateUserField,

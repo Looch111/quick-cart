@@ -7,7 +7,7 @@ import { useAppContext } from '@/context/AppContext';
 import Loading from '@/components/Loading';
 
 const WalletPage = () => {
-    const { userData, walletBalance, walletTransactions, setShowLogin, router, currency } = useAppContext();
+    const { userData, sellerWalletBalance, sellerWalletTransactions, setShowLogin, router, currency } = useAppContext();
     const [withdrawalAmount, setWithdrawalAmount] = useState('');
     const [bankDetails, setBankDetails] = useState({
         accountHolder: 'GreatStack',
@@ -30,7 +30,7 @@ const WalletPage = () => {
             toast.error("Please enter a valid withdrawal amount.");
             return;
         }
-        if (amount > walletBalance) {
+        if (amount > sellerWalletBalance) {
             toast.error("Insufficient balance.");
             return;
         }
@@ -45,12 +45,12 @@ const WalletPage = () => {
         return <Loading />;
     }
 
-    const sortedTransactions = [...walletTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedTransactions = [...sellerWalletTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
             <div className="w-full md:p-10 p-4">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-6">My Wallet</h2>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seller Wallet</h2>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Side: Balance & Withdrawal */}
@@ -61,8 +61,8 @@ const WalletPage = () => {
                                     <Wallet className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-700">Current Balance</h3>
-                                    <p className="text-3xl font-bold text-gray-900">{currency}{walletBalance.toFixed(2)}</p>
+                                    <h3 className="text-lg font-semibold text-gray-700">Available for Withdrawal</h3>
+                                    <p className="text-3xl font-bold text-gray-900">{currency}{sellerWalletBalance.toFixed(2)}</p>
                                 </div>
                             </div>
                             <form onSubmit={handleWithdrawal} className="mt-6 space-y-4">
@@ -94,7 +94,7 @@ const WalletPage = () => {
                                 <div className="bg-blue-100 text-blue-600 p-3 rounded-full">
                                     <History className="w-6 h-6" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-700">Transaction History</h3>
+                                <h3 className="text-lg font-semibold text-gray-700">Earnings History</h3>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full text-sm text-left text-gray-500">
