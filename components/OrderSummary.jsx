@@ -3,13 +3,19 @@ import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Wallet, X } from "lucide-react";
+import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 
 const OrderSummary = () => {
 
-  const { currency, router, getCartCount, getCartAmount, userAddresses, placeOrder, userData, setShowLogin, walletBalance, promotions, platformSettings } = useAppContext()
+  const { 
+    currency, router, getCartCount, getCartAmount, userAddresses, 
+    userData, setShowLogin, walletBalance, promotions, platformSettings,
+    placeOrder, placeOrderWithWallet
+   } = useAppContext()
+
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('wallet');
+  const [paymentMethod, setPaymentMethod] = useState('flutterwave');
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [appliedPromo, setAppliedPromo] = useState(null);
@@ -21,6 +27,27 @@ const OrderSummary = () => {
       setSelectedAddress(null);
     }
   }, [userAddresses])
+
+  const deliveryFee = getCartAmount() > (platformSettings?.freeShippingThreshold || 50) ? 0 : (platformSettings?.shippingFee || 5);
+  const totalAmount = getCartAmount() + deliveryFee - discount;
+
+  const handleFlutterwavePayment = useFlutterwave({
+    public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
+    tx_ref: `QUICKCART-ORDER-${Date.now()}`,
+    amount: totalAmount,
+    currency: 'NGN',
+    payment_options: 'card,mobilemoney,ussd',
+    customer: {
+        email: userData?.email,
+        name: selectedAddress?.fullName,
+        phone_number: selectedAddress?.phoneNumber,
+    },
+    customizations: {
+        title: 'QuickCart Order Payment',
+        description: 'Payment for items in cart',
+        logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
+    },
+  });
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
@@ -48,8 +75,7 @@ const OrderSummary = () => {
 
     let calculatedDiscount = 0;
     const cartAmount = getCartAmount();
-    const deliveryFee = getCartAmount() > (platformSettings.freeShippingThreshold || 50) ? 0 : (platformSettings.shippingFee || 5);
-
+    
     if (promo.type === 'percentage') {
         calculatedDiscount = (cartAmount * promo.value) / 100;
     } else if (promo.type === 'fixed') {
@@ -70,9 +96,6 @@ const OrderSummary = () => {
     toast.success("Promo code removed.");
   };
 
-  const deliveryFee = getCartAmount() > (platformSettings.freeShippingThreshold || 50) ? 0 : (platformSettings.shippingFee || 5);
-  const totalAmount = getCartAmount() + deliveryFee - discount;
-
   const handlePlaceOrder = async () => {
     if (!userData) {
       toast.error("Please log in to place an order.");
@@ -87,13 +110,25 @@ const OrderSummary = () => {
       toast.error("Your cart is empty.");
       return;
     }
-    if (paymentMethod === 'wallet' && walletBalance < totalAmount) {
-        toast.error("Insufficient wallet balance.");
-        return;
-    }
 
-    await placeOrder(selectedAddress, paymentMethod, totalAmount);
+    if (paymentMethod === 'wallet') {
+        if (walletBalance < totalAmount) {
+            toast.error("Insufficient wallet balance.");
+            return;
+        }
+        await placeOrderWithWallet(selectedAddress, totalAmount);
+    } else { // Flutterwave
+        handleFlutterwavePayment({
+            callback: async (response) => {
+                await placeOrder(selectedAddress, response, totalAmount);
+                closePaymentModal();
+            },
+            onClose: () => {},
+        });
+    }
   }
+
+  const isWalletDisabled = userData ? walletBalance < totalAmount : true;
 
   return (
     <div className="w-full md:w-96 bg-gray-500/5 p-5 rounded-lg">
@@ -151,8 +186,12 @@ const OrderSummary = () => {
                 Payment Method
             </label>
             <div className="space-y-2">
-                <label className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-100">
-                    <input type="radio" name="payment" className="h-4 w-4 text-orange-600" value="wallet" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} disabled={!userData} />
+                <label className={`flex items-center p-3 border rounded-md cursor-pointer ${paymentMethod === 'flutterwave' ? 'bg-orange-50 border-orange-400' : 'bg-white'}`}>
+                    <input type="radio" name="payment" className="h-4 w-4 text-orange-600" value="flutterwave" checked={paymentMethod === 'flutterwave'} onChange={() => setPaymentMethod('flutterwave')} disabled={!userData} />
+                    <span className="ml-3 text-sm font-medium text-gray-700">Pay with Flutterwave</span>
+                </label>
+                <label className={`flex items-center p-3 border rounded-md cursor-pointer ${paymentMethod === 'wallet' ? 'bg-orange-50 border-orange-400' : 'bg-white'} ${isWalletDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <input type="radio" name="payment" className="h-4 w-4 text-orange-600" value="wallet" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} disabled={!userData || isWalletDisabled} />
                     <span className="ml-3 text-sm font-medium text-gray-700">Pay with Wallet</span>
                     {userData && (
                         <span className="ml-auto text-xs font-semibold text-green-600">Balance: {currency}{walletBalance.toFixed(2)}</span>
@@ -217,5 +256,3 @@ const OrderSummary = () => {
 };
 
 export default OrderSummary;
-
-    

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useFirestore, useCollection, useDoc } from "@/src/firebase";
-import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc } from "firebase/firestore";
+import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc, runTransaction, increment, arrayUnion } from "firebase/firestore";
 
 export const AppContext = createContext();
 
@@ -21,7 +21,6 @@ export const AppContextProvider = (props) => {
     const { signOut } = useAuth();
     const firestore = useFirestore();
 
-    // App Data
     const { data: productsData, loading: productsLoading } = useCollection('products');
     const { data: ordersData, loading: ordersLoading } = useCollection('orders');
     const { data: bannersData, loading: bannersLoading } = useCollection('banners');
@@ -34,23 +33,18 @@ export const AppContextProvider = (props) => {
     const [banners, setBanners] = useState([]);
     const [promotions, setPromotions] = useState([]);
     const [platformSettings, setPlatformSettings] = useState({});
-
-    // User-specific Data
     const [userData, setUserData] = useState(undefined);
     const [userAddresses, setUserAddresses] = useState([]);
     const [userOrders, setUserOrders] = useState([]);
-
     const [isSeller, setIsSeller] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     
-    // Derived state from userData
     const cartItems = userData?.cartItems || {};
     const wishlistItems = userData?.wishlistItems || {};
     const walletBalance = userData?.walletBalance || 0;
     const walletTransactions = userData?.walletTransactions || [];
 
-    // Update global state when data loads
     useEffect(() => { 
         if (!productsLoading) {
             const mappedProducts = productsData.map(p => ({ ...p, _id: p.id }));
@@ -63,15 +57,12 @@ export const AppContextProvider = (props) => {
     useEffect(() => { if (!promotionsLoading) setPromotions(promotionsData.map(p => ({ ...p, id: p.id }))); }, [promotionsData, promotionsLoading]);
     useEffect(() => { if (!settingsLoading && settingsData) setPlatformSettings(settingsData); }, [settingsData, settingsLoading]);
 
-
-    // Effect to handle user authentication state changes
     useEffect(() => {
         let unsubscribeUser;
     
         const manageUser = async (currentUser) => {
           const userDocRef = doc(firestore, 'users', currentUser.uid);
           
-          // Set up the real-time listener for user data
           unsubscribeUser = onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
               const dbUser = snapshot.data();
@@ -79,12 +70,10 @@ export const AppContextProvider = (props) => {
               setIsSeller(dbUser.role === 'seller');
               setIsAdmin(dbUser.role === 'admin');
             } else {
-              // This case handles when a user is deleted from Firestore but still logged in.
               setUserData(null);
             }
           });
     
-          // Check if the user document exists. If not, create it.
           const userDocSnap = await getDoc(userDocRef);
           if (!userDocSnap.exists()) {
             const newUser = {
@@ -120,7 +109,6 @@ export const AppContextProvider = (props) => {
         };
       }, [firebaseUser, authLoading, firestore]);
 
-     // Effect to fetch user-specific sub-collections
     useEffect(() => {
         if (userData?._id) {
             const addressesRef = collection(firestore, 'users', userData._id, 'addresses');
@@ -144,8 +132,6 @@ export const AppContextProvider = (props) => {
             setUserOrders([]);
         }
     }, [userData, firestore]);
-
-    // --- DATA MUTATION FUNCTIONS ---
 
     const updateSettings = async (newSettings) => {
         if (!isAdmin) {
@@ -210,7 +196,7 @@ export const AppContextProvider = (props) => {
         const bannersCollectionRef = collection(firestore, 'banners');
         await addDoc(bannersCollectionRef, {
             ...newBanner,
-            image: newBanner.image || "https://i.imgur.com/gB343so.png", // placeholder image
+            image: newBanner.image || "https://i.imgur.com/gB343so.png",
         });
         toast.success("Banner added successfully!");
     }
@@ -279,7 +265,6 @@ export const AppContextProvider = (props) => {
 
         const productDocRef = doc(firestore, 'products', updatedProduct._id);
         const dataToUpdate = { ...updatedProduct };
-        // If a seller updates a product, it should go back to pending for re-approval
         if (isSeller && !isAdmin) {
             dataToUpdate.status = 'pending';
         }
@@ -324,104 +309,173 @@ export const AppContextProvider = (props) => {
         toast.success("Product deleted successfully");
     }
 
-    const placeOrder = async (address, paymentMethod, totalAmount) => {
+    const verifyFlutterwaveTransaction = async (transactionId) => {
+        try {
+            const response = await fetch('/api/verify-flutterwave', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ transactionId }),
+            });
+            return await response.json();
+        } catch (error) {
+            console.error("Verification API call failed:", error);
+            return { success: false, message: "Failed to connect to verification service." };
+        }
+    };
+
+    const depositToWallet = async (amount, transactionId) => {
+        if (!userData) {
+            return { success: false, message: "User not authenticated." };
+        }
+        const userRef = doc(firestore, 'users', userData._id);
+        try {
+            await runTransaction(db, async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) {
+                    throw "User does not exist.";
+                }
+                const transactions = userDoc.data().walletTransactions || [];
+                const isDuplicate = transactions.some(tx => tx.id === transactionId);
+                if (isDuplicate) {
+                    toast.error("This transaction has already been processed.");
+                    throw "This transaction has already been processed.";
+                }
+                transaction.update(userRef, {
+                    walletBalance: increment(amount),
+                    walletTransactions: arrayUnion({
+                        id: transactionId,
+                        type: 'Top Up',
+                        amount: amount,
+                        date: new Date().toISOString(),
+                    })
+                });
+            });
+            return { success: true };
+        } catch (error) {
+            console.error("Error depositing to wallet:", error);
+            return { success: false, message: error.toString() };
+        }
+    };
+    
+    const placeOrder = async (address, paymentResponse, totalAmount) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
-            setShowLogin(true);
             return;
         }
-         if (getCartCount() === 0) {
-            toast.error("Your cart is empty.");
+
+        const verificationResponse = await verifyFlutterwaveTransaction(paymentResponse.transaction_id);
+
+        if (!verificationResponse.success || verificationResponse.data.status !== 'successful') {
+            toast.error("Payment verification failed.");
             return;
         }
-        
+        if (verificationResponse.data.amount !== totalAmount) {
+            toast.error("Payment amount mismatch. Please contact support.");
+            return;
+        }
+
         const batch = writeBatch(firestore);
         
         try {
             const orderItems = [];
             for (const itemId in cartItems) {
                 const product = allRawProducts.find(p => p._id === itemId);
-                if (!product) {
-                    throw new Error(`Product with ID ${itemId} not found. Please remove it from your cart.`);
-                }
-                if (product.stock < cartItems[itemId]) {
-                    throw new Error(`Not enough stock for ${product.name}.`);
-                }
-                orderItems.push({
-                    ...product,
-                    price: Number(product.price),
-                    offerPrice: Number(product.offerPrice),
-                    productId: itemId,
-                    quantity: cartItems[itemId],
-                });
+                if (!product) throw new Error(`Product with ID ${itemId} not found.`);
+                if (product.stock < cartItems[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
+                orderItems.push({ ...product, productId: itemId, quantity: cartItems[itemId] });
             }
 
-            // Decrement stock
             for (const item of orderItems) {
                 const productRef = doc(firestore, 'products', item.productId);
-                const newStock = item.stock - item.quantity;
-                batch.update(productRef, { stock: newStock });
+                batch.update(productRef, { stock: increment(-item.quantity) });
             }
 
             const newOrderRef = doc(collection(firestore, 'orders'));
             batch.set(newOrderRef, {
                 userId: userData._id,
-                items: orderItems,
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId}) => ({_id, name, offerPrice, image, quantity, userId})),
                 amount: totalAmount,
                 address: address,
-                status: "Order Placed", // Start as "Order Placed"
+                status: "Order Placed",
                 date: serverTimestamp(),
-                paymentMethod: paymentMethod,
+                paymentMethod: 'flutterwave',
+                paymentTransactionId: paymentResponse.transaction_id,
             });
 
             const userDocRef = doc(firestore, 'users', userData._id);
-            const userUpdates = {
-                cartItems: {} 
-            };
-
-            if (paymentMethod === 'wallet') {
-                const newBalance = (userData.walletBalance || 0) - totalAmount;
-                const newTransaction = {
-                    id: `txn_${Date.now()}`,
-                    type: 'Payment',
-                    amount: -totalAmount,
-                    date: new Date().toISOString(),
-                };
-                const updatedTransactions = [newTransaction, ...(userData.walletTransactions || [])];
-                userUpdates.walletBalance = newBalance;
-                userUpdates.walletTransactions = updatedTransactions;
-            }
-            
-            batch.update(userDocRef, userUpdates);
+            batch.update(userDocRef, { cartItems: {} });
 
             await batch.commit();
-
-            setUserData(prev => ({
-                ...prev,
-                cartItems: {},
-                ...(paymentMethod === 'wallet' ? {
-                    walletBalance: userUpdates.walletBalance,
-                    walletTransactions: userUpdates.walletTransactions
-                } : {})
-            }));
-
             router.push("/order-placed");
         } catch (error) {
             toast.error(error.message);
         }
     }
+    
+    const placeOrderWithWallet = async (address, totalAmount) => {
+        if (!userData) {
+            toast.error("Please log in to place an order.");
+            return;
+        }
+        if (walletBalance < totalAmount) {
+            toast.error("Insufficient wallet balance.");
+            return;
+        }
+
+        const batch = writeBatch(firestore);
+        try {
+            const orderItems = [];
+            for (const itemId in cartItems) {
+                const product = allRawProducts.find(p => p._id === itemId);
+                if (!product) throw new Error(`Product with ID ${itemId} not found.`);
+                if (product.stock < cartItems[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
+                orderItems.push({ ...product, productId: itemId, quantity: cartItems[itemId] });
+            }
+            for (const item of orderItems) {
+                const productRef = doc(firestore, 'products', item.productId);
+                batch.update(productRef, { stock: increment(-item.quantity) });
+            }
+            const newOrderRef = doc(collection(firestore, 'orders'));
+            batch.set(newOrderRef, {
+                userId: userData._id,
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId}) => ({_id, name, offerPrice, image, quantity, userId})),
+                amount: totalAmount,
+                address: address,
+                status: "Order Placed",
+                date: serverTimestamp(),
+                paymentMethod: 'wallet'
+            });
+            const userDocRef = doc(firestore, 'users', userData._id);
+            const newTransaction = {
+                id: newOrderRef.id,
+                type: 'Payment',
+                amount: -totalAmount,
+                date: new Date().toISOString(),
+            };
+            batch.update(userDocRef, {
+                cartItems: {},
+                walletBalance: increment(-totalAmount),
+                walletTransactions: arrayUnion(newTransaction)
+            });
+            await batch.commit();
+            router.push("/order-placed");
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
 
     const processSellerPayouts = async (order) => {
         const commissionRate = (platformSettings.commission || 0) / 100;
-        const sellerPayouts = {}; // { sellerId: amount }
+        const sellerPayouts = {}; 
 
         order.items.forEach(item => {
             const sellerId = item.userId;
             if (sellerId) {
                 const earnings = item.offerPrice * item.quantity;
-                if (!sellerPayouts[sellerId]) {
-                    sellerPayouts[sellerId] = 0;
-                }
+                if (!sellerPayouts[sellerId]) sellerPayouts[sellerId] = 0;
                 sellerPayouts[sellerId] += earnings;
             }
         });
@@ -436,8 +490,7 @@ export const AppContextProvider = (props) => {
                 const sellerData = sellerSnap.data();
                 const grossSale = sellerPayouts[sellerId];
                 const netEarnings = grossSale * (1 - commissionRate);
-                const newBalance = (sellerData.walletBalance || 0) + netEarnings;
-
+                
                 const newTransaction = {
                     id: `txn_sale_${order._id.slice(-6)}_${Date.now()}`,
                     type: 'Sale',
@@ -446,11 +499,9 @@ export const AppContextProvider = (props) => {
                     orderId: order._id,
                 };
                 
-                const updatedTransactions = [newTransaction, ...(sellerData.walletTransactions || [])];
-
                 batch.update(sellerRef, {
-                    walletBalance: newBalance,
-                    walletTransactions: updatedTransactions
+                    walletBalance: increment(netEarnings),
+                    walletTransactions: arrayUnion(newTransaction)
                 });
             }
         }
@@ -469,7 +520,7 @@ export const AppContextProvider = (props) => {
 
         if (newStatus === "Delivered") {
             const orderSnap = await getDoc(orderDocRef);
-if (orderSnap.exists()) {
+            if (orderSnap.exists()) {
                 await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
             }
         }
@@ -495,12 +546,6 @@ if (orderSnap.exists()) {
         }
         const newCart = { ...cartItems };
         newCart[itemId] = (newCart[itemId] || 0) + 1;
-        
-        setUserData(prevUserData => ({
-            ...prevUserData,
-            cartItems: newCart
-        }));
-
         updateUserField('cartItems', newCart);
         toast.success("Product added to cart");
     }
@@ -518,14 +563,7 @@ if (orderSnap.exists()) {
         } else {
             newCart[itemId] = quantity;
         }
-        
-        setUserData(prevUserData => ({
-            ...prevUserData,
-            cartItems: newCart
-        }));
-
-        const userDocRef = doc(firestore, 'users', userData._id);
-        setDoc(userDocRef, { cartItems: newCart }, { merge: true });
+        updateUserField('cartItems', newCart);
     }
 
     const getCartCount = () => {
@@ -562,12 +600,6 @@ if (orderSnap.exists()) {
             newWishlist[productId] = true;
             toast.success("Added to wishlist");
         }
-        
-        setUserData(prevUserData => ({
-            ...prevUserData,
-            wishlistItems: newWishlist
-        }));
-
         updateUserField('wishlistItems', newWishlist);
     }
 
@@ -586,7 +618,7 @@ if (orderSnap.exists()) {
         currency, router,
         userData, setUserData, isSeller, isAdmin,
         products,
-        allRawProducts, // For admin/seller views
+        allRawProducts, 
         productsLoading,
         cartItems,
         addToCart, updateCartQuantity,
@@ -604,7 +636,10 @@ if (orderSnap.exists()) {
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct, updateProductStatus,
         updateUserField,
-        platformSettings, updateSettings, settingsLoading
+        platformSettings, updateSettings, settingsLoading,
+        verifyFlutterwaveTransaction,
+        depositToWallet,
+        placeOrderWithWallet
     }
 
     return (
@@ -613,5 +648,3 @@ if (orderSnap.exists()) {
         </AppContext.Provider>
     )
 }
-
-    
