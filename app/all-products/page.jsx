@@ -8,19 +8,25 @@ import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
+const SearchFocus = ({ searchInputRef }) => {
+    const searchParams = useSearchParams();
+    const focus = searchParams.get('focus');
+
+    useEffect(() => {
+        if (focus === 'search' && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [focus, searchInputRef]);
+
+    return null;
+}
+
 const AllProducts = () => {
 
     const { products } = useAppContext();
     const [searchTerm, setSearchTerm] = useState('');
     const searchInputRef = useRef(null);
-    const searchParams = useSearchParams();
-
-    useEffect(() => {
-        if (searchParams.get('focus') === 'search' && searchInputRef.current) {
-            searchInputRef.current.focus();
-        }
-    }, [searchParams]);
-
+    
     const filteredProducts = products.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -29,6 +35,7 @@ const AllProducts = () => {
         <>
             <Navbar />
             <div className="flex flex-col items-start px-6 md:px-16 lg:px-32 pt-20">
+                <SearchFocus searchInputRef={searchInputRef} />
                 <div className="flex flex-col items-end pt-12">
                     <p className="text-2xl font-medium">All products</p>
                     <div className="w-16 h-0.5 bg-orange-600 rounded-full"></div>
