@@ -37,7 +37,7 @@ export async function POST(req) {
                 return NextResponse.json({ message: `Not enough stock for ${product.name}. Only ${product.stock} left.` }, { status: 400 });
             }
             
-            const isFlashSale = product.flashSaleEndDate && product.flashSaleEndDate.toDate() > new Date();
+            const isFlashSale = product.flashSaleEndDate && product.flashSaleEndDate.toDate && product.flashSaleEndDate.toDate() > new Date();
             const currentPrice = isFlashSale ? product.offerPrice : product.price;
 
             serverCalculatedAmount += currentPrice * quantity;
