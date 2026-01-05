@@ -196,23 +196,34 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
-        const userDocRef = doc(firestore, 'users', userData._id);
-        const newBalance = (userData.walletBalance || 0) + amount;
-        const newTransaction = {
-            id: `txn_${Date.now()}`,
-            type: 'Top Up',
-            amount: amount,
-            date: new Date().toISOString(),
-        };
-        const updatedTransactions = [newTransaction, ...(userData.walletTransactions || [])];
-        
-        await setDoc(userDocRef, { 
-            walletBalance: newBalance,
-            walletTransactions: updatedTransactions 
-        }, { merge: true });
-
-        toast.success(`$${amount.toFixed(2)} added to your wallet.`);
+        try {
+            const response = await fetch('/api/fund-wallet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount,
+                    userId: userData._id,
+                    email: userData.email,
+                })
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Failed to create payment link.' }));
+                throw new Error(errorData.message);
+            }
+    
+            const data = await response.json();
+            if (data.paymentLink) {
+                router.push(data.paymentLink);
+            } else {
+                throw new Error("Payment link not received.");
+            }
+        } catch (error) {
+            console.error("Error funding wallet:", error);
+            toast.error(error.message || 'An error occurred while trying to fund your wallet.');
+        }
     };
+    
 
     const addAddress = async (newAddress) => {
         if (!userData) {
@@ -493,7 +504,7 @@ export const AppContextProvider = (props) => {
 
         if (newStatus === "Delivered") {
             const orderSnap = await getDoc(orderDocRef);
-            if (orderSnap.exists()) {
+if (orderSnap.exists()) {
                 await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
             }
         }

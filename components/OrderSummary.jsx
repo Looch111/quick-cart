@@ -90,10 +90,6 @@ const OrderSummary = () => {
         toast.error("Insufficient wallet balance.");
         return;
     }
-    if (paymentMethod === 'online') {
-        toast.error("Online payment is currently unavailable. Please select another method.");
-        return;
-    }
 
     await placeOrder(selectedAddress, paymentMethod, totalAmount);
   }
@@ -164,10 +160,6 @@ const OrderSummary = () => {
                     {userData && (
                         <span className="ml-auto text-xs font-semibold text-green-600">Balance: ${walletBalance.toFixed(2)}</span>
                     )}
-                </label>
-                 <label className="flex items-center p-3 border rounded-md cursor-not-allowed bg-gray-100 opacity-60">
-                    <input type="radio" name="payment" className="h-4 w-4 text-orange-600" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} disabled={true} />
-                    <span className="ml-3 text-sm font-medium text-gray-500">Online Payment (Card)</span>
                 </label>
             </div>
         </div>

@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { Wallet, Banknote, History, PlusCircle } from 'lucide-react';
+import { Wallet, History, PlusCircle } from 'lucide-react';
 import Loading from '@/components/Loading';
 
 const WalletPage = () => {
@@ -75,7 +75,7 @@ const WalletPage = () => {
                                     </div>
                                     <button type="submit" className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
                                         <PlusCircle className="w-5 h-5" />
-                                        Add Funds
+                                        Add Funds via Flutterwave
                                     </button>
                                 </form>
                             </div>
