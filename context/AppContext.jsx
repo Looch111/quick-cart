@@ -605,7 +605,16 @@ export const AppContextProvider = (props) => {
             newWishlist[productId] = true;
             toast.success("Added to wishlist");
         }
-        updateUserField('wishlistItems', newWishlist);
+        
+        // Optimistically update local state for immediate UI feedback
+        setUserData(prevUserData => ({
+            ...prevUserData,
+            wishlistItems: newWishlist
+        }));
+
+        // Update firestore in the background
+        const userDocRef = doc(firestore, 'users', userData._id);
+        setDoc(userDocRef, { wishlistItems: newWishlist }, { merge: true });
     }
 
     const getWishlistCount = () => {
