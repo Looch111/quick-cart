@@ -346,7 +346,7 @@ export const AppContextProvider = (props) => {
         toast.success("Product deleted successfully");
     }
 
-    const handleOnlinePayment = async (address, totalAmount) => {
+    const handleOnlinePayment = async (totalAmount) => {
         try {
             const response = await fetch('/api/pay', {
                 method: 'POST',
@@ -359,12 +359,12 @@ export const AppContextProvider = (props) => {
                 }),
             });
 
-            const data = await response.json();
-            
             if (!response.ok) {
-                throw new Error(data.message || 'Payment initialization failed.');
+                const errorData = await response.json().catch(() => ({ message: 'Payment initialization failed with a non-JSON response.' }));
+                throw new Error(errorData.message || 'Payment initialization failed.');
             }
-
+            
+            const data = await response.json();
             const { tx_ref } = data;
 
             window.FlutterwaveCheckout({
@@ -384,14 +384,10 @@ export const AppContextProvider = (props) => {
                     logo: "https://i.imgur.com/Am9r4s8.png",
                 },
                 callback: function (data) {
-                    // The webhook will handle the final order processing.
-                    // The redirect_url will take the user to the success page.
-                    console.log("Payment successful, redirecting...", data);
+                    console.log("Payment successful, webhook will handle finalization.", data);
                 },
                 onclose: function() {
-                    // This is called when the user closes the modal
                     toast.error("Payment popup closed.");
-                    // You can optionally update the order status to 'failed' here
                 },
             });
         } catch (error) {
@@ -409,69 +405,72 @@ export const AppContextProvider = (props) => {
             toast.error("Your cart is empty.");
             return;
         }
+        
         if (paymentMethod === 'online') {
-            await handleOnlinePayment(address, totalAmount);
+            await handleOnlinePayment(totalAmount);
             return;
         }
 
         const batch = writeBatch(firestore);
         
-        const newOrderRef = doc(collection(firestore, 'orders'));
-        const orderItems = Object.entries(cartItems).map(([itemId, quantity]) => {
-            const product = products.find(p => p._id === itemId);
-            if (product.stock < quantity) {
-                throw new Error(`Not enough stock for ${product.name}`);
-            }
-            return {
-                ...product, 
-                productId: itemId,
-                quantity,
-            };
-        });
-
-        // Decrement stock
-        for (const item of orderItems) {
-            const productRef = doc(firestore, 'products', item.productId);
-            const newStock = item.stock - item.quantity;
-            batch.update(productRef, { stock: newStock });
-        }
-
-        batch.set(newOrderRef, {
-            userId: userData._id,
-            items: orderItems,
-            amount: totalAmount,
-            address: address,
-            status: "Processing",
-            date: serverTimestamp(),
-            paymentMethod: paymentMethod,
-        });
-
-        const userDocRef = doc(firestore, 'users', userData._id);
-        const userUpdates = {
-            cartItems: {} 
-        };
-
-        if (paymentMethod === 'wallet') {
-            const newBalance = (userData.walletBalance || 0) - totalAmount;
-            const newTransaction = {
-                id: `txn_${Date.now()}`,
-                type: 'Payment',
-                amount: -totalAmount,
-                date: new Date().toISOString(),
-            };
-            const updatedTransactions = [newTransaction, ...(userData.walletTransactions || [])];
-            userUpdates.walletBalance = newBalance;
-            userUpdates.walletTransactions = updatedTransactions;
-        }
-        
-        batch.update(userDocRef, userUpdates);
-
         try {
+            const orderItems = Object.entries(cartItems).map(([itemId, quantity]) => {
+                const product = products.find(p => p._id === itemId);
+                if (!product) {
+                    throw new Error(`Product with ID ${itemId} not found. Please remove it from your cart.`);
+                }
+                if (product.stock < quantity) {
+                    throw new Error(`Not enough stock for ${product.name}.`);
+                }
+                return {
+                    ...product, 
+                    productId: itemId,
+                    quantity,
+                };
+            });
+
+            // Decrement stock
+            for (const item of orderItems) {
+                const productRef = doc(firestore, 'products', item.productId);
+                const newStock = item.stock - item.quantity;
+                batch.update(productRef, { stock: newStock });
+            }
+
+            const newOrderRef = doc(collection(firestore, 'orders'));
+            batch.set(newOrderRef, {
+                userId: userData._id,
+                items: orderItems,
+                amount: totalAmount,
+                address: address,
+                status: "Processing",
+                date: serverTimestamp(),
+                paymentMethod: paymentMethod,
+            });
+
+            const userDocRef = doc(firestore, 'users', userData._id);
+            const userUpdates = {
+                cartItems: {} 
+            };
+
+            if (paymentMethod === 'wallet') {
+                const newBalance = (userData.walletBalance || 0) - totalAmount;
+                const newTransaction = {
+                    id: `txn_${Date.now()}`,
+                    type: 'Payment',
+                    amount: -totalAmount,
+                    date: new Date().toISOString(),
+                };
+                const updatedTransactions = [newTransaction, ...(userData.walletTransactions || [])];
+                userUpdates.walletBalance = newBalance;
+                userUpdates.walletTransactions = updatedTransactions;
+            }
+            
+            batch.update(userDocRef, userUpdates);
+
             await batch.commit();
             router.push("/order-placed");
         } catch (error) {
             toast.error(error.message);
-            // Optionally, you could try to revert stock changes here if needed
         }
     }
 
@@ -658,3 +657,5 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
+
+    
