@@ -72,6 +72,10 @@ const Product = () => {
         }
     }, [productId, products]);
 
+    if (!productData) {
+        return <Loading />;
+    }
+
     const isOutOfStock = productData && productData.stock === 0;
     
     // Determine if flash sale is active
@@ -82,7 +86,8 @@ const Product = () => {
     const originalPrice = isFlashSaleActive ? productData.price : (productData.offerPrice < productData.price ? productData.price : null);
 
 
-    return productData ? (<>
+    return (
+    <>
         <Navbar />
         <div className="px-6 md:px-16 lg:px-32 pt-32 md:pt-28 space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
@@ -218,7 +223,7 @@ const Product = () => {
         </div>
         <Footer />
     </>
-    ) : <Loading />
+    )
 };
 
 export default Product;
