@@ -99,6 +99,16 @@ const MyOrders = () => {
                         <div className="space-y-6">
                             {orders.map((order) => (
                                 <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                     {order.status === 'Delivered' && (
+                                        <div className="relative w-full h-12 overflow-hidden">
+                                            <div className="absolute top-0 left-0 w-full h-full flex items-center">
+                                                <Truck className="w-8 h-8 text-orange-500 absolute animate-drive-by" />
+                                                <div className="absolute w-full h-full flex items-center justify-center animate-fade-in-check">
+                                                    <CheckCircle className="w-10 h-10 text-green-500" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                                         <div className="flex flex-wrap gap-x-6 gap-y-2">
                                             <div>

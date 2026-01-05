@@ -27,3 +27,35 @@
 .blinking-dot {
   animation: blink 1s linear infinite;
 }
+
+
+@keyframes drive-by {
+  0% {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(1000%); /* Adjust based on container width */
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-check {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-drive-by {
+  animation: drive-by 3s ease-in forwards;
+}
+
+.animate-fade-in-check {
+  opacity: 0;
+  animation: fade-in-check 0.5s ease-out 3s forwards;
+}
