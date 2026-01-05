@@ -49,9 +49,9 @@ const MyOrders = () => {
             <div className="bg-gray-50/50 min-h-[calc(100vh-200px)] pt-28">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex justify-between items-center mb-6">
-                        <div>
-                            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">My Orders</h1>
-                            <div className="w-20 h-0.5 bg-orange-600 mt-2"></div>
+                        <div className="flex flex-col items-start">
+                            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">My <span className="text-orange-600">Orders</span></h1>
+                            <div className="w-16 h-0.5 bg-orange-600 mt-2 self-end"></div>
                         </div>
                         <p className="text-gray-500">{orders.length} {orders.length === 1 ? 'Order' : 'Orders'}</p>
                     </div>
