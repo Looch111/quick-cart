@@ -51,6 +51,7 @@ const Product = () => {
     const [productData, setProductData] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
     const [userRating, setUserRating] = useState(4);
+    const [currentTime, setCurrentTime] = useState(new Date());
 
 
     const productId = params.id;
@@ -71,15 +72,22 @@ const Product = () => {
             fetchProductData(productId);
         }
     }, [productId, products]);
+    
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     if (!productData) {
         return <Loading />;
     }
-
+    
     const isOutOfStock = productData && productData.stock === 0;
     
     // Determine if flash sale is active
-    const isFlashSaleActive = productData && productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > new Date();
+    const isFlashSaleActive = productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > currentTime;
 
     // Determine current price and original price for display
     const currentPrice = isFlashSaleActive ? productData.flashSalePrice : productData.offerPrice;

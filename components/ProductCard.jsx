@@ -60,10 +60,21 @@ const CountdownTimer = ({ endDate }) => {
 const ProductCard = ({ product }) => {
 
     const { currency, router, wishlistItems, toggleWishlist, addToCart } = useAppContext()
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        // This timer ensures the component re-renders every second,
+        // which re-evaluates the isFlashSaleActive condition.
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
     const isWishlisted = wishlistItems[product._id];
     const isOutOfStock = product.stock === 0;
 
-    const isFlashSaleActive = product.flashSalePrice > 0 && product.flashSaleEndDate && new Date(product.flashSaleEndDate) > new Date();
+    const isFlashSaleActive = product.flashSalePrice > 0 && product.flashSaleEndDate && new Date(product.flashSaleEndDate) > currentTime;
 
     const currentPrice = isFlashSaleActive ? product.flashSalePrice : product.offerPrice;
     const originalPrice = isFlashSaleActive ? product.price : (product.offerPrice < product.price ? product.price : null);
