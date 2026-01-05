@@ -112,9 +112,9 @@ const WalletPage = () => {
                                                 <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
                                                 {tx.type === 'Sale' ? (
                                                     <>
-                                                        <td className="px-6 py-4">{currency}{tx.grossSale.toFixed(2)}</td>
-                                                        <td className="px-6 py-4 text-red-600">-{currency}{tx.commission.toFixed(2)}</td>
-                                                        <td className="px-6 py-4 font-medium text-green-600">+{currency}{tx.netEarnings.toFixed(2)}</td>
+                                                        <td className="px-6 py-4">{currency}{(tx.grossSale || 0).toFixed(2)}</td>
+                                                        <td className="px-6 py-4 text-red-600">-{currency}{(tx.commission || 0).toFixed(2)}</td>
+                                                        <td className="px-6 py-4 font-medium text-green-600">+{currency}{(tx.netEarnings || 0).toFixed(2)}</td>
                                                     </>
                                                 ) : (
                                                     <>
