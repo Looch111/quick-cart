@@ -20,6 +20,7 @@ const WalletPage = () => {
     }, [userData, router, setShowLogin]);
     
     const handleDeposit = () => {
+        
         const config = {
             public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
             tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -36,9 +37,9 @@ const WalletPage = () => {
                 logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
             },
         };
-        
-        const handleFlutterwavePayment = useFlutterwave(config);
 
+        const handleFlutterwavePayment = useFlutterwave(config);
+        
         if (!amount || Number(amount) <= 0) {
             toast.error('Please enter a valid amount.');
             return;
@@ -98,7 +99,7 @@ const WalletPage = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-white p-6 rounded-lg shadow-md">
+                            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Deposit Funds</h2>
                                 <div className="space-y-4">
                                     <div>
