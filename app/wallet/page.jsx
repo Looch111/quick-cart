@@ -26,7 +26,7 @@ const WalletPage = () => {
             return;
         }
 
-        const config = {
+        const flutterwaveConfig = {
             public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
             tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             amount: depositAmount,
@@ -42,8 +42,8 @@ const WalletPage = () => {
                 logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
             },
         };
-
-        const handleFlutterwavePayment = useFlutterwave(config);
+        
+        const handleFlutterwavePayment = useFlutterwave(flutterwaveConfig);
         
         handleFlutterwavePayment({
             callback: async (response) => {
@@ -94,7 +94,7 @@ const WalletPage = () => {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-700">Current Balance</h3>
-                                    <p className="text-4xl font-bold text-gray-900">{currency}{walletBalance.toFixed(2)}</p>
+                                    <p className="text-3xl lg:text-4xl font-bold text-gray-900">{currency}{walletBalance.toFixed(2)}</p>
                                 </div>
                             </div>
                             
