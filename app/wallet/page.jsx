@@ -20,10 +20,16 @@ const WalletPage = () => {
     }, [userData, router, setShowLogin]);
     
     const handleDeposit = () => {
+        const depositAmount = Number(amount);
+        if (!depositAmount || depositAmount <= 0) {
+            toast.error('Please enter a valid amount.');
+            return;
+        }
+
         const config = {
             public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
             tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            amount: Number(amount),
+            amount: depositAmount,
             currency: 'NGN',
             payment_options: 'card,mobilemoney,ussd',
             customer: {
@@ -39,18 +45,13 @@ const WalletPage = () => {
 
         const handleFlutterwavePayment = useFlutterwave(config);
         
-        if (!amount || Number(amount) <= 0) {
-            toast.error('Please enter a valid amount.');
-            return;
-        }
-
         handleFlutterwavePayment({
             callback: async (response) => {
                 const verificationResponse = await verifyFlutterwaveTransaction(response.transaction_id);
 
                 if (verificationResponse.success && verificationResponse.data.status === 'successful') {
-                    if (verificationResponse.data.amount === Number(amount)) {
-                        const depositResponse = await depositToWallet(Number(amount), response.transaction_id);
+                    if (verificationResponse.data.amount === depositAmount) {
+                        const depositResponse = await depositToWallet(depositAmount, response.transaction_id);
                         if (depositResponse.success) {
                             toast.success('Funds deposited successfully!');
                             setAmount('');
@@ -86,47 +87,46 @@ const WalletPage = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="bg-green-100 text-green-600 p-4 rounded-full">
-                                        <Wallet className="w-8 h-8" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-700">Current Balance</h3>
-                                        <p className="text-4xl font-bold text-gray-900">{currency}{walletBalance.toFixed(2)}</p>
-                                    </div>
+                        <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="bg-green-100 text-green-600 p-4 rounded-full">
+                                    <Wallet className="w-8 h-8" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-700">Current Balance</h3>
+                                    <p className="text-4xl font-bold text-gray-900">{currency}{walletBalance.toFixed(2)}</p>
                                 </div>
                             </div>
-                            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                                <h2 className="text-lg font-semibold text-gray-700 mb-4">Deposit Funds</h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label htmlFor="amount" className="text-sm font-medium text-gray-700">
-                                            Amount (NGN)
-                                        </label>
-                                        <div className="relative mt-1">
-                                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                                <DollarSign className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="amount"
-                                                id="amount"
-                                                className="block w-full rounded-md border-gray-300 pl-10 focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                                                placeholder="0.00"
-                                                value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
-                                            />
+                            
+                            <hr className="my-6" />
+
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Deposit Funds</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="amount" className="text-sm font-medium text-gray-700">
+                                        Amount (NGN)
+                                    </label>
+                                    <div className="relative mt-1">
+                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <DollarSign className="h-5 w-5 text-gray-400" />
                                         </div>
+                                        <input
+                                            type="number"
+                                            name="amount"
+                                            id="amount"
+                                            className="block w-full rounded-md border-gray-300 pl-10 focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
+                                            placeholder="0.00"
+                                            value={amount}
+                                            onChange={(e) => setAmount(e.target.value)}
+                                        />
                                     </div>
-                                    <button
-                                        onClick={handleDeposit}
-                                        className="w-full bg-orange-600 text-white py-2.5 rounded-md hover:bg-orange-700 transition font-semibold"
-                                    >
-                                        Deposit with Flutterwave
-                                    </button>
                                 </div>
+                                <button
+                                    onClick={handleDeposit}
+                                    className="w-full bg-orange-600 text-white py-2.5 rounded-md hover:bg-orange-700 transition font-semibold"
+                                >
+                                    Deposit with Flutterwave
+                                </button>
                             </div>
                         </div>
 
