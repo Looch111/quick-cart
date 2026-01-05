@@ -20,19 +20,19 @@ const Switch = ({ checked, onChange }) => {
 const MarketingPage = () => {
     const { banners, addBanner, deleteBanner, updateBanner, updateBannerStatus } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
-    const [newBanner, setNewBanner] = useState({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', linkText: '', image: '', status: 'active' });
+    const [newBanner, setNewBanner] = useState({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', image: '', status: 'active' });
     const [editingBanner, setEditingBanner] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [bannerToDelete, setBannerToDelete] = useState(null);
 
     const handleAddBanner = (e) => {
         e.preventDefault();
-        if (!newBanner.title || !newBanner.link || !newBanner.buttonText || !newBanner.linkText) {
+        if (!newBanner.title || !newBanner.link || !newBanner.buttonText) {
             toast.error("Please fill out all fields for the new banner.");
             return;
         }
         addBanner(newBanner);
-        setNewBanner({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', linkText: '', image: '', status: 'active' });
+        setNewBanner({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', image: '', status: 'active' });
         setIsAdding(false);
     };
 
@@ -128,16 +128,6 @@ const MarketingPage = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Link Text</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g., Learn More"
-                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                            value={newBanner.linkText}
-                                            onChange={(e) => setNewBanner({ ...newBanner, linkText: e.target.value })}
-                                        />
-                                    </div>
-                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
                                         <input
                                             type="text"
@@ -179,7 +169,6 @@ const MarketingPage = () => {
                                     <Switch checked={banner.status === 'active'} onChange={() => handleStatusToggle(banner.id, banner.status)} />
                                     </div>
                                     <p className="text-xs text-gray-500"><strong>Button:</strong> {banner.buttonText}</p>
-                                    <p className="text-xs text-gray-500"><strong>Link Text:</strong> {banner.linkText}</p>
                                     <div className="flex items-center justify-between mt-3 pt-3 border-t">
                                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${banner.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                                             {banner.status}

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
-import Link from "next/link";
 
 const HeaderSlider = () => {
     const { banners, router, isAdmin } = useAppContext();
@@ -27,6 +26,8 @@ const HeaderSlider = () => {
         return null;
     }
 
+    const currentBanner = activeBanners[currentSlide];
+
     return (
         <div className="overflow-hidden relative w-full">
             <div
@@ -41,7 +42,12 @@ const HeaderSlider = () => {
                         className="flex flex-col-reverse md:flex-row items-center justify-between bg-[#E6E9F2] py-8 md:px-14 px-5 mt-6 rounded-xl min-w-full"
                     >
                         <div className="md:pl-8 mt-6 md:mt-0">
-                            <p className="md:text-base text-orange-600 pb-1">{slide.offerText || 'Limited Time Offer'}</p>
+                             <p 
+                                className={`md:text-base text-orange-600 pb-1 ${isAdmin ? 'cursor-pointer hover:underline' : ''}`}
+                                onClick={() => isAdmin && router.push('/admin/marketing')}
+                            >
+                                {slide.offerText || 'Limited Time Offer'}
+                            </p>
                             <h1 className="max-w-lg md:text-[40px] md:leading-[48px] text-2xl font-semibold">
                                 {slide.title}
                             </h1>
@@ -49,10 +55,10 @@ const HeaderSlider = () => {
                                 <button onClick={() => router.push(slide.link)} className="md:px-10 px-7 md:py-2.5 py-2 bg-orange-600 rounded-full text-white font-medium">
                                     {slide.buttonText || 'Shop now'}
                                 </button>
-                                <Link href="/all-products" className="group flex items-center gap-2 px-6 py-2.5 font-medium">
-                                    {slide.linkText || 'Find more'}
+                                <button onClick={() => router.push('/all-products')} className="group flex items-center gap-2 px-6 py-2.5 font-medium">
+                                    Find more
                                     <Image className="group-hover:translate-x-1 transition" src={assets.arrow_icon} alt="arrow_icon" />
-                                </Link>
+                                </button>
                             </div>
                         </div>
                         <div className="flex items-center flex-1 justify-center">

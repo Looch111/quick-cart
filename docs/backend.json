@@ -130,8 +130,7 @@
             "image": { "type": "string", "format": "uri" },
             "link": { "type": "string" },
             "status": { "type": "string", "enum": ["active", "inactive"] },
-            "buttonText": { "type": "string" },
-            "linkText": { "type": "string" }
+            "buttonText": { "type": "string" }
         },
         "required": ["title", "image", "link", "status"]
     },

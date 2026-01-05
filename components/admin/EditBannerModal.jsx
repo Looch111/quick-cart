@@ -83,16 +83,6 @@ const EditBannerModal = ({ banner, onSave, onCancel }) => {
                             onChange={handleChange}
                         />
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Link Text</label>
-                        <input
-                            type="text"
-                            name="linkText"
-                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            value={bannerData.linkText}
-                            onChange={handleChange}
-                        />
-                    </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
                     <button onClick={onCancel} type="button" className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">
