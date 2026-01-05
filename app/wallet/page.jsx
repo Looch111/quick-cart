@@ -6,10 +6,12 @@ import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
 import { Wallet, History, PlusCircle } from 'lucide-react';
 import Loading from '@/components/Loading';
+import { fundWalletAction } from '@/app/actions/walletActions';
 
 const WalletPage = () => {
-    const { userData, walletBalance, fundWallet, walletTransactions, setShowLogin, router, currency } = useAppContext();
+    const { userData, walletBalance, walletTransactions, setShowLogin, router, currency } = useAppContext();
     const [topUpAmount, setTopUpAmount] = useState('');
+    const [isFunding, setIsFunding] = useState(false);
 
     useEffect(() => {
         if (!userData) {
@@ -18,15 +20,39 @@ const WalletPage = () => {
         }
     }, [userData, router, setShowLogin]);
 
-    const handleFundWallet = (e) => {
+    const handleFundWallet = async (e) => {
         e.preventDefault();
         const amount = parseFloat(topUpAmount);
         if (isNaN(amount) || amount <= 0) {
             toast.error("Please enter a valid amount.");
             return;
         }
-        fundWallet(amount);
-        setTopUpAmount('');
+
+        if (!userData) {
+            toast.error("Please log in to fund your wallet.");
+            setShowLogin(true);
+            return;
+        }
+        
+        setIsFunding(true);
+        try {
+            const result = await fundWalletAction({
+                amount,
+                userId: userData._id,
+                email: userData.email,
+            });
+
+            if (result.success && result.paymentLink) {
+                router.push(result.paymentLink);
+            } else {
+                throw new Error(result.message || "Failed to create payment link.");
+            }
+        } catch (error) {
+            toast.error(error.message || 'An error occurred while trying to fund your wallet.');
+        } finally {
+            setIsFunding(false);
+            setTopUpAmount('');
+        }
     };
 
      if (!userData) {
@@ -70,12 +96,13 @@ const WalletPage = () => {
                                                 placeholder="0.00"
                                                 value={topUpAmount}
                                                 onChange={(e) => setTopUpAmount(e.target.value)}
+                                                disabled={isFunding}
                                             />
                                         </div>
                                     </div>
-                                    <button type="submit" className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+                                    <button type="submit" className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300" disabled={isFunding}>
                                         <PlusCircle className="w-5 h-5" />
-                                        Add Funds via Flutterwave
+                                        {isFunding ? 'Processing...' : 'Add Funds via Flutterwave'}
                                     </button>
                                 </form>
                             </div>

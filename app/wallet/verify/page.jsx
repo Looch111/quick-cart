@@ -2,10 +2,11 @@
 import { assets } from '@/assets/assets'
 import { useAppContext } from '@/context/AppContext'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { verifyTransactionAction } from '@/app/actions/walletActions'
 
 const VerifyWalletFunding = () => {
   const { router } = useAppContext();
@@ -13,58 +14,49 @@ const VerifyWalletFunding = () => {
   const [message, setMessage] = useState("Verifying Your Payment...");
   const [isSuccess, setIsSuccess] = useState(null);
 
-  useEffect(() => {
+  const verifyPayment = useCallback(async () => {
     const status = searchParams.get('status');
-    const tx_ref = searchParams.get('tx_ref');
     const transaction_id = searchParams.get('transaction_id');
 
     if (status === 'cancelled') {
         toast.error("Payment was cancelled.");
         setMessage("Payment Cancelled.");
         setIsSuccess(false);
-        setTimeout(() => router.push('/wallet'), 4000);
         return;
     }
-
+    
     if (status === 'successful' && transaction_id) {
-        const verify = async () => {
-            try {
-                const response = await fetch('/api/verify-transaction', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ transaction_id }),
-                });
+        try {
+            const result = await verifyTransactionAction({ transaction_id });
 
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    toast.success("Payment successful! Your wallet has been updated.");
-                    setMessage("Payment Verified & Wallet Funded!");
-                    setIsSuccess(true);
-                } else {
-                    toast.error(result.message || "Payment verification failed.");
-                    setMessage(result.message || "Payment Verification Failed.");
-                    setIsSuccess(false);
-                }
-            } catch (error) {
-                toast.error("An error occurred during verification.");
-                setMessage("Verification Error.");
+            if (result.success) {
+                toast.success("Payment successful! Your wallet has been updated.");
+                setMessage("Payment Verified & Wallet Funded!");
+                setIsSuccess(true);
+            } else {
+                toast.error(result.message || "Payment verification failed.");
+                setMessage(result.message || "Payment Verification Failed.");
                 setIsSuccess(false);
-            } finally {
-                setTimeout(() => {
-                    router.push('/wallet');
-                }, 4000);
             }
+        } catch (error) {
+            toast.error("An error occurred during verification.");
+            setMessage("Verification Error.");
+            setIsSuccess(false);
         }
-        verify();
     } else {
         toast.error("Invalid transaction details.");
         setMessage("Invalid transaction details.");
         setIsSuccess(false);
-        setTimeout(() => router.push('/wallet'), 4000);
     }
-    
-  }, [searchParams, router]);
+  }, [searchParams]);
+
+  useEffect(() => {
+    verifyPayment().finally(() => {
+        setTimeout(() => {
+            router.push('/wallet');
+        }, 4000);
+    });
+  }, [verifyPayment, router]);
 
   return (
     <div className='h-screen flex flex-col justify-center items-center gap-5 text-center px-4'>

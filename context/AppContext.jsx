@@ -190,41 +190,6 @@ export const AppContextProvider = (props) => {
         toast.success(`Promotion ${status}.`);
     }
 
-    const fundWallet = async (amount) => {
-        if (!userData) {
-            toast.error("Please log in to fund your wallet.");
-            setShowLogin(true);
-            return;
-        }
-        try {
-            const response = await fetch('/api/fund-wallet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount,
-                    userId: userData._id,
-                    email: userData.email,
-                })
-            });
-    
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'Failed to create payment link.' }));
-                throw new Error(errorData.message);
-            }
-    
-            const data = await response.json();
-            if (data.paymentLink) {
-                router.push(data.paymentLink);
-            } else {
-                throw new Error("Payment link not received.");
-            }
-        } catch (error) {
-            console.error("Error funding wallet:", error);
-            toast.error(error.message || 'An error occurred while trying to fund your wallet.');
-        }
-    };
-    
-
     const addAddress = async (newAddress) => {
         if (!userData) {
             toast.error("Please log in to add an address.");
@@ -635,7 +600,7 @@ if (orderSnap.exists()) {
         userAddresses, addAddress,
         allOrders,
         placeOrder, userOrders,
-        walletBalance, fundWallet, walletTransactions,
+        walletBalance, walletTransactions,
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct, updateProductStatus,
         updateUserField,
