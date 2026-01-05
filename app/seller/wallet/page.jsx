@@ -45,6 +45,8 @@ const WalletPage = () => {
         return <Loading />;
     }
 
+    const sortedTransactions = [...walletTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
             <div className="w-full md:p-10 p-4">
@@ -104,7 +106,7 @@ const WalletPage = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {walletTransactions.map(tx => (
+                                        {sortedTransactions.map(tx => (
                                             <tr key={tx.id} className="bg-white border-b">
                                                 <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4">{tx.type}</td>

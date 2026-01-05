@@ -19,8 +19,7 @@ const WalletPage = () => {
         }
     }, [userData, router, setShowLogin]);
     
-    // Moved hook logic into the handler
-    const HandleDeposit = () => {
+    const handleDeposit = () => {
         const config = {
             public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
             tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -37,7 +36,7 @@ const WalletPage = () => {
                 logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
             },
         };
-
+        
         const handleFlutterwavePayment = useFlutterwave(config);
 
         if (!amount || Number(amount) <= 0) {
@@ -73,6 +72,8 @@ const WalletPage = () => {
      if (userData === undefined) {
         return <Loading />;
     }
+
+    const sortedTransactions = [...walletTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
         <>
@@ -120,7 +121,7 @@ const WalletPage = () => {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={HandleDeposit}
+                                        onClick={handleDeposit}
                                         className="w-full bg-orange-600 text-white py-2.5 rounded-md hover:bg-orange-700 transition font-semibold"
                                     >
                                         Deposit with Flutterwave
@@ -138,7 +139,7 @@ const WalletPage = () => {
                                     <h3 className="text-lg font-semibold text-gray-700">Transaction History</h3>
                                 </div>
                                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                                    {walletTransactions.length > 0 ? walletTransactions.map(tx => (
+                                    {sortedTransactions.length > 0 ? sortedTransactions.map(tx => (
                                         <div key={tx.id} className="flex justify-between items-center border-b pb-2">
                                             <div>
                                                 <p className={`font-medium ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>{tx.type}</p>
