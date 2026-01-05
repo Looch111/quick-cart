@@ -31,6 +31,7 @@ export function useCollection(
   const [error, setError] = useState(null);
 
   const memoizedQuery = useMemo(() => {
+    if (!firestore || !path) return null;
     let q = collection(firestore, path);
     if (whereClause) q = query(q, where(...whereClause));
     if (orderByClause) q = query(q, orderBy(...orderByClause));
@@ -39,6 +40,10 @@ export function useCollection(
   }, [firestore, path, whereClause, orderByClause, limitClause]);
 
   useEffect(() => {
+    if (!memoizedQuery) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onSnapshot(
       memoizedQuery,
       (snapshot) => {

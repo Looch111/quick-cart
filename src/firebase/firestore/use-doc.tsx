@@ -13,12 +13,16 @@ export function useDoc(path, id) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const memoizedDocRef = useMemo(
-    () => doc(firestore, path, id),
-    [firestore, path, id]
-  );
+  const memoizedDocRef = useMemo(() => {
+    if (!firestore || !path || !id) return null;
+    return doc(firestore, path, id);
+  }, [firestore, path, id]);
 
   useEffect(() => {
+    if (!memoizedDocRef) {
+        setLoading(false);
+        return;
+    }
     const unsubscribe = onSnapshot(
       memoizedDocRef,
       (snapshot) => {
