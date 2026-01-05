@@ -98,57 +98,60 @@ const MyOrders = () => {
                     ) : (
                         <div className="space-y-6">
                             {orders.map((order) => (
-                                <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                                     {order.status === 'Delivered' && (
-                                        <div className="relative w-full h-24 flex justify-center items-center overflow-hidden bg-gray-50">
-                                            <Truck className="w-16 h-16 text-orange-500 absolute animate-drive-by" />
-                                            <div className="absolute w-full h-full flex items-center justify-center animate-fade-in-check">
-                                                <CheckCircle className="w-16 h-16 text-green-500" />
+                                <div key={order._id} className="relative bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                     
+                                    <div className={order.status === 'Delivered' ? 'animate-blur-content' : ''}>
+                                        <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                                            <div className="flex flex-wrap gap-x-6 gap-y-2">
+                                                <div>
+                                                    <p className="text-xs text-gray-500 uppercase">Order Placed</p>
+                                                    <p className="text-sm font-medium text-gray-800">{new Date(order.date).toLocaleDateString()}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 uppercase">Total</p>
+                                                    <p className="text-sm font-medium text-gray-800">{currency}{Number(order.amount).toFixed(2)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 uppercase">Order ID</p>
+                                                    <p className="text-sm font-medium text-gray-600">#{order._id.slice(-8)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="mt-2 sm:mt-0">
+                                                <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClass(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 sm:p-6 space-y-4">
+                                            <div className='pb-4'>
+                                            <OrderStatusTracker status={order.status} />
+                                            </div>
+                                            {order.items.map((item, itemIndex) => (
+                                                <div key={itemIndex} className="flex items-start gap-4 pt-4 border-t">
+                                                    <Image
+                                                        src={item.image[0]}
+                                                        alt={item.name}
+                                                        width={80}
+                                                        height={80}
+                                                        className="w-20 h-20 object-contain rounded-md border bg-gray-50"
+                                                    />
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold text-gray-800">{item.name}</p>
+                                                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                                        <p className="text-sm font-medium text-gray-700">{currency}{Number(item.offerPrice).toFixed(2)}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {order.status === 'Delivered' && (
+                                        <div className="absolute inset-0 flex justify-center items-center overflow-hidden pointer-events-none">
+                                            <Truck className="w-24 h-24 text-orange-500 absolute animate-drive-by-blur" />
+                                            <div className="absolute w-full h-full flex items-center justify-center animate-fade-in-check-blur">
+                                                <CheckCircle className="w-24 h-24 text-green-500" />
                                             </div>
                                         </div>
                                     )}
-                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                        <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                            <div>
-                                                <p className="text-xs text-gray-500 uppercase">Order Placed</p>
-                                                <p className="text-sm font-medium text-gray-800">{new Date(order.date).toLocaleDateString()}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500 uppercase">Total</p>
-                                                <p className="text-sm font-medium text-gray-800">{currency}{Number(order.amount).toFixed(2)}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500 uppercase">Order ID</p>
-                                                <p className="text-sm font-medium text-gray-600">#{order._id.slice(-8)}</p>
-                                            </div>
-                                        </div>
-                                        <div className="mt-2 sm:mt-0">
-                                            <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClass(order.status)}`}>
-                                                {order.status}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="p-4 sm:p-6 space-y-4">
-                                        <div className='pb-4'>
-                                          <OrderStatusTracker status={order.status} />
-                                        </div>
-                                        {order.items.map((item, itemIndex) => (
-                                            <div key={itemIndex} className="flex items-start gap-4 pt-4 border-t">
-                                                <Image
-                                                    src={item.image[0]}
-                                                    alt={item.name}
-                                                    width={80}
-                                                    height={80}
-                                                    className="w-20 h-20 object-contain rounded-md border bg-gray-50"
-                                                />
-                                                <div className="flex-grow">
-                                                    <p className="font-semibold text-gray-800">{item.name}</p>
-                                                    <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                                                    <p className="text-sm font-medium text-gray-700">{currency}{Number(item.offerPrice).toFixed(2)}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
                                 </div>
                             ))}
                         </div>
