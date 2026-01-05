@@ -79,7 +79,7 @@ export const AppContextProvider = (props) => {
             const newUser = {
               email: currentUser.email,
               name: currentUser.displayName || '',
-              photoURL: currentUser.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${currentUser.email}`,
+              photoURL: currentUser.photoURL || null,
               role: 'buyer',
               cartItems: {},
               wishlistItems: {},
@@ -369,11 +369,11 @@ export const AppContextProvider = (props) => {
 
         if (!verificationResponse.success || verificationResponse.data.status !== 'successful') {
             toast.error("Payment verification failed.");
-            return;
+            return { success: false };
         }
         if (verificationResponse.data.amount !== totalAmount) {
             toast.error("Payment amount mismatch. Please contact support.");
-            return;
+            return { success: false };
         }
 
         const batch = writeBatch(firestore);
@@ -408,9 +408,10 @@ export const AppContextProvider = (props) => {
             batch.update(userDocRef, { cartItems: {} });
 
             await batch.commit();
-            router.push("/order-placed");
+            return { success: true };
         } catch (error) {
             toast.error(error.message);
+            return { success: false };
         }
     }
     
@@ -421,7 +422,7 @@ export const AppContextProvider = (props) => {
         }
         if (walletBalance < totalAmount) {
             toast.error("Insufficient wallet balance.");
-            return;
+            return { success: false };
         }
 
         const batch = writeBatch(firestore);
@@ -460,9 +461,10 @@ export const AppContextProvider = (props) => {
                 walletTransactions: arrayUnion(newTransaction)
             });
             await batch.commit();
-            router.push("/order-placed");
+            return { success: true };
         } catch (error) {
             toast.error(error.message);
+            return { success: false };
         }
     };
 
