@@ -500,12 +500,15 @@ export const AppContextProvider = (props) => {
 
             if (sellerSnap.exists()) {
                 const grossSale = sellerPayouts[sellerId];
-                const netEarnings = grossSale * (1 - commissionRate);
+                const commission = grossSale * commissionRate;
+                const netEarnings = grossSale - commission;
                 
                 const newTransaction = {
                     id: `txn_sale_${order._id.slice(-6)}_${Date.now()}`,
                     type: 'Sale',
-                    amount: netEarnings,
+                    grossSale: grossSale,
+                    commission: commission,
+                    netEarnings: netEarnings,
                     date: new Date().toISOString(),
                     orderId: order._id,
                 };

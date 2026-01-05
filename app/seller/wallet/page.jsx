@@ -101,18 +101,27 @@ const WalletPage = () => {
                                     <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
                                             <th scope="col" className="px-6 py-3">Date</th>
-                                            <th scope="col" className="px-6 py-3">Type</th>
-                                            <th scope="col" className="px-6 py-3">Amount</th>
+                                            <th scope="col" className="px-6 py-3">Gross Sale</th>
+                                            <th scope="col" className="px-6 py-3">Commission</th>
+                                            <th scope="col" className="px-6 py-3">Net Earnings</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {sortedTransactions.map(tx => (
                                             <tr key={tx.id} className="bg-white border-b">
                                                 <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
-                                                <td className="px-6 py-4">{tx.type}</td>
-                                                <td className={`px-6 py-4 font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {tx.amount > 0 ? `+${currency}${tx.amount.toFixed(2)}` : `-${currency}${Math.abs(tx.amount).toFixed(2)}`}
-                                                </td>
+                                                {tx.type === 'Sale' ? (
+                                                    <>
+                                                        <td className="px-6 py-4">{currency}{tx.grossSale.toFixed(2)}</td>
+                                                        <td className="px-6 py-4 text-red-600">-{currency}{tx.commission.toFixed(2)}</td>
+                                                        <td className="px-6 py-4 font-medium text-green-600">+{currency}{tx.netEarnings.toFixed(2)}</td>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <td colSpan="2" className="px-6 py-4 italic">{tx.type}</td>
+                                                        <td className="px-6 py-4 font-medium text-red-600">-{currency}{Math.abs(tx.amount || 0).toFixed(2)}</td>
+                                                    </>
+                                                )}
                                             </tr>
                                         ))}
                                     </tbody>
