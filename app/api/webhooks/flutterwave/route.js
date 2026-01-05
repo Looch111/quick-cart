@@ -12,14 +12,13 @@ export async function POST(req) {
 
     try {
         const payload = await req.json();
-        const { event, data } = payload;
+        const { event, data: transactionData } = payload;
 
-        if (event === 'charge.completed' && data.status === 'successful') {
+        if (event === 'charge.completed' && transactionData.status === 'successful') {
             // Check if this is a wallet funding transaction
-            if (data.meta && data.meta.type === 'wallet-funding') {
-                const userId = data.meta.user_id;
-                const amount = data.amount;
-                const tx_ref = data.tx_ref;
+            if (transactionData.meta && transactionData.meta.type === 'wallet-funding') {
+                const { tx_ref, amount, meta } = transactionData;
+                const userId = meta.user_id;
 
                 if (!userId || !amount) {
                     return NextResponse.json({ message: "Missing metadata for wallet funding" }, { status: 400 });
@@ -41,7 +40,7 @@ export async function POST(req) {
                     // --- Idempotency Check ---
                     // Prevent processing the same transaction twice
                     if (transactions.some(tx => tx.id === tx_ref)) {
-                        console.log(`Transaction ${tx_ref} already processed.`);
+                        console.log(`Webhook: Transaction ${tx_ref} already processed.`);
                         return; // Exit transaction gracefully
                     }
                     
@@ -63,7 +62,7 @@ export async function POST(req) {
                     });
                 });
 
-                console.log(`Successfully credited ${amount} to user ${userId}'s wallet.`);
+                console.log(`Webhook: Successfully credited ${amount} to user ${userId}'s wallet.`);
             }
         }
 
