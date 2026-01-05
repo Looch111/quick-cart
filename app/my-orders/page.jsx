@@ -46,7 +46,7 @@ const MyOrders = () => {
     return (
         <>
             <Navbar />
-            <div className="bg-gray-50/50 min-h-[calc(100vh-200px)]">
+            <div className="bg-gray-50/50 min-h-[calc(100vh-200px)] pt-28">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">My Orders</h1>
