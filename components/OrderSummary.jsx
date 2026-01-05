@@ -159,7 +159,7 @@ const OrderSummary = () => {
                     <input type="radio" name="payment" className="h-4 w-4 text-orange-600" value="wallet" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} disabled={!userData} />
                     <span className="ml-3 text-sm font-medium text-gray-700">Pay with Wallet</span>
                     {userData && (
-                        <span className="ml-auto text-xs font-semibold text-green-600">Balance: ${walletBalance.toFixed(2)}</span>
+                        <span className="ml-auto text-xs font-semibold text-green-600">Balance: ₦{walletBalance.toFixed(2)}</span>
                     )}
                 </label>
                  <label className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-100">

@@ -1,0 +1,75 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/app/lib/firebase-admin';
+
+// This is the webhook handler for Flutterwave. It's responsible for
+// verifying the payment status and updating the order in the database.
+// This is a critical part of the payment flow as it's the source of truth
+// for whether a payment was successful or not.
+
+export async function POST(req) {
+    const secretHash = process.env.FLUTTERWAVE_SECRET_HASH;
+    const signature = req.headers.get('verif-hash');
+
+    if (!signature || (signature !== secretHash)) {
+        // This request isn't from Flutterwave. Don't process it.
+        return NextResponse.json({ message: 'Invalid signature' }, { status: 401 });
+    }
+
+    try {
+        const payload = await req.json();
+        console.log("Received Flutterwave webhook:", payload);
+
+        // Check if the payment was successful
+        if (payload.status === 'successful') {
+            const { tx_ref, amount, currency } = payload.data;
+
+            // Find the pending order in Firestore using the transaction reference
+            const ordersRef = db.collection('orders');
+            const snapshot = await ordersRef.where('transactionRef', '==', tx_ref).where('status', '==', 'pending').limit(1).get();
+
+            if (snapshot.empty) {
+                console.warn(`No pending order found for tx_ref: ${tx_ref}`);
+                // Acknowledge receipt to Flutterwave even if order not found
+                return NextResponse.json({ status: 'success', message: 'Acknowledged, but no order found.' });
+            }
+
+            const orderDoc = snapshot.docs[0];
+            const order = orderDoc.data();
+
+            // --- Security Verification ---
+            // Verify that the amount paid matches the order amount
+            if (order.amount !== amount || "NGN" !== currency) {
+                console.error(`Amount mismatch for tx_ref: ${tx_ref}. Expected ${order.amount} ${"NGN"}, but got ${amount} ${currency}.`);
+                // Optionally update order to 'failed'
+                await orderDoc.ref.update({ status: 'failed', failureReason: 'Amount mismatch' });
+                return NextResponse.json({ message: 'Amount mismatch' }, { status: 400 });
+            }
+            
+            // --- Finalize Order in a Transaction ---
+            await db.runTransaction(async (transaction) => {
+                const stockUpdates = [];
+                for (const item of order.items) {
+                    const productRef = db.collection('products').doc(item.productId);
+                    const productDoc = await transaction.get(productRef);
+                    if (!productDoc.exists) throw new Error(`Product ${item.productId} not found!`);
+                    
+                    const newStock = productDoc.data().stock - item.quantity;
+                    if (newStock < 0) throw new Error(`Stock level error for ${item.productId}!`);
+                    
+                    transaction.update(productRef, { stock: newStock });
+                }
+                
+                // Update order status to 'Processing'
+                transaction.update(orderDoc.ref, { status: 'Processing' });
+            });
+
+            console.log(`Order ${orderDoc.id} successfully processed for tx_ref: ${tx_ref}`);
+        }
+
+        // Acknowledge receipt to Flutterwave
+        return NextResponse.json({ status: 'success' });
+    } catch (error) {
+        console.error('FLUTTERWAVE_WEBHOOK_ERROR:', error);
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}

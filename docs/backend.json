@@ -98,9 +98,10 @@
         },
         "amount": { "type": "number" },
         "address": { "$ref": "#/entities/address" },
-        "status": { "type": "string", "enum": ["Order Placed", "Processing", "Shipped", "Delivered"] },
+        "status": { "type": "string", "enum": ["pending", "failed", "Order Placed", "Processing", "Shipped", "Delivered"] },
         "date": { "type": "string", "format": "date-time" },
-        "paymentMethod": { "type": "string", "enum": ["cod", "wallet", "online"] }
+        "paymentMethod": { "type": "string", "enum": ["cod", "wallet", "online"] },
+        "transactionRef": { "type": "string", "description": "The unique reference for the payment transaction." }
       },
       "required": ["userId", "items", "amount", "address", "status", "date"]
     },

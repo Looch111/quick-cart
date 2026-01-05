@@ -16,7 +16,7 @@ export const useAppContext = () => {
 
 export const AppContextProvider = (props) => {
 
-    const currency = '$';
+    const currency = '₦';
     const router = useRouter()
     const { user: firebaseUser, loading: authLoading } = useUser();
     const { signOut } = useAuth();
@@ -205,7 +205,7 @@ export const AppContextProvider = (props) => {
             walletTransactions: updatedTransactions 
         }, { merge: true });
 
-        toast.success(`$${amount.toFixed(2)} added to your wallet.`);
+        toast.success(`₦${amount.toFixed(2)} added to your wallet.`);
     };
 
     const addAddress = async (newAddress) => {
@@ -345,6 +345,59 @@ export const AppContextProvider = (props) => {
         await deleteDoc(productRef);
         toast.success("Product deleted successfully");
     }
+
+    const handleOnlinePayment = async (address, totalAmount) => {
+        try {
+            const response = await fetch('/api/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: totalAmount,
+                    email: userData.email,
+                    name: userData.name,
+                    cart: cartItems
+                }),
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Payment initialization failed.');
+            }
+
+            const { tx_ref } = data;
+
+            window.FlutterwaveCheckout({
+                public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
+                tx_ref,
+                amount: totalAmount,
+                currency: "NGN",
+                payment_options: "card,mobilemoney,ussd",
+                redirect_url: `${window.location.origin}/order-placed`,
+                customer: {
+                    email: userData.email,
+                    name: userData.name,
+                },
+                customizations: {
+                    title: "QuickCart Store",
+                    description: "Payment for items in cart",
+                    logo: "https://i.imgur.com/Am9r4s8.png",
+                },
+                callback: function (data) {
+                    // The webhook will handle the final order processing.
+                    // The redirect_url will take the user to the success page.
+                    console.log("Payment successful, redirecting...", data);
+                },
+                onclose: function() {
+                    // This is called when the user closes the modal
+                    toast.error("Payment popup closed.");
+                    // You can optionally update the order status to 'failed' here
+                },
+            });
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
     
     const placeOrder = async (address, paymentMethod, totalAmount) => {
         if (!userData) {
@@ -354,6 +407,10 @@ export const AppContextProvider = (props) => {
         }
          if (getCartCount() === 0) {
             toast.error("Your cart is empty.");
+            return;
+        }
+        if (paymentMethod === 'online') {
+            await handleOnlinePayment(address, totalAmount);
             return;
         }
 
