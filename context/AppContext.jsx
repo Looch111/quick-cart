@@ -348,44 +348,6 @@ export const AppContextProvider = (props) => {
         toast.success("Product deleted successfully");
     }
 
-    const handleOnlinePayment = async (address, totalAmount) => {
-        if (!userData) {
-          toast.error("Please log in to place an order.");
-          setShowLogin(true);
-          return;
-        }
-      
-        try {
-          const response = await fetch('/api/pay', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              cart: cartItems,
-              address,
-              totalAmount,
-              userId: userData._id,
-              paymentMethod: 'online',
-              email: userData.email,
-              name: userData.name || 'Customer'
-            }),
-          });
-      
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Payment initialization failed.' }));
-            throw new Error(errorData.message);
-          }
-      
-          const data = await response.json();
-          const { paymentLink } = data;
-          
-          window.location.href = paymentLink;
-
-        } catch (error) {
-          toast.error(error.message);
-          console.error("Payment error:", error);
-        }
-      };
-
     const placeOrder = async (address, paymentMethod, totalAmount) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
@@ -397,11 +359,6 @@ export const AppContextProvider = (props) => {
             return;
         }
         
-        if (paymentMethod === 'online') {
-            await handleOnlinePayment(address, totalAmount);
-            return;
-        }
-
         const batch = writeBatch(firestore);
         
         try {

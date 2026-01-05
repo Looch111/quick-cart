@@ -5,7 +5,6 @@ import { Toaster } from "react-hot-toast";
 import LoginPopup from "@/components/LoginPopup";
 import { FirebaseClientProvider } from "@/src/firebase/client-provider";
 import FirebaseErrorListener from "@/src/components/FirebaseErrorListener";
-import Script from "next/script";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
@@ -26,7 +25,6 @@ export default function RootLayout({ children }) {
               <FirebaseErrorListener />
             </AppContextProvider>
           </FirebaseClientProvider>
-          <Script src="https://checkout.flutterwave.com/v3.js" />
         </body>
       </html>
   );

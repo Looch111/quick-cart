@@ -29,11 +29,7 @@ const OrderPlaced = () => {
       <p className="text-gray-600 max-w-md">
         Thank you for your purchase. Your order is being processed. You will be redirected to your orders page shortly.
       </p>
-      {tx_ref && (
-        <p className="text-sm text-gray-500 mt-2">
-          Transaction Reference: {tx_ref}
-        </p>
-      )}
+      
       <p className="text-gray-500 mt-4">
         Redirecting you to <Link href="/my-orders" className="text-orange-600 hover:underline font-medium">My Orders</Link>...
       </p>
