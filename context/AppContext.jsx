@@ -570,7 +570,14 @@ export const AppContextProvider = (props) => {
         } else {
             newCart[itemId] = quantity;
         }
-        updateUserField('cartItems', newCart);
+        
+        setUserData(prevUserData => ({
+            ...prevUserData,
+            cartItems: newCart
+        }));
+
+        const userDocRef = doc(firestore, 'users', userData._id);
+        setDoc(userDocRef, { cartItems: newCart }, { merge: true });
     }
 
     const getCartCount = () => {
@@ -606,13 +613,11 @@ export const AppContextProvider = (props) => {
             toast.success("Added to wishlist");
         }
         
-        // Optimistically update local state for immediate UI feedback
         setUserData(prevUserData => ({
             ...prevUserData,
             wishlistItems: newWishlist
         }));
 
-        // Update firestore in the background
         const userDocRef = doc(firestore, 'users', userData._id);
         setDoc(userDocRef, { wishlistItems: newWishlist }, { merge: true });
     }
