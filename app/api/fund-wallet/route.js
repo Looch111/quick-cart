@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Flutterwave from 'flutterwave-node-v3';
 
 export async function POST(req) {
+    // Correctly initialize Flutterwave inside the handler
     const flw = new Flutterwave(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
     
     try {
