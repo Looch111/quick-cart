@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import Footer from '@/components/seller/Footer';
@@ -37,8 +36,8 @@ const WalletPage = () => {
         }
 
         // In a real app, you would process the withdrawal here and update the balance/transactions via context
-        console.log(`Withdrawal request for ₦${amount}`);
-        toast.success(`Successfully requested withdrawal of ₦${amount.toFixed(2)}`);
+        console.log(`Withdrawal request for $${amount}`);
+        toast.success(`Successfully requested withdrawal of $${amount.toFixed(2)}`);
         setWithdrawalAmount('');
     };
     
@@ -61,7 +60,7 @@ const WalletPage = () => {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-700">Current Balance</h3>
-                                    <p className="text-3xl font-bold text-gray-900">₦{walletBalance.toFixed(2)}</p>
+                                    <p className="text-3xl font-bold text-gray-900">${walletBalance.toFixed(2)}</p>
                                 </div>
                             </div>
                             <form onSubmit={handleWithdrawal} className="mt-6 space-y-4">
@@ -69,7 +68,7 @@ const WalletPage = () => {
                                     <label htmlFor="withdrawal-amount" className="block text-sm font-medium text-gray-700">Request Withdrawal</label>
                                     <div className="mt-1 relative rounded-md shadow-sm">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span className="text-gray-500 sm:text-sm">₦</span>
+                                            <span className="text-gray-500 sm:text-sm">$</span>
                                         </div>
                                         <input
                                             type="number"
@@ -110,7 +109,7 @@ const WalletPage = () => {
                                                 <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4">{tx.type}</td>
                                                 <td className={`px-6 py-4 font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {tx.amount > 0 ? `+₦${tx.amount.toFixed(2)}` : `-₦${Math.abs(tx.amount).toFixed(2)}`}
+                                                    {tx.amount > 0 ? `+$${tx.amount.toFixed(2)}` : `-$${Math.abs(tx.amount).toFixed(2)}`}
                                                 </td>
                                             </tr>
                                         ))}

@@ -8,7 +8,6 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile,
-  type User,
 } from 'firebase/auth';
 import { useAuth as useFirebaseAuth } from '../provider';
 import toast from 'react-hot-toast';
@@ -18,7 +17,7 @@ import toast from 'react-hot-toast';
 // authentication state.
 export function useUser() {
   const auth = useFirebaseAuth();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

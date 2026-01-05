@@ -1,4 +1,3 @@
-
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -16,7 +15,7 @@ export const useAppContext = () => {
 
 export const AppContextProvider = (props) => {
 
-    const currency = '₦';
+    const currency = '$';
     const router = useRouter()
     const { user: firebaseUser, loading: authLoading } = useUser();
     const { signOut } = useAuth();
@@ -205,7 +204,7 @@ export const AppContextProvider = (props) => {
             walletTransactions: updatedTransactions 
         }, { merge: true });
 
-        toast.success(`₦${amount.toFixed(2)} added to your wallet.`);
+        toast.success(`$${amount.toFixed(2)} added to your wallet.`);
     };
 
     const addAddress = async (newAddress) => {
@@ -657,5 +656,3 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
-
-    

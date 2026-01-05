@@ -83,7 +83,7 @@ const UserList = () => {
                 {/* Desktop View: Table */}
                 <div className="hidden md:block overflow-x-auto rounded-md bg-white border border-gray-500/20">
                     <table className="min-w-full table-auto">
-                        <thead className="text-gray-900 text-sm text-left bg-gray-50">
+                        <thead className="text-gray-900 text-sm text-left bg-gray-500/10">
                             <tr>
                                 <th className="px-4 py-3 font-medium">User</th>
                                 <th className="px-4 py-3 font-medium">Email</th>

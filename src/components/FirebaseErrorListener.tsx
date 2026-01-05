@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 // This is useful for debugging security rules.
 export default function FirebaseErrorListener() {
   useEffect(() => {
-    const handleError = (error: FirestorePermissionError) => {
+    const handleError = (error) => {
       console.error('Firestore Permission Error:', error.context);
       toast.error(
         `Permission denied. Check security rules for ${error.context.operation} on ${error.context.path}`

@@ -1,16 +1,12 @@
-import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
 // App is a singleton, so we can initialize it once and then reuse it.
 // We are using initializeApp to create the app, and then we are
 // using getAuth and getFirestore to get the auth and firestore services.
-export function initializeFirebase(): {
-  firebaseApp: FirebaseApp;
-  auth: Auth;
-  firestore: Firestore;
-} {
+export function initializeFirebase() {
   const existingApp = getApps().length ? getApp() : null;
   if (existingApp) {
     return {
