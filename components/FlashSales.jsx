@@ -7,7 +7,7 @@ const FlashSales = () => {
     const { products, router, userData } = useAppContext();
 
     const flashSaleProducts = products
-        .filter(p => p.flashSaleEndDate && new Date(p.flashSaleEndDate) > new Date())
+        .filter(p => p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > new Date())
         .slice(0, 5);
 
     if (flashSaleProducts.length === 0) {

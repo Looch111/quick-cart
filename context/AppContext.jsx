@@ -395,7 +395,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             batch.set(newOrderRef, {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId}) => ({_id, name, offerPrice, image, quantity, userId})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed",
@@ -440,7 +440,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             batch.set(newOrderRef, {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId}) => ({_id, name, offerPrice, image, quantity, userId})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed",
@@ -474,7 +474,9 @@ export const AppContextProvider = (props) => {
         order.items.forEach(item => {
             const sellerId = item.userId;
             if (sellerId) {
-                const earnings = item.offerPrice * item.quantity;
+                const isFlashSale = item.flashSalePrice && item.flashSaleEndDate && new Date(item.flashSaleEndDate) > new Date();
+                const salePrice = isFlashSale ? item.flashSalePrice : item.offerPrice;
+                const earnings = salePrice * item.quantity;
                 if (!sellerPayouts[sellerId]) sellerPayouts[sellerId] = 0;
                 sellerPayouts[sellerId] += earnings;
             }
@@ -578,8 +580,8 @@ export const AppContextProvider = (props) => {
         for (const itemId in cartItems) {
             let itemInfo = allRawProducts.find((product) => product._id === itemId);
             if (itemInfo && cartItems[itemId] > 0) {
-                const isFlashSale = itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
-                const currentPrice = isFlashSale ? itemInfo.offerPrice : itemInfo.price;
+                const isFlashSale = itemInfo.flashSalePrice && itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
+                const currentPrice = isFlashSale ? itemInfo.flashSalePrice : itemInfo.offerPrice;
                 totalAmount += Number(currentPrice) * cartItems[itemId];
             }
         }

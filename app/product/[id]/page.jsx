@@ -73,10 +73,13 @@ const Product = () => {
     }, [productId, products]);
 
     const isOutOfStock = productData && productData.stock === 0;
-    const isFlashSale = productData && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > new Date();
+    
+    // Determine if flash sale is active
+    const isFlashSaleActive = productData && productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > new Date();
 
-    const currentPrice = productData ? (isFlashSale ? productData.offerPrice : productData.price) : 0;
-    const originalPrice = productData ? (isFlashSale ? productData.price : (productData.offerPrice < productData.price ? productData.price : null)) : null;
+    // Determine current price and original price for display
+    const currentPrice = isFlashSaleActive ? productData.flashSalePrice : productData.offerPrice;
+    const originalPrice = isFlashSaleActive ? productData.price : (productData.offerPrice < productData.price ? productData.price : null);
 
 
     return productData ? (<>
@@ -131,10 +134,10 @@ const Product = () => {
                         {productData.description}
                     </p>
                     <p className="text-3xl font-medium mt-6">
-                        {currency}{productData.offerPrice}
-                        {productData.price > productData.offerPrice && (
+                        {currency}{currentPrice}
+                        {originalPrice && (
                             <span className="text-base font-normal text-gray-800/60 line-through ml-2">
-                                {currency}{productData.price}
+                                {currency}{originalPrice}
                             </span>
                         )}
                     </p>

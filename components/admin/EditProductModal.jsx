@@ -71,7 +71,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
-            <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto">
+            <div className="w-full max-w-2xl p-6 bg-white rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto">
                 <button onClick={onCancel} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -123,7 +123,58 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                             onChange={handleChange}
                         />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className='space-y-4 border p-4 rounded-md'>
+                            <h3 className='font-semibold text-lg'>Standard Pricing</h3>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Original Price</label>
+                                <input
+                                    type="number"
+                                    name="price"
+                                    className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                    value={productData.price}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Standard Offer Price</label>
+                                <input
+                                    type="number"
+                                    name="offerPrice"
+                                    className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                    value={productData.offerPrice}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                        </div>
+
+                         <div className='space-y-4 border p-4 rounded-md'>
+                            <h3 className='font-semibold text-lg'>Flash Sale Pricing</h3>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Flash Sale Price</label>
+                                <input
+                                    type="number"
+                                    name="flashSalePrice"
+                                    className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                    value={productData.flashSalePrice || ''}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Flash Sale End Date</label>
+                                <input
+                                    type="datetime-local"
+                                    name="flashSaleEndDate"
+                                    className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                    value={productData.flashSaleEndDate || ''}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                             <select
@@ -141,26 +192,6 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                 <option value="Accessories">Accessories</option>
                                 <option value="Clothes">Clothes</option>
                             </select>
-                        </div>
-                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                            <input
-                                type="number"
-                                name="price"
-                                className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                value={productData.price}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Offer Price</label>
-                            <input
-                                type="number"
-                                name="offerPrice"
-                                className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                value={productData.offerPrice}
-                                onChange={handleChange}
-                            />
                         </div>
                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
@@ -181,16 +212,6 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                             placeholder="e.g. S, M, L, XL"
                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
                             value={productData.sizes}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Flash Sale End Date</label>
-                        <input
-                            type="datetime-local"
-                            name="flashSaleEndDate"
-                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            value={productData.flashSaleEndDate || ''}
                             onChange={handleChange}
                         />
                     </div>

@@ -15,6 +15,7 @@ const AddProduct = () => {
   const [category, setCategory] = useState('Earphone');
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
+  const [flashSalePrice, setFlashSalePrice] = useState('');
   const [sizes, setSizes] = useState('');
   const [stock, setStock] = useState('');
   const [flashSaleEndDate, setFlashSaleEndDate] = useState('');
@@ -33,6 +34,7 @@ const AddProduct = () => {
         category,
         price: Number(price),
         offerPrice: Number(offerPrice),
+        flashSalePrice: Number(flashSalePrice) || null,
         image: imageUrls.filter(url => url).map(url => getImageUrl(url)),
         stock: Number(stock),
         sizes: sizes.split(',').map(s => s.trim()).filter(s => s),
@@ -53,6 +55,7 @@ const AddProduct = () => {
     setCategory('Earphone');
     setPrice('');
     setOfferPrice('');
+    setFlashSalePrice('');
     setSizes('');
     setStock('');
     setFlashSaleEndDate('');
@@ -75,7 +78,7 @@ const AddProduct = () => {
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between">
-      <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg">
+      <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-4xl">
         <div>
           <p className="text-base font-medium">Product Image URLs</p>
           <div className="flex flex-col gap-3 mt-2">
@@ -131,8 +134,74 @@ const AddProduct = () => {
             required
           ></textarea>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Standard Pricing */}
+            <div className='space-y-4 border p-4 rounded-md'>
+                <h3 className='font-semibold text-lg'>Standard Pricing</h3>
+                <div className="flex flex-col gap-1 w-full">
+                    <label className="text-base font-medium" htmlFor="product-price">
+                    Original Price
+                    </label>
+                    <input
+                    id="product-price"
+                    type="number"
+                    placeholder="0"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    onChange={(e) => setPrice(e.target.value)}
+                    value={price}
+                    required
+                    />
+                </div>
+                <div className="flex flex-col gap-1 w-full">
+                    <label className="text-base font-medium" htmlFor="offer-price">
+                    Standard Offer Price
+                    </label>
+                    <input
+                    id="offer-price"
+                    type="number"
+                    placeholder="0"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    onChange={(e) => setOfferPrice(e.target.value)}
+                    value={offerPrice}
+                    required
+                    />
+                </div>
+            </div>
+
+            {/* Flash Sale Pricing */}
+            <div className='space-y-4 border p-4 rounded-md'>
+                <h3 className='font-semibold text-lg'>Flash Sale (Optional)</h3>
+                <div className="flex flex-col gap-1 w-full">
+                    <label className="text-base font-medium" htmlFor="flash-sale-price">
+                    Flash Sale Price
+                    </label>
+                    <input
+                    id="flash-sale-price"
+                    type="number"
+                    placeholder="0"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    onChange={(e) => setFlashSalePrice(e.target.value)}
+                    value={flashSalePrice}
+                    />
+                </div>
+                <div className="flex flex-col gap-1 w-full">
+                    <label className="text-base font-medium" htmlFor="flash-sale-date">
+                    Flash Sale End Date
+                    </label>
+                    <input
+                    id="flash-sale-date"
+                    type="datetime-local"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    onChange={(e) => setFlashSaleEndDate(e.target.value)}
+                    value={flashSaleEndDate}
+                    />
+                </div>
+            </div>
+        </div>
+
         <div className="flex items-center gap-5 flex-wrap">
-          <div className="flex flex-col gap-1 w-32">
+          <div className="flex flex-col gap-1 w-40">
             <label className="text-base font-medium" htmlFor="category">
               Category
             </label>
@@ -153,34 +222,6 @@ const AddProduct = () => {
             </select>
           </div>
           <div className="flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="product-price">
-              Product Price
-            </label>
-            <input
-              id="product-price"
-              type="number"
-              placeholder="0"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setPrice(e.target.value)}
-              value={price}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="offer-price">
-              Offer Price
-            </label>
-            <input
-              id="offer-price"
-              type="number"
-              placeholder="0"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setOfferPrice(e.target.value)}
-              value={offerPrice}
-              required
-            />
-          </div>
-           <div className="flex flex-col gap-1 w-32">
             <label className="text-base font-medium" htmlFor="stock-quantity">
               Stock Quantity
             </label>
@@ -192,18 +233,6 @@ const AddProduct = () => {
               onChange={(e) => setStock(e.target.value)}
               value={stock}
               required
-            />
-          </div>
-           <div className="flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="flash-sale-date">
-              Flash Sale End
-            </label>
-            <input
-              id="flash-sale-date"
-              type="datetime-local"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setFlashSaleEndDate(e.target.value)}
-              value={flashSaleEndDate}
             />
           </div>
         </div>

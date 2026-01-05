@@ -64,14 +64,15 @@
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" },
-        "price": { "type": "number" },
-        "offerPrice": { "type": "number" },
+        "price": { "type": "number", "description": "The original price of the product." },
+        "offerPrice": { "type": "number", "description": "The standard discounted price." },
+        "flashSalePrice": { "type": "number", "description": "A special, deeper discount price for a limited time." },
         "image": { "type": "array", "items": { "type": "string", "format": "uri" } },
         "category": { "type": "string" },
         "stock": { "type": "number" },
         "sizes": { "type": "array", "items": { "type": "string" } },
         "userId": { "type": "string", "description": "The UID of the seller who owns this product." },
-        "flashSaleEndDate": { "type": "string", "format": "date-time" },
+        "flashSaleEndDate": { "type": "string", "format": "date-time", "description": "The date and time when the flash sale ends." },
         "status": {
           "type": "string",
           "enum": ["pending", "approved", "rejected"],
