@@ -331,7 +331,7 @@ export const AppContextProvider = (props) => {
         }
         const userRef = doc(firestore, 'users', userData._id);
         try {
-            await runTransaction(db, async (transaction) => {
+            await runTransaction(firestore, async (transaction) => {
                 const userDoc = await transaction.get(userRef);
                 if (!userDoc.exists()) {
                     throw "User does not exist.";
