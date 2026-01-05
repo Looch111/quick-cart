@@ -28,19 +28,21 @@ export async function POST(req) {
 
         for (const doc of productDocs) {
             if (!doc.exists) {
-                return NextResponse.json({ message: `Product with ID ${doc.id} not found.` }, { status: 404 });
+                throw new Error(`Product with ID ${doc.id} not found.`);
             }
             const product = { id: doc.id, ...doc.data() };
             const quantity = cart[product.id];
             
             if (product.stock < quantity) {
-                return NextResponse.json({ message: `Not enough stock for ${product.name}. Only ${product.stock} left.` }, { status: 400 });
+                throw new Error(`Not enough stock for ${product.name}. Only ${product.stock} left.`);
             }
             
+            // Safely check for flash sale and calculate price
             const isFlashSale = product.flashSaleEndDate && product.flashSaleEndDate.toDate && product.flashSaleEndDate.toDate() > new Date();
             const currentPrice = isFlashSale ? product.offerPrice : product.price;
 
-            serverCalculatedAmount += currentPrice * quantity;
+            serverCalculatedAmount += Number(currentPrice) * quantity;
+
             orderItems.push({
                 ...product,
                 price: Number(product.price),
@@ -54,11 +56,11 @@ export async function POST(req) {
         const tx_ref = `QUICKCART-${Date.now()}`;
         const newOrderRef = db.collection('orders').doc();
         
-        // Use the totalAmount passed from client as the final charge amount, which includes shipping & discounts
+        // Use the SERVER calculated amount for the order record
         await newOrderRef.set({
             userId: userId,
             items: orderItems,
-            amount: totalAmount, 
+            amount: serverCalculatedAmount, // Use server-calculated amount
             address: address,
             status: 'pending',
             paymentMethod: paymentMethod,
@@ -69,7 +71,7 @@ export async function POST(req) {
         // --- Generate Payment Link ---
         const payload = {
             tx_ref,
-            amount: totalAmount,
+            amount: totalAmount, // The client total (including shipping/discounts) is sent to Flutterwave
             currency: "NGN",
             redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-placed?tx_ref=${tx_ref}`,
             customer: {
@@ -86,7 +88,7 @@ export async function POST(req) {
         const response = await flw.Payment.initiate(payload);
 
         if (response.status !== 'success') {
-            return NextResponse.json({ message: 'Failed to create payment link.' }, { status: 500 });
+            throw new Error('Flutterwave failed to create payment link.');
         }
 
         return NextResponse.json({
@@ -96,7 +98,8 @@ export async function POST(req) {
         });
 
     } catch (error) {
+        // DETAILED LOGGING: This will show the exact error on the server console.
         console.error('PAYMENT_INITIALIZATION_ERROR:', error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

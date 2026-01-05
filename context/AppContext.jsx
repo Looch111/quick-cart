@@ -609,7 +609,7 @@ export const AppContextProvider = (props) => {
             if (itemInfo && cartItems[itemId] > 0) {
                 const isFlashSale = itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
                 const currentPrice = isFlashSale ? itemInfo.offerPrice : itemInfo.price;
-                totalAmount += currentPrice * cartItems[itemId];
+                totalAmount += Number(currentPrice) * cartItems[itemId];
             }
         }
         return Math.floor(totalAmount * 100) / 100;
