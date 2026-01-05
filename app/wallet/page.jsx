@@ -20,7 +20,6 @@ const WalletPage = () => {
     }, [userData, router, setShowLogin]);
     
     const handleDeposit = () => {
-        
         const config = {
             public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
             tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -79,8 +78,8 @@ const WalletPage = () => {
     return (
         <>
             <Navbar />
-            <div className="flex flex-col items-center justify-center px-6 md:px-16 lg:px-32 min-h-screen pt-28 pb-16">
-                <div className="w-full max-w-4xl">
+            <div className="flex flex-col items-center justify-center px-4 md:px-16 lg:px-32 min-h-screen pt-28 pb-16 bg-gray-50">
+                <div className="w-full max-w-5xl">
                      <div className="flex flex-col items-start mb-10">
                         <h1 className="text-3xl font-bold text-gray-800">My Wallet</h1>
                         <p className="text-gray-500 mt-1">View your balance and transaction history.</p>
@@ -139,18 +138,43 @@ const WalletPage = () => {
                                     </div>
                                     <h3 className="text-lg font-semibold text-gray-700">Transaction History</h3>
                                 </div>
-                                <div className="space-y-4 max-h-96 overflow-y-auto">
-                                    {sortedTransactions.length > 0 ? sortedTransactions.map(tx => (
-                                        <div key={tx.id} className="flex justify-between items-center border-b pb-2">
+
+                                {/* Mobile View: Cards */}
+                                <div className="space-y-4 md:hidden">
+                                     {sortedTransactions.length > 0 ? sortedTransactions.map(tx => (
+                                        <div key={tx.id} className="flex justify-between items-center border-b pb-3 last:border-b-0">
                                             <div>
-                                                <p className={`font-medium ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>{tx.type}</p>
+                                                <p className={`font-medium capitalize ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>{tx.type}</p>
                                                 <p className="text-xs text-gray-500">{new Date(tx.date).toLocaleString()}</p>
                                             </div>
-                                            <p className={`font-semibold ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>
+                                            <p className={`font-semibold text-lg ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>
                                                 {tx.type === 'Payment' ? '-' : '+'}{currency}{Math.abs(tx.amount).toFixed(2)}
                                             </p>
                                         </div>
                                     )) : (
+                                        <p className="text-sm text-gray-500 text-center py-4">No transactions yet.</p>
+                                    )}
+                                </div>
+                                
+                                {/* Desktop View: Table */}
+                                <div className="hidden md:block max-h-96 overflow-y-auto">
+                                    {sortedTransactions.length > 0 ? (
+                                        <table className="min-w-full text-sm text-left">
+                                            <tbody>
+                                                {sortedTransactions.map(tx => (
+                                                    <tr key={tx.id} className="border-b last:border-b-0">
+                                                        <td className="py-2">
+                                                            <p className={`font-medium capitalize ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>{tx.type}</p>
+                                                            <p className="text-xs text-gray-500">{new Date(tx.date).toLocaleDateString()}</p>
+                                                        </td>
+                                                        <td className={`py-2 text-right font-semibold ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>
+                                                          {tx.type === 'Payment' ? '-' : '+'}{currency}{Math.abs(tx.amount).toFixed(2)}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    ) : (
                                         <p className="text-sm text-gray-500 text-center py-4">No transactions yet.</p>
                                     )}
                                 </div>
