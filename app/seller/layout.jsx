@@ -25,7 +25,7 @@ const Layout = ({ children }) => {
   return (
     <div>
       <SellerNavbar />
-      <div className='w-full'>
+      <div className='w-full pt-16'>
         {children}
       </div>
     </div>
