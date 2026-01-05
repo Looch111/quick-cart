@@ -102,7 +102,7 @@ const MyOrders = () => {
                                                 <div className="flex-grow">
                                                     <p className="font-semibold text-gray-800">{item.name}</p>
                                                     <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                                                    <p className="text-sm font-medium text-gray-700">{currency}{item.offerPrice.toFixed(2)}</p>
+                                                    <p className="text-sm font-medium text-gray-700">{currency}{Number(item.offerPrice).toFixed(2)}</p>
                                                 </div>
                                             </div>
                                         ))}
