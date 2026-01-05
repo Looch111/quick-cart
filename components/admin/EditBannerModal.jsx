@@ -64,7 +64,17 @@ const EditBannerModal = ({ banner, onSave, onCancel }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Primary Button Text</label>
+                        <input
+                            type="text"
+                            name="buttonText"
+                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value={bannerData.buttonText}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Primary Link URL</label>
                         <input
                             type="text"
                             name="link"
@@ -74,12 +84,22 @@ const EditBannerModal = ({ banner, onSave, onCancel }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Button Text</label>
                         <input
                             type="text"
-                            name="buttonText"
+                            name="secondaryButtonText"
                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            value={bannerData.buttonText}
+                            value={bannerData.secondaryButtonText}
+                            onChange={handleChange}
+                        />
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Link URL</label>
+                        <input
+                            type="text"
+                            name="secondaryLink"
+                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value={bannerData.secondaryLink}
                             onChange={handleChange}
                         />
                     </div>

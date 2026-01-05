@@ -55,8 +55,8 @@ const HeaderSlider = () => {
                                 <button onClick={() => router.push(slide.link)} className="md:px-10 px-7 md:py-2.5 py-2 bg-orange-600 rounded-full text-white font-medium">
                                     {slide.buttonText || 'Shop now'}
                                 </button>
-                                <button onClick={() => router.push('/all-products')} className="group flex items-center gap-2 px-6 py-2.5 font-medium">
-                                    Find more
+                                <button onClick={() => router.push(slide.secondaryLink || '/all-products')} className="group flex items-center gap-2 px-6 py-2.5 font-medium">
+                                    {slide.secondaryButtonText || 'Find more'}
                                     <Image className="group-hover:translate-x-1 transition" src={assets.arrow_icon} alt="arrow_icon" />
                                 </button>
                             </div>

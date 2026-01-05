@@ -20,7 +20,7 @@ const Switch = ({ checked, onChange }) => {
 const MarketingPage = () => {
     const { banners, addBanner, deleteBanner, updateBanner, updateBannerStatus } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
-    const [newBanner, setNewBanner] = useState({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', image: '', status: 'active' });
+    const [newBanner, setNewBanner] = useState({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: 'Shop Now', image: '', status: 'active', secondaryButtonText: 'Find More', secondaryLink: '/all-products' });
     const [editingBanner, setEditingBanner] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [bannerToDelete, setBannerToDelete] = useState(null);
@@ -32,7 +32,7 @@ const MarketingPage = () => {
             return;
         }
         addBanner(newBanner);
-        setNewBanner({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', image: '', status: 'active' });
+        setNewBanner({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: 'Shop Now', image: '', status: 'active', secondaryButtonText: 'Find More', secondaryLink: '/all-products' });
         setIsAdding(false);
     };
 
@@ -108,7 +108,17 @@ const MarketingPage = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Primary Button Text</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Shop Now"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                            value={newBanner.buttonText}
+                                            onChange={(e) => setNewBanner({ ...newBanner, buttonText: e.target.value })}
+                                        />
+                                    </div>
+                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Primary Link URL</label>
                                         <input
                                             type="text"
                                             placeholder="/all-products"
@@ -118,16 +128,26 @@ const MarketingPage = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Button Text</label>
                                         <input
                                             type="text"
-                                            placeholder="e.g., Shop Now"
+                                            placeholder="e.g., Find More"
                                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                            value={newBanner.buttonText}
-                                            onChange={(e) => setNewBanner({ ...newBanner, buttonText: e.target.value })}
+                                            value={newBanner.secondaryButtonText}
+                                            onChange={(e) => setNewBanner({ ...newBanner, secondaryButtonText: e.target.value })}
                                         />
                                     </div>
-                                    <div>
+                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Link URL</label>
+                                        <input
+                                            type="text"
+                                            placeholder="/all-products"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                            value={newBanner.secondaryLink}
+                                            onChange={(e) => setNewBanner({ ...newBanner, secondaryLink: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className='md:col-span-2'>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
                                         <input
                                             type="text"
