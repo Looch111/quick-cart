@@ -365,8 +365,8 @@ export const AppContextProvider = (props) => {
               totalAmount,
               userId: userData._id,
               paymentMethod: 'online',
-              email: userData.email, // Pass email for Flutterwave
-              name: userData.name || 'Customer' // Pass name for Flutterwave
+              email: userData.email,
+              name: userData.name || 'Customer'
             }),
           });
       
@@ -376,32 +376,10 @@ export const AppContextProvider = (props) => {
           }
       
           const data = await response.json();
-          const { tx_ref } = data;
-      
-          window.FlutterwaveCheckout({
-            public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-            tx_ref,
-            amount: totalAmount,
-            currency: "NGN",
-            payment_options: "card,mobilemoney,ussd",
-            redirect_url: `${window.location.origin}/order-placed?tx_ref=${tx_ref}`,
-            customer: {
-              email: userData.email,
-              name: userData.name || 'Customer',
-            },
-            customizations: {
-              title: "QuickCart Store",
-              description: "Payment for items in cart",
-              logo: "https://i.imgur.com/Am9r4s8.png",
-            },
-            callback: function (data) {
-              console.log("Payment successful, webhook will handle finalization.", data);
-              // The redirect_url will handle the next step.
-            },
-            onclose: function () {
-              toast.error("Payment popup closed.");
-            },
-          });
+          const { paymentLink } = data;
+          
+          window.location.href = paymentLink;
+
         } catch (error) {
           toast.error(error.message);
           console.error("Payment error:", error);

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/firebase-admin';
+import Flutterwave from 'flutterwave-node-v3';
 
-// This endpoint initializes a payment by creating a 'pending' order
-// in the database. It's a crucial security step to ensure that order details
-// are validated on the server and an immutable record is created before
-// handing off to the payment provider.
+const flw = new Flutterwave(
+    process.env.FLUTTERWAVE_PUBLIC_KEY,
+    process.env.FLUTTERWAVE_SECRET_KEY
+);
 
 export async function POST(req) {
     try {
@@ -23,9 +24,7 @@ export async function POST(req) {
         const productIds = Object.keys(cart);
         const productRefs = productIds.map(id => db.collection('products').doc(id));
         const productDocs = await db.getAll(...productRefs);
-        const productsInCart = {};
         const orderItems = [];
-
 
         for (const doc of productDocs) {
             if (!doc.exists) {
@@ -35,14 +34,13 @@ export async function POST(req) {
             const quantity = cart[product.id];
             
             if (product.stock < quantity) {
-                return NextResponse.json({ message: `Not enough stock for ${product.name}. Only ${product.stock} left.` }, { status_code: 400 });
+                return NextResponse.json({ message: `Not enough stock for ${product.name}. Only ${product.stock} left.` }, { status: 400 });
             }
             
             const isFlashSale = product.flashSaleEndDate && product.flashSaleEndDate.toDate() > new Date();
             const currentPrice = isFlashSale ? product.offerPrice : product.price;
 
             serverCalculatedAmount += currentPrice * quantity;
-            productsInCart[product.id] = product;
             orderItems.push({
                 ...product,
                 price: Number(product.price),
@@ -56,20 +54,44 @@ export async function POST(req) {
         const tx_ref = `QUICKCART-${Date.now()}`;
         const newOrderRef = db.collection('orders').doc();
         
-        // Use the server-calculated total amount for the order record
+        // Use the totalAmount passed from client as the final charge amount, which includes shipping & discounts
         await newOrderRef.set({
             userId: userId,
             items: orderItems,
-            amount: totalAmount, // Use the client-side totalAmount which includes shipping and discounts for the final charge
+            amount: totalAmount, 
             address: address,
             status: 'pending',
             paymentMethod: paymentMethod,
             transactionRef: tx_ref,
             date: new Date(),
         });
+        
+        // --- Generate Payment Link ---
+        const payload = {
+            tx_ref,
+            amount: totalAmount,
+            currency: "NGN",
+            redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-placed?tx_ref=${tx_ref}`,
+            customer: {
+              email: email,
+              name: name,
+            },
+            customizations: {
+              title: "QuickCart Store",
+              description: "Payment for items in cart",
+              logo: "https://i.imgur.com/Am9r4s8.png",
+            },
+        };
+
+        const response = await flw.Payment.initiate(payload);
+
+        if (response.status !== 'success') {
+            return NextResponse.json({ message: 'Failed to create payment link.' }, { status: 500 });
+        }
 
         return NextResponse.json({
-            message: 'Payment initialized successfully',
+            message: 'Payment link created successfully',
+            paymentLink: response.data.link,
             tx_ref,
         });
 
