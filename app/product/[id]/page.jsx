@@ -76,7 +76,7 @@ const Product = () => {
     const isFlashSale = productData && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > new Date();
 
     const currentPrice = productData ? (isFlashSale ? productData.offerPrice : productData.price) : 0;
-    const originalPrice = productData ? (isFlashSale ? productData.price : null) : null;
+    const originalPrice = productData ? (isFlashSale ? productData.price : (productData.offerPrice < productData.price ? productData.price : null)) : null;
 
 
     return productData ? (<>
@@ -131,10 +131,10 @@ const Product = () => {
                         {productData.description}
                     </p>
                     <p className="text-3xl font-medium mt-6">
-                        {currency}{currentPrice}
-                        {originalPrice && originalPrice > currentPrice && (
+                        {currency}{productData.offerPrice}
+                        {productData.price > productData.offerPrice && (
                             <span className="text-base font-normal text-gray-800/60 line-through ml-2">
-                                {currency}{originalPrice}
+                                {currency}{productData.price}
                             </span>
                         )}
                     </p>

@@ -65,7 +65,7 @@ const ProductCard = ({ product }) => {
     const isFlashSale = product.flashSaleEndDate && new Date(product.flashSaleEndDate) > new Date();
 
     const currentPrice = isFlashSale ? product.offerPrice : product.price;
-    const originalPrice = isFlashSale ? product.price : null;
+    const originalPrice = isFlashSale ? product.price : (product.offerPrice < product.price ? product.price : null);
 
     const handleWishlistClick = (e) => {
         e.stopPropagation();
@@ -131,8 +131,8 @@ const ProductCard = ({ product }) => {
 
                 <div className="flex items-end justify-between w-full mt-2">
                     <div className="flex items-center flex-wrap gap-x-2">
-                        <p className="text-base font-medium text-orange-600">{currency}{currentPrice}</p>
-                        {originalPrice && originalPrice > currentPrice && <p className="text-sm line-through text-gray-400">{currency}{originalPrice}</p>}
+                        <p className="text-base font-medium text-orange-600">{currency}{product.offerPrice}</p>
+                        {product.price > product.offerPrice && <p className="text-sm line-through text-gray-400">{currency}{product.price}</p>}
                     </div>
                     <div className="flex items-center gap-2">
                         <button 
