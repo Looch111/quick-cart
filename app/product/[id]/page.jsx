@@ -37,6 +37,11 @@ const Product = () => {
     }, [params.id, products]);
 
     const isOutOfStock = productData && productData.stock === 0;
+    const isFlashSale = productData && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > new Date();
+
+    const currentPrice = productData ? (isFlashSale ? productData.offerPrice : productData.price) : 0;
+    const originalPrice = productData ? (isFlashSale ? productData.price : null) : null;
+
 
     return productData ? (<>
         <Navbar />
@@ -100,10 +105,12 @@ const Product = () => {
                         {productData.description}
                     </p>
                     <p className="text-3xl font-medium mt-6">
-                        ${productData.offerPrice}
-                        <span className="text-base font-normal text-gray-800/60 line-through ml-2">
-                            ${productData.price}
-                        </span>
+                        ${currentPrice}
+                        {originalPrice && originalPrice > currentPrice && (
+                            <span className="text-base font-normal text-gray-800/60 line-through ml-2">
+                                ${originalPrice}
+                            </span>
+                        )}
                     </p>
                     {productData.sizes && productData.sizes.length > 0 && (
                         <div className="mt-6">

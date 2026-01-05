@@ -599,7 +599,9 @@ export const AppContextProvider = (props) => {
         for (const itemId in cartItems) {
             let itemInfo = allRawProducts.find((product) => product._id === itemId);
             if (itemInfo && cartItems[itemId] > 0) {
-                totalAmount += itemInfo.offerPrice * cartItems[itemId];
+                const isFlashSale = itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
+                const currentPrice = isFlashSale ? itemInfo.offerPrice : itemInfo.price;
+                totalAmount += currentPrice * cartItems[itemId];
             }
         }
         return Math.floor(totalAmount * 100) / 100;
