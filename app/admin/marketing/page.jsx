@@ -20,7 +20,7 @@ const Switch = ({ checked, onChange }) => {
 const MarketingPage = () => {
     const { banners, addBanner, deleteBanner, updateBanner, updateBannerStatus } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
-    const [newBanner, setNewBanner] = useState({ title: '', link: '', buttonText: '', linkText: '' });
+    const [newBanner, setNewBanner] = useState({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', linkText: '', image: '', status: 'active' });
     const [editingBanner, setEditingBanner] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [bannerToDelete, setBannerToDelete] = useState(null);
@@ -32,7 +32,7 @@ const MarketingPage = () => {
             return;
         }
         addBanner(newBanner);
-        setNewBanner({ title: '', link: '', buttonText: '', linkText: '' });
+        setNewBanner({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: '', linkText: '', image: '', status: 'active' });
         setIsAdding(false);
     };
 
@@ -98,6 +98,16 @@ const MarketingPage = () => {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Offer Text</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Limited Time Offer"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                            value={newBanner.offerText}
+                                            onChange={(e) => setNewBanner({ ...newBanner, offerText: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
                                         <input
                                             type="text"
@@ -125,6 +135,23 @@ const MarketingPage = () => {
                                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
                                             value={newBanner.linkText}
                                             onChange={(e) => setNewBanner({ ...newBanner, linkText: e.target.value })}
+                                        />
+                                    </div>
+                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                                        <input
+                                            type="text"
+                                            placeholder="https://i.imgur.com/gB343so.png"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                            value={newBanner.image}
+                                            onChange={(e) => setNewBanner({ ...newBanner, image: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <label className="block text-sm font-medium text-gray-700">Active</label>
+                                        <Switch 
+                                            checked={newBanner.status === 'active'} 
+                                            onChange={(e) => setNewBanner({ ...newBanner, status: e.target.checked ? 'active' : 'inactive' })} 
                                         />
                                     </div>
                                 </div>

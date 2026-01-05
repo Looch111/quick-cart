@@ -126,6 +126,7 @@
         "type": "object",
         "properties": {
             "title": { "type": "string" },
+            "offerText": { "type": "string" },
             "image": { "type": "string", "format": "uri" },
             "link": { "type": "string" },
             "status": { "type": "string", "enum": ["active", "inactive"] },

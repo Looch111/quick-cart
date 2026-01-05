@@ -226,12 +226,8 @@ export const AppContextProvider = (props) => {
         }
         const bannersCollectionRef = collection(firestore, 'banners');
         await addDoc(bannersCollectionRef, {
-            title: newBanner.title,
-            image: "https://i.imgur.com/gB343so.png", // placeholder image
-            link: newBanner.link,
-            status: 'active',
-            buttonText: newBanner.buttonText,
-            linkText: newBanner.linkText
+            ...newBanner,
+            image: newBanner.image || "https://i.imgur.com/gB343so.png", // placeholder image
         });
         toast.success("Banner added successfully!");
     }
