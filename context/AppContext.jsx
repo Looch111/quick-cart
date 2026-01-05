@@ -67,7 +67,7 @@ export const AppContextProvider = (props) => {
             if (snapshot.exists()) {
               const dbUser = snapshot.data();
               setUserData({ ...dbUser, _id: snapshot.id });
-              setIsSeller(dbUser.role === 'seller');
+              setIsSeller(dbUser.role === 'seller' || dbUser.role === 'admin');
               setIsAdmin(dbUser.role === 'admin');
             } else {
               setUserData(null);
