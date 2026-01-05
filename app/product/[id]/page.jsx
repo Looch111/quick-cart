@@ -18,23 +18,24 @@ const Product = () => {
     const [productData, setProductData] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
 
-    const fetchProductData = async (productId) => {
-        const product = products.find(product => product._id === productId);
-        setProductData(product);
-        if (product) {
-            setMainImage(product.image[0]);
-            if (product.sizes && product.sizes.length > 0) {
-                setSelectedSize(product.sizes[0]);
-            }
-        }
-    }
+    const productId = params.id;
 
     useEffect(() => {
-        const productId = params.id;
+        const fetchProductData = async (id) => {
+            const product = products.find(product => product._id === id);
+            setProductData(product);
+            if (product) {
+                setMainImage(product.image[0]);
+                if (product.sizes && product.sizes.length > 0) {
+                    setSelectedSize(product.sizes[0]);
+                }
+            }
+        }
+
         if (productId && products.length > 0) {
             fetchProductData(productId);
         }
-    }, [params.id, products]);
+    }, [productId, products]);
 
     const isOutOfStock = productData && productData.stock === 0;
     const isFlashSale = productData && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > new Date();
