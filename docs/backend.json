@@ -100,8 +100,7 @@
         "address": { "$ref": "#/entities/address" },
         "status": { "type": "string", "enum": ["pending", "failed", "Order Placed", "Processing", "Shipped", "Delivered"] },
         "date": { "type": "string", "format": "date-time" },
-        "paymentMethod": { "type": "string", "enum": ["cod", "wallet", "online"] },
-        "transactionRef": { "type": "string", "description": "The unique reference for the payment transaction." }
+        "paymentMethod": { "type": "string", "enum": ["wallet", "online"] }
       },
       "required": ["userId", "items", "amount", "address", "status", "date"]
     },
@@ -194,3 +193,5 @@
     }
   }
 }
+
+    

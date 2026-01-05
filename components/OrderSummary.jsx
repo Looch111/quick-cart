@@ -1,3 +1,4 @@
+'use client';
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -8,7 +9,7 @@ const OrderSummary = () => {
   const { currency, router, getCartCount, getCartAmount, userAddresses, placeOrder, userData, setShowLogin, walletBalance, promotions, platformSettings } = useAppContext()
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentMethod, setPaymentMethod] = useState('wallet');
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [appliedPromo, setAppliedPromo] = useState(null);
@@ -151,10 +152,6 @@ const OrderSummary = () => {
             </label>
             <div className="space-y-2">
                 <label className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-100">
-                    <input type="radio" name="payment" className="h-4 w-4 text-orange-600" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
-                    <span className="ml-3 text-sm font-medium text-gray-700">Cash on Delivery (COD)</span>
-                </label>
-                <label className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-100">
                     <input type="radio" name="payment" className="h-4 w-4 text-orange-600" value="wallet" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} disabled={!userData} />
                     <span className="ml-3 text-sm font-medium text-gray-700">Pay with Wallet</span>
                     {userData && (
@@ -220,3 +217,5 @@ const OrderSummary = () => {
 };
 
 export default OrderSummary;
+
+    
