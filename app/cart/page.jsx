@@ -9,7 +9,7 @@ import { Plus, Minus } from "lucide-react";
 
 const Cart = () => {
 
-  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency } = useAppContext();
+  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts } = useAppContext();
 
   if (!userData && getCartCount() > 0) {
     setShowLogin(true);
@@ -62,9 +62,11 @@ const Cart = () => {
               </thead>
               <tbody>
                 {Object.keys(cartItems).map((itemId) => {
-                  const product = products.find(product => product._id === itemId);
+                  const product = allRawProducts.find(product => product._id === itemId);
 
                   if (!product || cartItems[itemId] <= 0) return null;
+
+                  const isStockLimitReached = cartItems[itemId] >= product.stock;
 
                   return (
                     <tr key={itemId}>
@@ -113,7 +115,8 @@ const Cart = () => {
                             />
                             <button 
                                 onClick={() => addToCart(product._id)}
-                                className="p-1.5"
+                                className="p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isStockLimitReached}
                             >
                                 <Plus className="w-4 h-4 text-gray-600" />
                             </button>

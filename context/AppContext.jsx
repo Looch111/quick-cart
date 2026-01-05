@@ -546,6 +546,16 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
+        const product = allRawProducts.find(p => p._id === itemId);
+        if (!product) {
+            toast.error("Product not found.");
+            return;
+        }
+        const currentQuantityInCart = cartItems[itemId] || 0;
+        if (currentQuantityInCart >= product.stock) {
+            toast.error(`No more stock available for ${product.name}`);
+            return;
+        }
         const newCart = { ...cartItems };
         newCart[itemId] = (newCart[itemId] || 0) + 1;
         updateUserField('cartItems', newCart);
@@ -558,6 +568,17 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
+        const product = allRawProducts.find(p => p._id === itemId);
+        if (!product) {
+            toast.error("Product not found.");
+            return;
+        }
+
+        if (quantity > product.stock) {
+            toast.error(`Only ${product.stock} items available for ${product.name}`);
+            quantity = product.stock;
+        }
+
         const newCart = { ...cartItems };
         if (quantity <= 0) {
             delete newCart[itemId];
