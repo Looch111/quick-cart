@@ -597,7 +597,7 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
-        const newWishlist = { ...wishlistItems };
+        const newWishlist = { ...userData.wishlistItems };
         if (newWishlist[productId]) {
             delete newWishlist[productId];
             toast.success("Removed from wishlist");
