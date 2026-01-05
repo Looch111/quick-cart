@@ -16,7 +16,7 @@ const Switch = ({ checked, onChange }) => {
 };
 
 const PromotionsPage = () => {
-    const { promotions, addPromotion, deletePromotion, updatePromotionStatus } = useAppContext();
+    const { promotions, addPromotion, deletePromotion, updatePromotionStatus, currency } = useAppContext();
     const [newPromo, setNewPromo] = useState({ code: '', type: 'percentage', value: '', expiryDate: '' });
     const [isAdding, setIsAdding] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -53,7 +53,7 @@ const PromotionsPage = () => {
     
     const getPromoValue = (promo) => {
         if (promo.type === 'percentage') return `${promo.value}%`;
-        if (promo.type === 'fixed') return `$${promo.value}`;
+        if (promo.type === 'fixed') return `${currency}${promo.value}`;
         if (promo.type === 'shipping') return 'Free Shipping';
         return 'N/A';
     }
@@ -100,7 +100,7 @@ const PromotionsPage = () => {
                                         onChange={(e) => setNewPromo({ ...newPromo, type: e.target.value, value: e.target.value === 'shipping' ? 0 : '' })}
                                     >
                                         <option value="percentage">Percentage (%)</option>
-                                        <option value="fixed">Fixed Amount ($)</option>
+                                        <option value="fixed">Fixed Amount ({currency})</option>
                                         <option value="shipping">Free Shipping</option>
                                     </select>
                                 </div>

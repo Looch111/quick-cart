@@ -8,7 +8,7 @@ import { Wallet, History, PlusCircle } from 'lucide-react';
 import Loading from '@/components/Loading';
 
 const WalletPage = () => {
-    const { userData, walletBalance, fundWallet, walletTransactions, setShowLogin, router } = useAppContext();
+    const { userData, walletBalance, fundWallet, walletTransactions, setShowLogin, router, currency } = useAppContext();
     const [topUpAmount, setTopUpAmount] = useState('');
 
     useEffect(() => {
@@ -52,7 +52,7 @@ const WalletPage = () => {
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-semibold text-gray-700">Current Balance</h3>
-                                        <p className="text-4xl font-bold text-gray-900">${walletBalance.toFixed(2)}</p>
+                                        <p className="text-4xl font-bold text-gray-900">{currency}{walletBalance.toFixed(2)}</p>
                                     </div>
                                 </div>
                                 <form onSubmit={handleFundWallet} className="mt-8 space-y-4">
@@ -60,7 +60,7 @@ const WalletPage = () => {
                                         <label htmlFor="topup-amount" className="block text-sm font-medium text-gray-700">Top Up Wallet</label>
                                         <div className="mt-1 relative rounded-md shadow-sm">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">$</span>
+                                                <span className="text-gray-500 sm:text-sm">{currency}</span>
                                             </div>
                                             <input
                                                 type="number"
@@ -97,7 +97,7 @@ const WalletPage = () => {
                                                 <p className="text-xs text-gray-500">{new Date(tx.date).toLocaleString()}</p>
                                             </div>
                                             <p className={`font-semibold ${tx.type === 'Payment' ? 'text-red-600' : 'text-green-600'}`}>
-                                                {tx.type === 'Payment' ? '-' : '+'}${Math.abs(tx.amount).toFixed(2)}
+                                                {tx.type === 'Payment' ? '-' : '+'}{currency}{Math.abs(tx.amount).toFixed(2)}
                                             </p>
                                         </div>
                                     )) : (

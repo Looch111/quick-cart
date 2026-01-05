@@ -6,7 +6,7 @@ import { useAppContext } from '@/context/AppContext';
 import Loading from '@/components/Loading';
 
 const SettingsPage = () => {
-    const { platformSettings, updateSettings, settingsLoading } = useAppContext();
+    const { platformSettings, updateSettings, settingsLoading, currency } = useAppContext();
     const [commission, setCommission] = useState(0);
     const [shippingFee, setShippingFee] = useState(0);
     const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
@@ -73,7 +73,7 @@ const SettingsPage = () => {
                                 </label>
                                 <div className="mt-1 relative rounded-md shadow-sm">
                                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span className="text-gray-500 sm:text-sm">$</span>
+                                        <span className="text-gray-500 sm:text-sm">{currency}</span>
                                     </div>
                                     <input
                                         type="number"
@@ -97,7 +97,7 @@ const SettingsPage = () => {
                                 </label>
                                 <div className="mt-1 relative rounded-md shadow-sm">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span className="text-gray-500 sm:text-sm">$</span>
+                                        <span className="text-gray-500 sm:text-sm">{currency}</span>
                                     </div>
                                     <input
                                         type="number"

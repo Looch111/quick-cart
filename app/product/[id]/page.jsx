@@ -12,7 +12,7 @@ import { useParams } from "next/navigation";
 
 const Product = () => {
     const params = useParams();
-    const { products, router, addToCart } = useAppContext()
+    const { products, router, addToCart, currency } = useAppContext()
 
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
@@ -105,10 +105,10 @@ const Product = () => {
                         {productData.description}
                     </p>
                     <p className="text-3xl font-medium mt-6">
-                        ${currentPrice}
+                        {currency}{currentPrice}
                         {originalPrice && originalPrice > currentPrice && (
                             <span className="text-base font-normal text-gray-800/60 line-through ml-2">
-                                ${originalPrice}
+                                {currency}{originalPrice}
                             </span>
                         )}
                     </p>

@@ -15,7 +15,7 @@ export const useAppContext = () => {
 
 export const AppContextProvider = (props) => {
 
-    const currency = '$';
+    const currency = '₦';
     const router = useRouter()
     const { user: firebaseUser, loading: authLoading } = useUser();
     const { signOut } = useAuth();

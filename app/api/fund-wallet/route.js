@@ -16,7 +16,7 @@ export async function POST(req) {
         const payload = {
             tx_ref,
             amount: Number(amount),
-            currency: "USD",
+            currency: "NGN",
             redirect_url: `${process.env.BASE_URL}/wallet/verify`,
             customer: {
                 email: email,
@@ -27,7 +27,7 @@ export async function POST(req) {
             },
             customizations: {
                 title: "QuickCart Wallet Funding",
-                description: `Fund your QuickCart wallet with $${amount}`,
+                description: `Fund your QuickCart wallet with ₦${amount}`,
                 logo: "https://i.imgur.com/gB343so.png"
             }
         };

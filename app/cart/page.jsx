@@ -9,7 +9,7 @@ import { Plus, Minus } from "lucide-react";
 
 const Cart = () => {
 
-  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin } = useAppContext();
+  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency } = useAppContext();
 
   if (!userData && getCartCount() > 0) {
     setShowLogin(true);
@@ -96,7 +96,7 @@ const Cart = () => {
                           </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">${product.offerPrice}</td>
+                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{product.offerPrice}</td>
                       <td className="py-4 md:px-4 px-1">
                         <div className="flex items-center border border-gray-300 rounded-full">
                             <button 
@@ -119,7 +119,7 @@ const Cart = () => {
                             </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">${(product.offerPrice * cartItems[itemId]).toFixed(2)}</td>
+                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{(product.offerPrice * cartItems[itemId]).toFixed(2)}</td>
                     </tr>
                   );
                 })}

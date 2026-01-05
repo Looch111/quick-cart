@@ -153,7 +153,7 @@ const AdminDashboard = () => {
                   <div className="text-sm text-gray-600 space-y-1">
                     <p><span className="font-medium text-gray-700">Customer:</span> {order.address.fullName}</p>
                     <p><span className="font-medium text-gray-700">Date:</span> {new Date(order.date).toLocaleDateString()}</p>
-                    <p><span className="font-medium text-gray-700">Amount:</span> ${order.amount.toFixed(2)}</p>
+                    <p><span className="font-medium text-gray-700">Amount:</span> {currency}{order.amount.toFixed(2)}</p>
                   </div>
                 </div>
               ))}
@@ -176,7 +176,7 @@ const AdminDashboard = () => {
                     <tr key={order._id} className="bg-white border-b">
                       <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">...{order._id.slice(-6)}</td>
                       <td className="px-6 py-4">{order.address.fullName}</td>
-                      <td className="px-6 py-4">${order.amount.toFixed(2)}</td>
+                      <td className="px-6 py-4">{currency}{order.amount.toFixed(2)}</td>
                       <td className="px-6 py-4">{new Date(order.date).toLocaleDateString()}</td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">{order.status}</span>

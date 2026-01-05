@@ -29,7 +29,7 @@ const StatusBadge = ({ status }) => {
 
 const ProductList = () => {
 
-  const { router, allRawProducts, userData, deleteProduct, productsLoading } = useAppContext()
+  const { router, allRawProducts, userData, deleteProduct, productsLoading, currency } = useAppContext()
 
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -129,7 +129,7 @@ const ProductList = () => {
                     <span className="font-medium text-gray-800 truncate">{product.name}</span>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">{product.category}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell">${product.offerPrice}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell">{currency}{product.offerPrice}</td>
                   <td className="px-4 py-3 hidden md:table-cell">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
                   <td className="px-4 py-3">
                       <StatusBadge status={product.status} />

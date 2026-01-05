@@ -30,7 +30,7 @@ const StatusBadge = ({ status }) => {
 
 const ProductList = () => {
 
-  const { router, allRawProducts, deleteProduct, productsLoading, updateProductStatus } = useAppContext()
+  const { router, allRawProducts, deleteProduct, productsLoading, updateProductStatus, currency } = useAppContext()
 
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -115,8 +115,8 @@ const ProductList = () => {
                             <h3 className="font-semibold text-gray-800">{product.name}</h3>
                             <p className="text-xs text-gray-500">{product.category}</p>
                             <div className="flex items-center gap-2 mt-2">
-                                <p className="text-sm font-semibold text-orange-600">${product.offerPrice}</p>
-                                <p className="text-xs text-gray-400 line-through">${product.price}</p>
+                                <p className="text-sm font-semibold text-orange-600">{currency}{product.offerPrice}</p>
+                                <p className="text-xs text-gray-400 line-through">{currency}{product.price}</p>
                             </div>
                             <div className="mt-1">
                                 <StatusBadge status={product.status} />
@@ -169,7 +169,7 @@ const ProductList = () => {
                     <span className="font-medium text-gray-800">{product.name}</span>
                   </td>
                   <td className="px-4 py-3">{product.category}</td>
-                  <td className="px-4 py-3">${product.offerPrice}</td>
+                  <td className="px-4 py-3">{currency}{product.offerPrice}</td>
                   <td className="px-4 py-3">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
                    <td className="px-4 py-3">
                       <StatusBadge status={product.status} />
