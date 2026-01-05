@@ -1,11 +1,16 @@
+'use client';
 import { NextResponse } from 'next/server';
 import Flutterwave from 'flutterwave-node-v3';
 
 export async function POST(req) {
-    // Correctly initialize Flutterwave inside the handler
-    const flw = new Flutterwave(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
-    
     try {
+        // Initialize Flutterwave inside the handler to catch potential key errors
+        if (!process.env.FLUTTERWAVE_PUBLIC_KEY || !process.env.FLUTTERWAVE_SECRET_KEY) {
+            console.error("Flutterwave API keys are not configured in .env file.");
+            return NextResponse.json({ message: "Server is not configured for payments." }, { status: 500 });
+        }
+        const flw = new Flutterwave(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
+        
         const { amount, userId, email } = await req.json();
 
         if (!amount || !userId || !email) {
@@ -43,7 +48,8 @@ export async function POST(req) {
         }
 
     } catch (error) {
-        console.error("Error in fund-wallet endpoint:", error);
+        // This will catch any error, including from SDK initialization or the API call
+        console.error("Critical Error in fund-wallet endpoint:", error);
         return NextResponse.json({ message: "An internal server error occurred." }, { status: 500 });
     }
 }
