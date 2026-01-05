@@ -31,12 +31,10 @@
 
 @keyframes drive-by {
   0% {
-    transform: translateX(-100%);
-    opacity: 1;
+    transform: translateX(-150%);
   }
   100% {
-    transform: translateX(1000%); /* Adjust based on container width */
-    opacity: 1;
+    transform: translateX(150%);
   }
 }
 
@@ -52,10 +50,10 @@
 }
 
 .animate-drive-by {
-  animation: drive-by 3s ease-in forwards;
+  animation: drive-by 2.5s ease-in forwards;
 }
 
 .animate-fade-in-check {
   opacity: 0;
-  animation: fade-in-check 0.5s ease-out 3s forwards;
+  animation: fade-in-check 0.5s ease-out 2.6s forwards;
 }

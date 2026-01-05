@@ -100,12 +100,10 @@ const MyOrders = () => {
                             {orders.map((order) => (
                                 <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                                      {order.status === 'Delivered' && (
-                                        <div className="relative w-full h-12 overflow-hidden">
-                                            <div className="absolute top-0 left-0 w-full h-full flex items-center">
-                                                <Truck className="w-8 h-8 text-orange-500 absolute animate-drive-by" />
-                                                <div className="absolute w-full h-full flex items-center justify-center animate-fade-in-check">
-                                                    <CheckCircle className="w-10 h-10 text-green-500" />
-                                                </div>
+                                        <div className="relative w-full h-24 flex justify-center items-center overflow-hidden bg-gray-50">
+                                            <Truck className="w-16 h-16 text-orange-500 absolute animate-drive-by" />
+                                            <div className="absolute w-full h-full flex items-center justify-center animate-fade-in-check">
+                                                <CheckCircle className="w-16 h-16 text-green-500" />
                                             </div>
                                         </div>
                                     )}
