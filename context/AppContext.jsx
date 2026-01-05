@@ -425,7 +425,9 @@ export const AppContextProvider = (props) => {
                     throw new Error(`Not enough stock for ${product.name}.`);
                 }
                 return {
-                    ...product, 
+                    ...product,
+                    price: Number(product.price), // Ensure price is a number
+                    offerPrice: Number(product.offerPrice), // Ensure offerPrice is a number
                     productId: itemId,
                     quantity,
                 };
@@ -560,6 +562,12 @@ export const AppContextProvider = (props) => {
         }
         const newCart = { ...cartItems };
         newCart[itemId] = (newCart[itemId] || 0) + 1;
+        
+        setUserData(prevUserData => ({
+            ...prevUserData,
+            cartItems: newCart
+        }));
+
         updateUserField('cartItems', newCart);
         toast.success("Product added to cart");
     }
