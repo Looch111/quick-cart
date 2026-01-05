@@ -39,12 +39,27 @@ const AdminDashboard = () => {
     const totalRevenue = allOrders.reduce((sum, order) => sum + order.amount, 0);
     const totalUsers = users?.length || 0;
     const totalOrders = allOrders?.length || 0;
+    
+    // Calculate sales for the current month
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const salesThisMonth = allOrders.reduce((sum, order) => {
+        const orderDate = new Date(order.date);
+        if (orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear) {
+            return sum + order.amount;
+        }
+        return sum;
+    }, 0);
+
+
     const recentOrders = allOrders.slice(0, 5);
 
     const processChartData = () => {
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const salesData = monthNames.map(month => ({ name: month, sales: 0 }));
-        const userData = monthNames.map(month => ({ name: month, users: 0 }));
+        
+        // Cumulative user data
+        const initialUserCounts = Array(12).fill(0);
 
         allOrders.forEach(order => {
             if (order.date) {
@@ -57,18 +72,22 @@ const AdminDashboard = () => {
           if (user.createdAt) {
             const date = user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
             const month = date.getMonth();
-            userData[month].users += 1;
-          } else if(user.creationTime) {
-            const date = new Date(user.creationTime);
-            const month = date.getMonth();
-            userData[month].users += 1;
+            if (date.getFullYear() === currentYear) {
+                initialUserCounts[month] += 1;
+            }
           }
         });
 
-        // To make the user chart cumulative
-        for (let i = 1; i < 12; i++) {
-            userData[i].users += userData[i-1].users;
-        }
+        const cumulativeUserCounts = initialUserCounts.reduce((acc, count) => {
+            const lastTotal = acc.length > 0 ? acc[acc.length - 1] : 0;
+            acc.push(lastTotal + count);
+            return acc;
+        }, []);
+
+        const userData = monthNames.map((month, index) => ({
+            name: month,
+            users: cumulativeUserCounts[index] || 0
+        }));
 
         return { salesData, userData };
     };
@@ -86,9 +105,9 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card title="Total Revenue" value={`${currency}${totalRevenue.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
+            <Card title="Sales (This Month)" value={`${currency}${salesThisMonth.toFixed(2)}`} icon={<Activity className="w-6 h-6" />} />
             <Card title="Total Users" value={totalUsers} icon={<Users className="w-6 h-6" />} />
             <Card title="Total Orders" value={totalOrders} icon={<ShoppingCart className="w-6 h-6" />} />
-            <Card title="Active Now" value={totalUsers > 0 ? (totalUsers > 10 ? Math.floor(totalUsers / 10) : 1) : 0} icon={<Activity className="w-6 h-6" />} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -176,5 +195,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
-    

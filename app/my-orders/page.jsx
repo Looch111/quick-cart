@@ -5,30 +5,57 @@ import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
-import { Truck } from "lucide-react";
+import { Truck, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+const OrderStatusTracker = ({ status }) => {
+    const statuses = ["Order Placed", "Processing", "Shipped", "Delivered"];
+    const currentStatusIndex = statuses.indexOf(status);
+
+    return (
+        <div className="flex items-center justify-between w-full mt-4">
+            {statuses.map((s, index) => (
+                <React.Fragment key={s}>
+                    <div className="flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${index <= currentStatusIndex ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                            {index <= currentStatusIndex ? <CheckCircle size={18} /> : <div className="w-2 h-2 bg-gray-400 rounded-full"></div>}
+                        </div>
+                        <p className={`mt-2 text-xs text-center ${index <= currentStatusIndex ? 'font-semibold text-gray-800' : 'text-gray-500'}`}>{s}</p>
+                    </div>
+                    {index < statuses.length - 1 && (
+                        <div className={`flex-1 h-1 mx-2 ${index < currentStatusIndex ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                    )}
+                </React.Fragment>
+            ))}
+        </div>
+    );
+};
+
+
 const MyOrders = () => {
-    const { currency, userData, userOrders } = useAppContext();
+    const { currency, userData, userOrders, setShowLogin } = useAppContext();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
-        if (userData === null) {
+        if (!userData && !userOrders) {
             setLoading(false);
+            router.push('/');
+            setShowLogin(true);
         }
         if (userOrders) {
             setOrders(userOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
             setLoading(false);
         }
-    }, [userData, userOrders]);
+    }, [userData, userOrders, router, setShowLogin]);
 
     const getStatusClass = (status) => {
         switch (status) {
             case 'Delivered': return 'bg-green-100 text-green-800';
             case 'Shipped': return 'bg-blue-100 text-blue-800';
             case 'Processing': return 'bg-yellow-100 text-yellow-800';
+            case 'Order Placed': return 'bg-purple-100 text-purple-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
@@ -48,12 +75,9 @@ const MyOrders = () => {
             <Navbar />
             <div className="bg-gray-50/50 min-h-[calc(100vh-200px)] pt-28">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex flex-col items-start">
-                            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">My <span className="text-orange-600">Orders</span></h1>
-                            <div className="w-16 h-0.5 bg-orange-600 mt-2 self-end"></div>
-                        </div>
-                        <p className="text-gray-500">{orders.length} {orders.length === 1 ? 'Order' : 'Orders'}</p>
+                     <div className="flex flex-col items-start mb-10">
+                        <h1 className="text-3xl font-bold text-gray-800">My <span className="text-orange-600">Orders</span></h1>
+                        <div className="w-24 h-1 bg-orange-500 mt-1 self-start"></div>
                     </div>
 
                     {!userData ? (
@@ -62,10 +86,14 @@ const MyOrders = () => {
                          </div>
                     ) : orders.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-lg shadow-sm">
-                            <p className="text-gray-600">You haven't placed any orders yet.</p>
-                            <button onClick={() => router.push('/all-products')} className="mt-4 text-orange-600 hover:underline">
-                                Start Shopping
-                            </button>
+                            <Truck className="mx-auto h-12 w-12 text-gray-400" />
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">No orders yet</h3>
+                            <p className="mt-1 text-sm text-gray-500">You haven't placed any orders with us. Let's change that!</p>
+                            <div className="mt-6">
+                                <button onClick={() => router.push('/all-products')} className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+                                    Start Shopping
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-6">
@@ -79,7 +107,7 @@ const MyOrders = () => {
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500 uppercase">Total</p>
-                                                <p className="text-sm font-medium text-gray-800">{currency}{order.amount.toFixed(2)}</p>
+                                                <p className="text-sm font-medium text-gray-800">{currency}{Number(order.amount).toFixed(2)}</p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500 uppercase">Order ID</p>
@@ -93,8 +121,11 @@ const MyOrders = () => {
                                         </div>
                                     </div>
                                     <div className="p-4 sm:p-6 space-y-4">
+                                        <div className='pb-4'>
+                                          <OrderStatusTracker status={order.status} />
+                                        </div>
                                         {order.items.map((item, itemIndex) => (
-                                            <div key={itemIndex} className="flex items-start gap-4">
+                                            <div key={itemIndex} className="flex items-start gap-4 pt-4 border-t">
                                                 <Image
                                                     src={item.image[0]}
                                                     alt={item.name}
@@ -109,12 +140,6 @@ const MyOrders = () => {
                                                 </div>
                                             </div>
                                         ))}
-                                    </div>
-                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
-                                        <button className="flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700">
-                                            <Truck size={16} />
-                                            Track Order
-                                        </button>
                                     </div>
                                 </div>
                             ))}

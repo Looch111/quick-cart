@@ -129,7 +129,7 @@ export const AppContextProvider = (props) => {
                 setUserAddresses(addresses);
             });
             
-            const ordersQuery = query(collection(firestore, 'orders'), where('userId', '==', userData._id));
+            const ordersQuery = query(collection(firestore, 'orders'), where('userId', '==', userData._id), where('status', '!=', 'pending'), where('status', '!=', 'failed'));
             const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
                 const orders = snapshot.docs.map(doc => ({ ...doc.data(), _id: doc.id, date: doc.data().date.toDate() }));
                 setUserOrders(orders);
@@ -348,55 +348,66 @@ export const AppContextProvider = (props) => {
         toast.success("Product deleted successfully");
     }
 
-    const handleOnlinePayment = async (totalAmount) => {
-        try {
-            const response = await fetch('/api/pay', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: totalAmount,
-                    email: userData.email,
-                    name: userData.name,
-                    cart: cartItems
-                }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'Payment initialization failed with a non-JSON response.' }));
-                throw new Error(errorData.message || 'Payment initialization failed.');
-            }
-            
-            const data = await response.json();
-            const { tx_ref } = data;
-
-            window.FlutterwaveCheckout({
-                public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-                tx_ref,
-                amount: totalAmount,
-                currency: "NGN",
-                payment_options: "card,mobilemoney,ussd",
-                redirect_url: `${window.location.origin}/order-placed`,
-                customer: {
-                    email: userData.email,
-                    name: userData.name,
-                },
-                customizations: {
-                    title: "QuickCart Store",
-                    description: "Payment for items in cart",
-                    logo: "https://i.imgur.com/Am9r4s8.png",
-                },
-                callback: function (data) {
-                    console.log("Payment successful, webhook will handle finalization.", data);
-                },
-                onclose: function() {
-                    toast.error("Payment popup closed.");
-                },
-            });
-        } catch (error) {
-            toast.error(error.message);
+    const handleOnlinePayment = async (address, totalAmount) => {
+        if (!userData) {
+          toast.error("Please log in to place an order.");
+          setShowLogin(true);
+          return;
         }
-    };
-    
+      
+        try {
+          const response = await fetch('/api/pay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cart: cartItems,
+              address,
+              totalAmount,
+              userId: userData._id,
+              paymentMethod: 'online',
+              email: userData.email, // Pass email for Flutterwave
+              name: userData.name || 'Customer' // Pass name for Flutterwave
+            }),
+          });
+      
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Payment initialization failed.' }));
+            throw new Error(errorData.message);
+          }
+      
+          const data = await response.json();
+          const { tx_ref } = data;
+      
+          window.FlutterwaveCheckout({
+            public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
+            tx_ref,
+            amount: totalAmount,
+            currency: "NGN",
+            payment_options: "card,mobilemoney,ussd",
+            redirect_url: `${window.location.origin}/order-placed?tx_ref=${tx_ref}`,
+            customer: {
+              email: userData.email,
+              name: userData.name || 'Customer',
+            },
+            customizations: {
+              title: "QuickCart Store",
+              description: "Payment for items in cart",
+              logo: "https://i.imgur.com/Am9r4s8.png",
+            },
+            callback: function (data) {
+              console.log("Payment successful, webhook will handle finalization.", data);
+              // The redirect_url will handle the next step.
+            },
+            onclose: function () {
+              toast.error("Payment popup closed.");
+            },
+          });
+        } catch (error) {
+          toast.error(error.message);
+          console.error("Payment error:", error);
+        }
+      };
+
     const placeOrder = async (address, paymentMethod, totalAmount) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
@@ -409,29 +420,30 @@ export const AppContextProvider = (props) => {
         }
         
         if (paymentMethod === 'online') {
-            await handleOnlinePayment(totalAmount);
+            await handleOnlinePayment(address, totalAmount);
             return;
         }
 
         const batch = writeBatch(firestore);
         
         try {
-            const orderItems = Object.entries(cartItems).map(([itemId, quantity]) => {
+            const orderItems = [];
+            for (const itemId in cartItems) {
                 const product = allRawProducts.find(p => p._id === itemId);
                 if (!product) {
                     throw new Error(`Product with ID ${itemId} not found. Please remove it from your cart.`);
                 }
-                if (product.stock < quantity) {
+                if (product.stock < cartItems[itemId]) {
                     throw new Error(`Not enough stock for ${product.name}.`);
                 }
-                return {
+                orderItems.push({
                     ...product,
-                    price: Number(product.price), // Ensure price is a number
-                    offerPrice: Number(product.offerPrice), // Ensure offerPrice is a number
+                    price: Number(product.price),
+                    offerPrice: Number(product.offerPrice),
                     productId: itemId,
-                    quantity,
-                };
-            });
+                    quantity: cartItems[itemId],
+                });
+            }
 
             // Decrement stock
             for (const item of orderItems) {
@@ -446,7 +458,7 @@ export const AppContextProvider = (props) => {
                 items: orderItems,
                 amount: totalAmount,
                 address: address,
-                status: "Processing",
+                status: "Order Placed", // Start as "Order Placed"
                 date: serverTimestamp(),
                 paymentMethod: paymentMethod,
             });
@@ -472,6 +484,16 @@ export const AppContextProvider = (props) => {
             batch.update(userDocRef, userUpdates);
 
             await batch.commit();
+
+            setUserData(prev => ({
+                ...prev,
+                cartItems: {},
+                ...(paymentMethod === 'wallet' ? {
+                    walletBalance: userUpdates.walletBalance,
+                    walletTransactions: userUpdates.walletTransactions
+                } : {})
+            }));
+
             router.push("/order-placed");
         } catch (error) {
             toast.error(error.message);

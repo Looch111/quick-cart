@@ -34,6 +34,9 @@ const Orders = () => {
             case 'Delivered': return 'bg-green-100 text-green-800';
             case 'Shipped': return 'bg-blue-100 text-blue-800';
             case 'Processing': return 'bg-yellow-100 text-yellow-800';
+            case 'Order Placed': return 'bg-purple-100 text-purple-800';
+            case 'pending': return 'bg-gray-100 text-gray-800';
+            case 'failed': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
@@ -66,6 +69,7 @@ const Orders = () => {
                                         onChange={(e) => handleStatusChange(order._id, e.target.value)} 
                                         value={order.status} 
                                         className="w-full border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-sm"
+                                        disabled={order.status === 'pending' || order.status === 'failed'}
                                     >
                                         <option value="Order Placed">Order Placed</option>
                                         <option value="Processing">Processing</option>
@@ -112,6 +116,7 @@ const Orders = () => {
                                                 onChange={(e) => handleStatusChange(order._id, e.target.value)} 
                                                 value={order.status} 
                                                 className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300"
+                                                disabled={order.status === 'pending' || order.status === 'failed'}
                                             >
                                                 <option value="Order Placed">Order Placed</option>
                                                 <option value="Processing">Processing</option>

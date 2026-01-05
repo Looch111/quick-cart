@@ -8,10 +8,14 @@ import { db } from '@/app/lib/firebase-admin';
 
 export async function POST(req) {
     try {
-        const { amount: clientAmount, email, name, cart } = await req.json();
+        const { amount: clientAmount, email, name, cart, address, totalAmount, userId, paymentMethod } = await req.json();
 
         if (!cart || Object.keys(cart).length === 0) {
             return NextResponse.json({ message: 'Cart is empty.' }, { status: 400 });
+        }
+        
+        if (!userId) {
+            return NextResponse.json({ message: 'User not authenticated.' }, { status: 401 });
         }
 
         // --- Server-side validation ---
@@ -20,6 +24,8 @@ export async function POST(req) {
         const productRefs = productIds.map(id => db.collection('products').doc(id));
         const productDocs = await db.getAll(...productRefs);
         const productsInCart = {};
+        const orderItems = [];
+
 
         for (const doc of productDocs) {
             if (!doc.exists) {
@@ -29,7 +35,7 @@ export async function POST(req) {
             const quantity = cart[product.id];
             
             if (product.stock < quantity) {
-                return NextResponse.json({ message: `Not enough stock for ${product.name}. Only ${product.stock} left.` }, { status: 400 });
+                return NextResponse.json({ message: `Not enough stock for ${product.name}. Only ${product.stock} left.` }, { status_code: 400 });
             }
             
             const isFlashSale = product.flashSaleEndDate && product.flashSaleEndDate.toDate() > new Date();
@@ -37,12 +43,13 @@ export async function POST(req) {
 
             serverCalculatedAmount += currentPrice * quantity;
             productsInCart[product.id] = product;
-        }
-
-        // Security: Compare client-side amount with server-calculated amount
-        // Allowing a small tolerance for floating point inaccuracies
-        if (Math.abs(clientAmount - serverCalculatedAmount) > 0.01) {
-            return NextResponse.json({ message: 'Price mismatch. Please refresh your cart.' }, { status: 400 });
+            orderItems.push({
+                ...product,
+                price: Number(product.price),
+                offerPrice: Number(product.offerPrice),
+                productId: product.id,
+                quantity,
+            });
         }
         
         // --- Create Pending Order ---
@@ -50,16 +57,12 @@ export async function POST(req) {
         const newOrderRef = db.collection('orders').doc();
         
         await newOrderRef.set({
-            amount: serverCalculatedAmount,
-            userId: '', // Webhook will associate the user if needed
-            customer: { email, name },
-            items: Object.entries(cart).map(([id, quantity]) => ({
-                ...productsInCart[id],
-                productId: id,
-                quantity,
-            })),
+            userId: userId,
+            items: orderItems,
+            amount: totalAmount,
+            address: address,
             status: 'pending',
-            paymentMethod: 'online',
+            paymentMethod: paymentMethod,
             transactionRef: tx_ref,
             date: new Date(),
         });

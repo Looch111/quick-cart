@@ -20,8 +20,15 @@ export async function POST(req) {
         console.log("Received Flutterwave webhook:", payload);
 
         // Check if the payment was successful
-        if (payload.status === 'successful') {
-            const { tx_ref, amount, currency } = payload.data;
+        if (payload.status === 'successful' || payload.event === 'charge.completed') {
+            const tx_ref = payload.data?.tx_ref || payload.tx_ref;
+            const amount = payload.data?.amount || payload.amount;
+            const currency = payload.data?.currency || payload.currency;
+
+            if (!tx_ref) {
+                 console.warn(`Webhook received without a transaction reference.`);
+                 return NextResponse.json({ status: 'success', message: 'Acknowledged, but no tx_ref found.' });
+            }
 
             // Find the pending order in Firestore using the transaction reference
             const ordersRef = db.collection('orders');
@@ -37,9 +44,9 @@ export async function POST(req) {
             const order = orderDoc.data();
 
             // --- Security Verification ---
-            // Verify that the amount paid matches the order amount
-            if (order.amount !== amount || "NGN" !== currency) {
-                console.error(`Amount mismatch for tx_ref: ${tx_ref}. Expected ${order.amount} ${"NGN"}, but got ${amount} ${currency}.`);
+            // Verify that the amount paid matches the order amount. Allow small tolerance.
+            if (Math.abs(order.amount - amount) > 0.01) {
+                console.error(`Amount mismatch for tx_ref: ${tx_ref}. Expected ${order.amount}, but got ${amount}.`);
                 // Optionally update order to 'failed'
                 await orderDoc.ref.update({ status: 'failed', failureReason: 'Amount mismatch' });
                 return NextResponse.json({ message: 'Amount mismatch' }, { status: 400 });
@@ -47,23 +54,39 @@ export async function POST(req) {
             
             // --- Finalize Order in a Transaction ---
             await db.runTransaction(async (transaction) => {
-                const stockUpdates = [];
+                // Double check stock before committing
                 for (const item of order.items) {
                     const productRef = db.collection('products').doc(item.productId);
                     const productDoc = await transaction.get(productRef);
                     if (!productDoc.exists) throw new Error(`Product ${item.productId} not found!`);
                     
                     const newStock = productDoc.data().stock - item.quantity;
-                    if (newStock < 0) throw new Error(`Stock level error for ${item.productId}!`);
+                    if (newStock < 0) throw new Error(`Stock level error for ${item.productId}! Cannot fulfill order.`);
                     
                     transaction.update(productRef, { stock: newStock });
                 }
                 
-                // Update order status to 'Processing'
-                transaction.update(orderDoc.ref, { status: 'Processing' });
+                // Update order status to 'Order Placed' and clear the cart
+                transaction.update(orderDoc.ref, { status: 'Order Placed' });
+
+                if (order.userId) {
+                    const userRef = db.collection('users').doc(order.userId);
+                    transaction.update(userRef, { cartItems: {} });
+                }
             });
 
             console.log(`Order ${orderDoc.id} successfully processed for tx_ref: ${tx_ref}`);
+        } else {
+            // Handle failed or abandoned transactions if needed
+            const tx_ref = payload.data?.tx_ref || payload.tx_ref;
+            if (tx_ref) {
+                 const ordersRef = db.collection('orders');
+                 const snapshot = await ordersRef.where('transactionRef', '==', tx_ref).where('status', '==', 'pending').limit(1).get();
+                 if (!snapshot.empty) {
+                     const orderDoc = snapshot.docs[0];
+                     await orderDoc.ref.update({ status: 'failed', failureReason: payload.data?.processor_response || 'Payment failed or was cancelled.' });
+                 }
+            }
         }
 
         // Acknowledge receipt to Flutterwave
