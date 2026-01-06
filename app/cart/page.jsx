@@ -114,7 +114,7 @@ const Cart = () => {
                               </div>
                               <div className="flex-1">
                                   <h3 className="font-semibold text-gray-800 text-base">{product.name}</h3>
-                                  <p className="text-sm text-gray-600 mt-1">{currency}{product.offerPrice.toFixed(2)}</p>
+                                  <p className="text-sm text-gray-600 mt-1">{currency}{Number(product.offerPrice).toFixed(2)}</p>
                                   <div className="mt-3 flex items-center border border-gray-300 rounded-full w-fit">
                                       <button onClick={() => updateCartQuantity(product._id, cartItems[itemId] - 1)} className="p-1.5"><Minus className="w-4 h-4 text-gray-600" /></button>
                                       <input onChange={e => updateCartQuantity(product._id, Number(e.target.value))} type="number" value={cartItems[itemId]} className="w-10 border-none text-center appearance-none focus:outline-none bg-transparent" />
@@ -130,7 +130,7 @@ const Cart = () => {
                           </div>
                           <div className="flex justify-between items-center mt-3 pt-3 border-t">
                               <button onClick={() => updateCartQuantity(product._id, 0)} className="text-xs text-orange-600">Remove</button>
-                              <p className="text-sm font-medium text-gray-800">Subtotal: <span className='font-bold'>{currency}{(product.offerPrice * cartItems[itemId]).toFixed(2)}</span></p>
+                              <p className="text-sm font-medium text-gray-800">Subtotal: <span className='font-bold'>{currency}{(Number(product.offerPrice) * cartItems[itemId]).toFixed(2)}</span></p>
                           </div>
                       </div>
                   );
@@ -199,7 +199,7 @@ const Cart = () => {
                           </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{product.offerPrice.toFixed(2)}</td>
+                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{Number(product.offerPrice).toFixed(2)}</td>
                       <td className="py-4 md:px-4 px-1">
                         <div className="flex items-center border border-gray-300 rounded-full">
                             <button 
@@ -223,7 +223,7 @@ const Cart = () => {
                             </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{(product.offerPrice * cartItems[itemId]).toFixed(2)}</td>
+                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{(Number(product.offerPrice) * cartItems[itemId]).toFixed(2)}</td>
                     </tr>
                   );
                 })}
