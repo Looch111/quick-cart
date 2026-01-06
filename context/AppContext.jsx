@@ -523,20 +523,18 @@ export const AppContextProvider = (props) => {
 
     const updateUserField = async (field, value) => {
         if (!userData) {
-            if(showLogin) toast.error("Please log in to update your profile.");
+            toast.error("Please log in to update your profile.");
+            if (showLogin) return;
             setShowLogin(true);
             return;
         }
-        
-        // Deep copy to avoid mutation issues
-        const newUserData = JSON.parse(JSON.stringify(userData));
-        newUserData[field] = value;
-        
         const userDocRef = doc(firestore, 'users', userData._id);
-        await setDoc(userDocRef, { [field]: value }, { merge: true });
-
-        // Update local state after successful Firestore update
-        setUserData(newUserData);
+        try {
+            await setDoc(userDocRef, { [field]: value }, { merge: true });
+        } catch (error) {
+            console.error("Error updating user field:", error);
+            toast.error("Failed to update profile.");
+        }
     }
 
     const updateSellerBankDetails = async (bankDetails) => {
@@ -549,50 +547,91 @@ export const AppContextProvider = (props) => {
         toast.success("Bank details updated successfully!");
     }
 
-    const addToCart = (itemId) => {
+    const addToCart = async (itemId) => {
         if (!userData) {
             toast.error("Please log in to add items to your cart.");
             setShowLogin(true);
             return;
         }
+    
         const product = allRawProducts.find(p => p._id === itemId);
         if (!product) {
             toast.error("Product not found.");
             return;
         }
-        const currentQuantityInCart = cartItems[itemId] || 0;
-        if (currentQuantityInCart >= product.stock) {
-            toast.error(`No more stock available for ${product.name}`);
-            return;
+    
+        const userDocRef = doc(firestore, 'users', userData._id);
+    
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) {
+                    throw "User document does not exist!";
+                }
+    
+                const currentCart = userDoc.data().cartItems || {};
+                const currentQuantityInCart = currentCart[itemId] || 0;
+    
+                if (currentQuantityInCart >= product.stock) {
+                    // This toast will be displayed, but the transaction will not fail.
+                    // The user will see the message and the cart state will remain unchanged.
+                    toast.error(`No more stock available for ${product.name}`);
+                    return; // Exit transaction without making changes
+                }
+    
+                const newCart = { ...currentCart };
+                newCart[itemId] = currentQuantityInCart + 1;
+                transaction.update(userDocRef, { cartItems: newCart });
+            });
+            toast.success("Product added to cart");
+        } catch (error) {
+            console.error("Add to cart transaction failed: ", error);
+            toast.error("Could not add item to cart.");
         }
-        const newCart = { ...cartItems };
-        newCart[itemId] = (newCart[itemId] || 0) + 1;
-        updateUserField('cartItems', newCart);
-        toast.success("Product added to cart");
-    }
-
+    };
+    
     const updateCartQuantity = async (itemId, quantity) => {
         if (!userData) {
             toast.error("Please log in to modify your cart.");
             setShowLogin(true);
             return;
         }
-        const newCart = { ...cartItems };
-        if (quantity <= 0) {
-            delete newCart[itemId];
-            toast.success("Item removed from cart");
-        } else {
-            const product = allRawProducts.find(p => p._id === itemId);
-            if (product && quantity > product.stock) {
-                toast.error(`Only ${product.stock} items available`);
-                newCart[itemId] = product.stock;
-            } else {
-                newCart[itemId] = quantity;
+    
+        const userDocRef = doc(firestore, 'users', userData._id);
+    
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) {
+                    throw "User document does not exist!";
+                }
+    
+                const currentCart = userDoc.data().cartItems || {};
+                const newCart = { ...currentCart };
+    
+                if (quantity <= 0) {
+                    delete newCart[itemId];
+                } else {
+                    const product = allRawProducts.find(p => p._id === itemId);
+                    if (product && quantity > product.stock) {
+                        toast.error(`Only ${product.stock} items available`);
+                        newCart[itemId] = product.stock;
+                    } else {
+                        newCart[itemId] = quantity;
+                    }
+                }
+                transaction.update(userDocRef, { cartItems: newCart });
+            });
+    
+            if (quantity <= 0) {
+                toast.success("Item removed from cart");
             }
+        } catch (error) {
+            console.error("Update cart quantity transaction failed: ", error);
+            toast.error("Could not update cart.");
         }
-        await updateUserField('cartItems', newCart);
     };
-
+    
     const getCartCount = () => {
         if (!cartItems) return 0;
         return Object.values(cartItems).reduce((sum, quantity) => sum + quantity, 0);
