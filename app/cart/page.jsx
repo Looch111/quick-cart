@@ -85,7 +85,7 @@ const Cart = () => {
                                                 <button onClick={() => updateCartQuantity(product._id, product.quantity - 1)} className="p-1 border rounded-full">
                                                     <Minus className="w-4 h-4 text-gray-600"/>
                                                 </button>
-                                                <input onChange={e => handleQuantityChange(product, Number(e.target.value))} type="number" value={product.quantity} className="w-10 border-t border-b text-center appearance-none"></input>
+                                                <span className="w-10 text-center">{product.quantity}</span>
                                                 <button onClick={() => addToCart(product._id)} className="p-1 border rounded-full">
                                                     <Plus className="w-4 h-4 text-gray-600" />
                                                 </button>
@@ -152,7 +152,7 @@ const Cart = () => {
                                                     <button onClick={() => updateCartQuantity(product._id, product.quantity - 1)} className="p-1 hover:bg-gray-100 rounded-full">
                                                         <Minus className="w-4 h-4 text-gray-600"/>
                                                     </button>
-                                                    <input onChange={e => handleQuantityChange(product, Number(e.target.value))} type="number" value={product.quantity} className="w-10 border-none text-center appearance-none bg-transparent focus:ring-0"></input>
+                                                    <span className="w-10 text-center">{product.quantity}</span>
                                                     <button onClick={() => addToCart(product._id)} className="p-1 hover:bg-gray-100 rounded-full">
                                                         <Plus className="w-4 h-4 text-gray-600" />
                                                     </button>
