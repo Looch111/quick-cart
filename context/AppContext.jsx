@@ -422,7 +422,13 @@ export const AppContextProvider = (props) => {
                 const product = allRawProducts.find(p => p._id === itemId);
                 if (!product) throw new Error(`Product with ID ${itemId} not found.`);
                 if (product.stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
-                orderItems.push({ ...product, productId: itemId, quantity: itemsToOrder[itemId] });
+                orderItems.push({ 
+                    ...product, 
+                    productId: itemId, 
+                    quantity: itemsToOrder[itemId], 
+                    status: 'Processing', // Set initial item status
+                    sellerId: product.userId
+                });
             }
 
             const updatedCartItems = { ...cartItems };
@@ -435,10 +441,10 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice})),
                 amount: totalAmount,
                 address: address,
-                status: "Order Placed",
+                status: "Order Placed", // Overall order status
                 date: serverTimestamp(),
                 paymentMethod: 'flutterwave',
                 paymentTransactionId: paymentResponse.transaction_id,
@@ -474,7 +480,13 @@ export const AppContextProvider = (props) => {
                 const product = allRawProducts.find(p => p._id === itemId);
                 if (!product) throw new Error(`Product with ID ${itemId} not found.`);
                 if (product.stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
-                orderItems.push({ ...product, productId: itemId, quantity: itemsToOrder[itemId] });
+                orderItems.push({ 
+                    ...product, 
+                    productId: itemId, 
+                    quantity: itemsToOrder[itemId],
+                    status: 'Processing', // Set initial item status
+                    sellerId: product.userId
+                });
             }
             
             const updatedCartItems = { ...cartItems };
@@ -487,10 +499,10 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice})),
                 amount: totalAmount,
                 address: address,
-                status: "Order Placed",
+                status: "Order Placed", // Overall order status
                 date: serverTimestamp(),
                 paymentMethod: 'wallet'
             };

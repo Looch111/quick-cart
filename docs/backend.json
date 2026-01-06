@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "user": {
@@ -131,14 +130,19 @@
           "items": {
             "type": "object",
             "properties": {
-              "productId": { "type": "string" },
-              "quantity": { "type": "number" }
+              "_id": { "type": "string" },
+              "name": { "type": "string" },
+              "offerPrice": { "type": "number" },
+              "image": { "type": "array", "items": { "type": "string", "format": "uri" } },
+              "quantity": { "type": "number" },
+              "sellerId": { "type": "string", "description": "The UID of the seller for this item." },
+              "status": { "type": "string", "enum": ["Processing", "Shipped", "Delivered"], "description": "The status of this specific item." }
             }
           }
         },
         "amount": { "type": "number" },
         "address": { "$ref": "#/entities/address" },
-        "status": { "type": "string", "enum": ["pending", "failed", "Order Placed", "Processing", "Shipped", "Delivered"] },
+        "status": { "type": "string", "enum": ["pending", "failed", "Order Placed", "Partially Shipped", "Shipped", "Delivered"], "description": "The overall status of the entire order." },
         "date": { "type": "string", "format": "date-time" },
         "paymentMethod": { "type": "string", "enum": ["wallet", "flutterwave"] }
       },

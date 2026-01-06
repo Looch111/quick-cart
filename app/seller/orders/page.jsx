@@ -1,82 +1,131 @@
 'use client';
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
+import { useFirestore } from "@/src/firebase";
+import { doc, updateDoc, writeBatch } from 'firebase/firestore';
+import toast from "react-hot-toast";
+
+const getStatusClass = (status) => {
+    switch (status) {
+        case 'Delivered': return 'bg-green-100 text-green-800';
+        case 'Shipped': return 'bg-blue-100 text-blue-800';
+        case 'Processing': return 'bg-yellow-100 text-yellow-800';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+};
 
 const Orders = () => {
-    const { currency, userData, allOrders, products, productsLoading } = useAppContext();
-    const [sellerOrders, setSellerOrders] = useState([]);
+    const { currency, userData, allOrders, productsLoading } = useAppContext();
+    const firestore = useFirestore();
+    const [sellerItems, setSellerItems] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const filterSellerOrders = useCallback(() => {
-        if (userData && allOrders.length > 0 && products.length > 0) {
-            const sellerProductIds = products.filter(p => p.userId === userData._id).map(p => p._id);
-            
-            const filteredOrders = allOrders.map(order => {
-                const sellerItems = order.items.filter(item => sellerProductIds.includes(item._id));
-                if (sellerItems.length > 0) {
-                    const sellerAmount = sellerItems.reduce((sum, item) => sum + item.offerPrice * item.quantity, 0);
-                    return { ...order, items: sellerItems, amount: sellerAmount };
-                }
-                return null;
-            }).filter(order => order !== null);
-            
-            setSellerOrders(filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
-        }
-    }, [userData, allOrders, products]);
 
     useEffect(() => {
         if (!userData || productsLoading) {
             setLoading(true);
-        } else if (allOrders && products) {
-            filterSellerOrders();
+        } else if (allOrders) {
+            const items = allOrders.flatMap(order => 
+                order.items
+                    .filter(item => item.sellerId === userData._id)
+                    .map(item => ({ ...item, orderId: order._id, orderDate: order.date, address: order.address, orderAmount: order.amount, orderStatus: order.status }))
+            ).sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate));
+            setSellerItems(items);
             setLoading(false);
         } else {
-             setLoading(false);
+            setLoading(false);
         }
-    }, [allOrders, userData, products, filterSellerOrders, productsLoading]);
+    }, [allOrders, userData, productsLoading]);
+
+    const handleItemStatusChange = async (orderId, itemId, newStatus) => {
+        const orderRef = doc(firestore, 'orders', orderId);
+
+        try {
+            const batch = writeBatch(firestore);
+            const orderSnap = await getDoc(orderRef);
+            if (!orderSnap.exists()) throw new Error("Order not found");
+
+            const orderData = orderSnap.data();
+            const updatedItems = orderData.items.map(item => {
+                if (item._id === itemId) {
+                    return { ...item, status: newStatus };
+                }
+                return item;
+            });
+            
+            batch.update(orderRef, { items: updatedItems });
+            await batch.commit();
+
+            toast.success("Item status updated!");
+        } catch (error) {
+            toast.error("Failed to update status.");
+            console.error(error);
+        }
+    };
 
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between text-sm">
             {loading ? <Loading /> : <div className="md:p-10 p-4 space-y-5">
-                <h2 className="text-lg font-medium">Your Orders</h2>
-                <div className="max-w-4xl rounded-md bg-white shadow-md">
-                    {sellerOrders.length > 0 ? sellerOrders.map((order, index) => (
-                        <div key={index} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b last:border-b-0">
-                            <div className="flex-1 flex gap-5 max-w-sm">
-                                <Image
-                                    className="max-w-16 max-h-16 object-contain self-start"
-                                    src={assets.box_icon}
-                                    alt="box_icon"
-                                />
-                                <div className="flex flex-col gap-1">
-                                    <p className="font-medium">
-                                        {order.items.map((item) => `${item.name} x ${item.quantity}`).join(", ")}
-                                    </p>
-                                    <p className="text-xs text-gray-500">Items: {order.items.reduce((sum, item) => sum + item.quantity, 0)}</p>
-                                    <p className="text-xs text-gray-500">Order ID: #{order._id.slice(-6)}</p>
-                                </div>
-                            </div>
-                            <div className='flex-shrink-0 w-48'>
-                                <p className='font-medium'>{order.address.fullName}</p>
-                                <p className='text-gray-600'>{order.address.area}</p>
-                                <p className='text-gray-600'>{`${order.address.city}, ${order.address.state}`}</p>
-                                <p className='text-gray-600'>{order.address.phoneNumber}</p>
-                            </div>
-                            <div className="flex-shrink-0 w-32 flex flex-col justify-center">
-                               <p className="font-semibold text-base">{currency}{order.amount.toFixed(2)}</p>
-                               <p className="text-xs text-gray-500">{order.paymentMethod.toUpperCase()}</p>
-                            </div>
-                            <div className="flex-shrink-0 w-32 flex flex-col justify-center items-start">
-                                <p className="text-xs text-gray-500">{new Date(order.date).toLocaleDateString()}</p>
-                                <span className="text-green-600 font-medium mt-1 px-2 py-0.5 bg-green-100 rounded-full text-xs">{order.status}</span>
-                            </div>
-                        </div>
-                    )) : <p className="text-center p-10 text-gray-500">You have no orders yet.</p>}
+                <h2 className="text-lg font-medium">Your Items to Fulfill</h2>
+                <div className="overflow-x-auto rounded-md bg-white shadow-md">
+                    <table className="min-w-full table-auto">
+                         <thead className="bg-gray-50 text-gray-600 text-sm text-left uppercase">
+                                <tr>
+                                    <th className="px-6 py-3 font-medium">Order & Item</th>
+                                    <th className="px-6 py-3 font-medium">Date</th>
+                                    <th className="px-6 py-3 font-medium">Customer</th>
+                                    <th className="px-6 py-3 font-medium">Item Price</th>
+                                    <th className="px-6 py-3 font-medium">Item Status</th>
+                                    <th className="px-6 py-3 font-medium text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-sm text-gray-700">
+                               {sellerItems.length > 0 ? sellerItems.map((item) => (
+                                    <tr key={`${item.orderId}-${item._id}`} className="border-b border-gray-200 hover:bg-gray-50">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <Image src={item.image[0]} alt={item.name} width={40} height={40} className="w-10 h-10 object-contain rounded bg-gray-100" />
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{item.name} x{item.quantity}</p>
+                                                    <p className="text-xs text-gray-500">Order #{item.orderId.slice(-6)}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">{new Date(item.orderDate).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4">
+                                            <p className="font-medium">{item.address.fullName}</p>
+                                            <p className="text-xs text-gray-500">{item.address.city}</p>
+                                        </td>
+                                        <td className="px-6 py-4 font-medium">{currency}{(item.offerPrice * item.quantity).toFixed(2)}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClass(item.status)}`}>
+                                                {item.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <select 
+                                                onChange={(e) => handleItemStatusChange(item.orderId, item._id, e.target.value)} 
+                                                value={item.status}
+                                                className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-xs"
+                                                // Sellers cannot mark as delivered, only admins can.
+                                                disabled={item.status === 'Delivered'}
+                                            >
+                                                <option value="Processing">Processing</option>
+                                                <option value="Shipped">Shipped</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                               )) : (
+                                <tr>
+                                    <td colSpan="6" className="text-center py-10 text-gray-500">You have no items to fulfill.</td>
+                                </tr>
+                               )}
+                            </tbody>
+                    </table>
                 </div>
             </div>}
             <Footer />
