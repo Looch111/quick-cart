@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { X } from 'lucide-react';
 
-const steps = [
+const desktopSteps = [
     {
         title: "Welcome to QuickCart!",
         content: "We're glad to have you here. Let's take a quick tour of the app.",
@@ -36,6 +36,34 @@ const steps = [
     }
 ];
 
+const mobileSteps = [
+    {
+        title: "Welcome to QuickCart!",
+        content: "We're glad to have you here. Let's take a quick tour of the app.",
+        target: null
+    },
+    {
+        title: "Access Your Profile",
+        content: "Tap on your avatar at any time to open your account menu.",
+        target: "nav-account-button"
+    },
+    {
+        title: "Save Your Favorites",
+        content: "Add products to your wishlist to save them for later.",
+        target: "nav-wishlist-link"
+    },
+    {
+        title: "View Your Cart",
+        content: "See the items you've added and proceed to checkout from here.",
+        target: "nav-cart-link"
+    },
+    {
+        title: "Manage Your Account",
+        content: "Finally, let's go to your account page to set up your profile and addresses.",
+        target: "nav-manage-account-link"
+    }
+];
+
 
 const OnboardingTour = () => {
     const { userData, updateUserField } = useAppContext();
@@ -44,9 +72,17 @@ const OnboardingTour = () => {
     const [style, setStyle] = useState({});
     const [highlightStyle, setHighlightStyle] = useState({});
     const tourRef = useRef(null);
+    const [steps, setSteps] = useState(desktopSteps);
 
     useEffect(() => {
         setIsClient(true);
+        const mediaQuery = window.matchMedia('(max-width: 768px)');
+        const handleResize = () => {
+            setSteps(mediaQuery.matches ? mobileSteps : desktopSteps);
+        };
+        handleResize(); // Set initial steps
+        mediaQuery.addEventListener('change', handleResize);
+        return () => mediaQuery.removeEventListener('change', handleResize);
     }, []);
 
     const updateHighlightAndPopup = (targetId) => {
@@ -81,7 +117,7 @@ const OnboardingTour = () => {
                 position: 'absolute',
                 top: `${topPosition}px`,
                 left: `${leftPosition}px`,
-                transform: 'none', // Remove translateX as we now calculate the exact left position
+                transform: 'none',
                 zIndex: 1002
             });
     
@@ -107,7 +143,6 @@ const OnboardingTour = () => {
 
         const currentStep = steps[step];
 
-        // For step 0, no target is needed, so clear styles.
         if(step === 0) {
             setHighlightStyle({});
             setStyle({});
@@ -127,19 +162,17 @@ const OnboardingTour = () => {
             }
         };
         
-        // Initial update
         updatePositions();
 
-        // Update on resize
         window.addEventListener('resize', updatePositions);
         return () => window.removeEventListener('resize', updatePositions);
 
-    }, [step, userData, isClient]);
+    }, [step, userData, isClient, steps]);
 
 
     const finishTour = async () => {
         if (!userData) return;
-        setHighlightStyle({}); // Hide highlight immediately
+        setHighlightStyle({});
         await updateUserField('isNewUser', false);
         setStep(0);
     };
@@ -163,10 +196,10 @@ const OnboardingTour = () => {
     const currentStep = steps[step];
 
     const overlayPanels = highlightStyle.width ? [
-        { top: 0, left: 0, width: '100%', height: highlightStyle.top, zIndex: 1000 }, // Top
-        { top: highlightStyle.top, left: 0, width: highlightStyle.left, height: highlightStyle.height, zIndex: 1000 }, // Left
-        { top: highlightStyle.top, left: highlightStyle.left + highlightStyle.width, right: 0, height: highlightStyle.height, zIndex: 1000 }, // Right
-        { top: highlightStyle.top + highlightStyle.height, left: 0, width: '100%', bottom: 0, zIndex: 1000 } // Bottom
+        { top: 0, left: 0, width: '100%', height: highlightStyle.top, zIndex: 1000 },
+        { top: highlightStyle.top, left: 0, width: highlightStyle.left, height: highlightStyle.height, zIndex: 1000 },
+        { top: highlightStyle.top, left: highlightStyle.left + highlightStyle.width, right: 0, height: highlightStyle.height, zIndex: 1000 },
+        { top: highlightStyle.top + highlightStyle.height, left: 0, width: '100%', bottom: 0, zIndex: 1000 }
     ] : [{ top: 0, left: 0, width: '100%', height: '100%', zIndex: 1000 }];
 
     return (
