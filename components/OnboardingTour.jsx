@@ -141,7 +141,7 @@ const OnboardingTour = () => {
                     left: `${document.getElementById(currentStep.target)?.getBoundingClientRect().left - 4}px`,
                     width: `${document.getElementById(currentStep.target)?.getBoundingClientRect().width + 8}px`,
                     height: `${document.getElementById(currentStep.target)?.getBoundingClientRect().height + 8}px`,
-                    zIndex: 999
+                    zIndex: 1000
                 }}
             />}
             <div
