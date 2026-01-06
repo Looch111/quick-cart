@@ -340,7 +340,7 @@ export const AppContextProvider = (props) => {
         }
     };
     
-    const placeOrder = async (address, paymentResponse, totalAmount) => {
+    const placeOrder = async (address, paymentResponse, totalAmount, itemsToOrder) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
             return { success: false };
@@ -361,16 +361,18 @@ export const AppContextProvider = (props) => {
         
         try {
             const orderItems = [];
-            for (const itemId in cartItems) {
+            for (const itemId in itemsToOrder) {
                 const product = allRawProducts.find(p => p._id === itemId);
                 if (!product) throw new Error(`Product with ID ${itemId} not found.`);
-                if (product.stock < cartItems[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
-                orderItems.push({ ...product, productId: itemId, quantity: cartItems[itemId] });
+                if (product.stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
+                orderItems.push({ ...product, productId: itemId, quantity: itemsToOrder[itemId] });
             }
 
+            const updatedCartItems = { ...cartItems };
             for (const item of orderItems) {
                 const productRef = doc(firestore, 'products', item.productId);
                 batch.update(productRef, { stock: increment(-item.quantity) });
+                delete updatedCartItems[item.productId];
             }
 
             const newOrderRef = doc(collection(firestore, 'orders'));
@@ -386,7 +388,7 @@ export const AppContextProvider = (props) => {
             });
 
             const userDocRef = doc(firestore, 'users', userData._id);
-            batch.update(userDocRef, { cartItems: {} });
+            batch.update(userDocRef, { cartItems: updatedCartItems });
 
             await batch.commit();
             return { success: true };
@@ -396,7 +398,7 @@ export const AppContextProvider = (props) => {
         }
     }
     
-    const placeOrderWithWallet = async (address, totalAmount) => {
+    const placeOrderWithWallet = async (address, totalAmount, itemsToOrder) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
             return { success: false };
@@ -409,16 +411,20 @@ export const AppContextProvider = (props) => {
         const batch = writeBatch(firestore);
         try {
             const orderItems = [];
-            for (const itemId in cartItems) {
+            for (const itemId in itemsToOrder) {
                 const product = allRawProducts.find(p => p._id === itemId);
                 if (!product) throw new Error(`Product with ID ${itemId} not found.`);
-                if (product.stock < cartItems[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
-                orderItems.push({ ...product, productId: itemId, quantity: cartItems[itemId] });
+                if (product.stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
+                orderItems.push({ ...product, productId: itemId, quantity: itemsToOrder[itemId] });
             }
+            
+            const updatedCartItems = { ...cartItems };
             for (const item of orderItems) {
                 const productRef = doc(firestore, 'products', item.productId);
                 batch.update(productRef, { stock: increment(-item.quantity) });
+                delete updatedCartItems[item.productId];
             }
+
             const newOrderRef = doc(collection(firestore, 'orders'));
             batch.set(newOrderRef, {
                 userId: userData._id,
@@ -437,7 +443,7 @@ export const AppContextProvider = (props) => {
                 date: new Date().toISOString(),
             };
             batch.update(userDocRef, {
-                cartItems: {},
+                cartItems: updatedCartItems,
                 walletBalance: increment(-totalAmount),
                 walletTransactions: arrayUnion(newTransaction)
             });

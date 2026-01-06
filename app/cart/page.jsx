@@ -1,5 +1,5 @@
 'use client'
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
@@ -11,6 +11,36 @@ import Loading from "@/components/Loading";
 const Cart = () => {
 
   const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts, productsLoading } = useAppContext();
+  const [selectedItems, setSelectedItems] = useState({});
+
+  useEffect(() => {
+    // Initially, select all items in the cart
+    const initialSelection = {};
+    Object.keys(cartItems).forEach(itemId => {
+        initialSelection[itemId] = true;
+    });
+    setSelectedItems(initialSelection);
+  }, [cartItems]);
+  
+  const handleItemSelect = (itemId) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
+
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+    const newSelection = {};
+    if (isChecked) {
+      Object.keys(cartItems).forEach(itemId => {
+        newSelection[itemId] = true;
+      });
+    }
+    setSelectedItems(newSelection);
+  };
+  
+  const isAllSelected = Object.keys(cartItems).length > 0 && Object.keys(cartItems).every(itemId => selectedItems[itemId]);
 
   if (productsLoading || userData === undefined) {
     return (
@@ -61,6 +91,14 @@ const Cart = () => {
             <table className="min-w-full table-auto">
               <thead className="text-left">
                 <tr>
+                   <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
+                      <input 
+                        type="checkbox" 
+                        className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                        checked={isAllSelected}
+                        onChange={handleSelectAll}
+                      />
+                  </th>
                   <th className="text-nowrap pb-6 md:px-4 px-1 text-gray-600 font-medium">
                     Product Details
                   </th>
@@ -85,6 +123,14 @@ const Cart = () => {
 
                   return (
                     <tr key={itemId}>
+                      <td className="py-4 md:px-4 px-1">
+                        <input 
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                          checked={!!selectedItems[itemId]}
+                          onChange={() => handleItemSelect(itemId)}
+                        />
+                      </td>
                       <td className="flex items-center gap-4 py-4 md:px-4 px-1">
                         <div>
                           <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2">
@@ -137,7 +183,7 @@ const Cart = () => {
                             </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{(product.offerPrice * cartItems[itemId]).toFixed(2)}</td>
+                      <td className="py-4 mdpx-4 px-1 text-gray-600">{currency}{(product.offerPrice * cartItems[itemId]).toFixed(2)}</td>
                     </tr>
                   );
                 })}
@@ -153,7 +199,7 @@ const Cart = () => {
             Continue Shopping
           </button>
         </div>
-        <OrderSummary />
+        <OrderSummary selectedItems={selectedItems} />
       </div>
     </>
   );

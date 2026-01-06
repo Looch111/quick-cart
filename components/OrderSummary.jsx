@@ -6,12 +6,12 @@ import { Wallet, X } from "lucide-react";
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import PaymentCancellationModal from "./PaymentCancellationModal";
 
-const OrderSummary = () => {
+const OrderSummary = ({ selectedItems }) => {
 
   const { 
-    currency, router, getCartCount, getCartAmount, userAddresses, 
+    currency, router, cartItems, userAddresses, 
     userData, setShowLogin, walletBalance, promotions, platformSettings,
-    placeOrder, placeOrderWithWallet
+    placeOrder, placeOrderWithWallet, allRawProducts
    } = useAppContext()
 
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -29,12 +29,35 @@ const OrderSummary = () => {
     } else {
       setSelectedAddress(null);
     }
-  }, [userAddresses])
+  }, [userAddresses]);
 
-  const deliveryFee = getCartAmount() > (platformSettings?.freeShippingThreshold || 50) ? 0 : (platformSettings?.shippingFee || 5);
-  const totalAmount = getCartAmount() + deliveryFee - discount;
+  const getSelectedItemsCount = () => {
+    if (!selectedItems) return 0;
+    return Object.keys(selectedItems).filter(itemId => selectedItems[itemId]).reduce((sum, itemId) => sum + (cartItems[itemId] || 0), 0);
+  };
 
-  const handleFlutterwavePayment = useFlutterwave({
+  const getSelectedItemsAmount = () => {
+    let totalAmount = 0;
+    if (!allRawProducts.length || !cartItems || !selectedItems) return 0;
+    
+    for (const itemId in selectedItems) {
+      if (selectedItems[itemId]) {
+        let itemInfo = allRawProducts.find((product) => product._id === itemId);
+        if (itemInfo) {
+            const isFlashSale = itemInfo.flashSalePrice && itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
+            const currentPrice = isFlashSale ? itemInfo.flashSalePrice : itemInfo.offerPrice;
+            totalAmount += Number(currentPrice) * cartItems[itemId];
+        }
+      }
+    }
+    return Math.floor(totalAmount * 100) / 100;
+  };
+  
+  const selectedItemsAmount = getSelectedItemsAmount();
+  const deliveryFee = selectedItemsAmount > (platformSettings?.freeShippingThreshold || 50) ? 0 : (platformSettings?.shippingFee || 5);
+  const totalAmount = selectedItemsAmount + deliveryFee - discount;
+
+  const flutterwaveConfig = {
     public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
     tx_ref: `QUICKCART-ORDER-${Date.now()}`,
     amount: totalAmount,
@@ -50,7 +73,8 @@ const OrderSummary = () => {
         description: 'Payment for items in cart',
         logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
     },
-  });
+  };
+  const handleFlutterwavePayment = useFlutterwave(flutterwaveConfig);
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
@@ -77,17 +101,16 @@ const OrderSummary = () => {
     }
 
     let calculatedDiscount = 0;
-    const cartAmount = getCartAmount();
     
     if (promo.type === 'percentage') {
-        calculatedDiscount = (cartAmount * promo.value) / 100;
+        calculatedDiscount = (selectedItemsAmount * promo.value) / 100;
     } else if (promo.type === 'fixed') {
         calculatedDiscount = promo.value;
     } else if (promo.type === 'shipping') {
         calculatedDiscount = deliveryFee;
     }
     
-    setDiscount(calculatedDiscount > cartAmount ? cartAmount : calculatedDiscount);
+    setDiscount(calculatedDiscount > selectedItemsAmount ? selectedItemsAmount : calculatedDiscount);
     setAppliedPromo(promo);
     toast.success(`Promo code "${promo.code}" applied successfully!`);
   };
@@ -99,17 +122,27 @@ const OrderSummary = () => {
     toast.success("Promo code removed.");
   };
 
+  const getItemsForOrder = () => {
+    return Object.keys(cartItems)
+        .filter(itemId => selectedItems[itemId])
+        .reduce((obj, key) => {
+            obj[key] = cartItems[key];
+            return obj;
+        }, {});
+  };
+
   const executeOrderPlacement = async () => {
     setOrderStatus('loading');
+    const itemsForOrder = getItemsForOrder();
     
     let result;
     if (paymentMethod === 'wallet') {
-        result = await placeOrderWithWallet(selectedAddress, totalAmount);
+        result = await placeOrderWithWallet(selectedAddress, totalAmount, itemsForOrder);
     } else {
         result = await new Promise((resolve) => {
              handleFlutterwavePayment({
                 callback: async (response) => {
-                    const orderResult = await placeOrder(selectedAddress, response, totalAmount);
+                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, itemsForOrder);
                     resolve(orderResult);
                     closePaymentModal();
                 },
@@ -145,8 +178,8 @@ const OrderSummary = () => {
       toast.error("Please select a shipping address.");
       return;
     }
-    if (getCartCount() === 0) {
-      toast.error("Your cart is empty.");
+    if (getSelectedItemsCount() === 0) {
+      toast.error("Please select items to purchase.");
       return;
     }
 
@@ -254,8 +287,8 @@ const OrderSummary = () => {
 
         <div className="space-y-4">
           <div className="flex justify-between text-base font-medium">
-            <p className="uppercase text-gray-600">Items ({getCartCount()})</p>
-            <p className="text-gray-800">{currency}{getCartAmount().toFixed(2)}</p>
+            <p className="uppercase text-gray-600">Items ({getSelectedItemsCount()})</p>
+            <p className="text-gray-800">{currency}{selectedItemsAmount.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p className="text-gray-600">Shipping Fee</p>
@@ -281,8 +314,8 @@ const OrderSummary = () => {
 
       <button 
         onClick={handlePlaceOrder} 
-        disabled={orderStatus === 'loading' || orderStatus === 'done'}
-        className="w-full bg-orange-600 text-white py-3 rounded-full hover:bg-orange-700 transition font-semibold disabled:bg-orange-400 disabled:cursor-wait mt-5"
+        disabled={orderStatus === 'loading' || orderStatus === 'done' || getSelectedItemsCount() === 0}
+        className="w-full bg-orange-600 text-white py-3 rounded-full hover:bg-orange-700 transition font-semibold disabled:bg-orange-400 disabled:cursor-not-allowed mt-5"
       >
         {orderStatus === 'loading' ? 'Placing Order...' : orderStatus === 'done' ? 'Order Placed!' : 'Place Order'}
       </button>
