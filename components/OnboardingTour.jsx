@@ -1,7 +1,25 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { X, User, Settings } from 'lucide-react';
+import { X } from 'lucide-react';
+
+const steps = [
+    {
+        title: "Welcome to QuickCart!",
+        content: "We're glad to have you here. Let's take a quick moment to get your account set up.",
+        target: null
+    },
+    {
+        title: "Access Your Profile",
+        content: "Click on your avatar at any time to open your account menu.",
+        target: "nav-account-button"
+    },
+    {
+        title: "Manage Your Account",
+        content: "From here, you can manage your profile details, wallet, and orders. Let's go there now!",
+        target: "nav-manage-account-link"
+    }
+];
 
 const OnboardingTour = () => {
     const { userData, updateUserField } = useAppContext();
@@ -13,24 +31,6 @@ const OnboardingTour = () => {
     useEffect(() => {
         setIsClient(true);
     }, []);
-
-    const steps = [
-        {
-            title: "Welcome to QuickCart!",
-            content: "We're glad to have you here. Let's take a quick moment to get your account set up.",
-            target: null
-        },
-        {
-            title: "Access Your Profile",
-            content: "Click on your avatar at any time to open your account menu.",
-            target: "nav-account-button"
-        },
-        {
-            title: "Manage Your Account",
-            content: "From here, you can manage your profile details, wallet, and orders. Let's go there now!",
-            target: "nav-manage-account-link"
-        }
-    ];
 
     useEffect(() => {
         if (!userData || !userData.isNewUser || !isClient || step === 0) {
@@ -88,7 +88,7 @@ const OnboardingTour = () => {
             }, 300);
         }
 
-    }, [step, userData, isClient, steps]);
+    }, [step, userData, isClient]);
 
 
     const finishTour = async () => {
