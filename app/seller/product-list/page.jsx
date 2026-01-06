@@ -130,7 +130,7 @@ const ProductList = () => {
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">{product.category}</td>
                   <td className="px-4 py-3 hidden sm:table-cell">{currency}{product.offerPrice}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">{product.stock > 0 ? product.stock : <span className="text-red-500">Out of Stock</span>}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">{product.stock > 0 ? product.stock : <span className="text-red-500 font-medium">Out of Stock</span>}</td>
                   <td className="px-4 py-3">
                       <StatusBadge status={product.status} />
                   </td>
