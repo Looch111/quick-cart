@@ -135,7 +135,7 @@ const OnboardingTour = () => {
     return (
         <div className="fixed inset-0 bg-black/50 z-[999] backdrop-blur-sm">
              {currentStep.target && document.getElementById(currentStep.target) && <div 
-                className="absolute bg-white rounded-lg animate-pulse" 
+                className="absolute bg-transparent border-2 border-white rounded-lg animate-pulse" 
                 style={{ 
                     top: `${document.getElementById(currentStep.target)?.getBoundingClientRect().top - 4}px`, 
                     left: `${document.getElementById(currentStep.target)?.getBoundingClientRect().left - 4}px`,
