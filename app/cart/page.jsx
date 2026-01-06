@@ -10,7 +10,7 @@ import Loading from "@/components/Loading";
 
 const Cart = () => {
 
-  const { router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts, productsLoading } = useAppContext();
+  const { router, cartItems, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts, productsLoading, addToCart } = useAppContext();
   
   if (productsLoading || userData === undefined) {
     return (
