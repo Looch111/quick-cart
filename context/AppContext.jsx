@@ -599,7 +599,6 @@ export const AppContextProvider = (props) => {
                 const newCart = { ...currentCart };
                 newCart[itemId] = currentQuantityInCart + 1;
                 transaction.update(userDocRef, { cartItems: newCart });
-                toast.success("Product added to cart", { id: `add-cart-success-${itemId}` });
             });
         } catch (error) {
             console.error("Add to cart transaction failed: ", error);
@@ -724,10 +723,8 @@ export const AppContextProvider = (props) => {
         const newWishlist = { ...userData.wishlistItems };
         if (newWishlist[productId]) {
             delete newWishlist[productId];
-            toast.success("Removed from wishlist");
         } else {
             newWishlist[productId] = true;
-            toast.success("Added to wishlist");
         }
         updateUserField('wishlistItems', newWishlist);
     }

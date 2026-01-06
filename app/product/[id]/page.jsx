@@ -17,7 +17,6 @@ const StarRating = ({ rating, onRatingChange }) => {
 
     const handleRating = (rate) => {
         onRatingChange(rate);
-        toast.success(`You rated this product ${rate} stars. Thank you!`);
     };
 
     return (

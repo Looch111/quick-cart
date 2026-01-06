@@ -76,6 +76,7 @@ const ProductCard = ({ product }) => {
     const isOutOfStock = !product.stock || product.stock <= 0;
 
     const isFlashSaleActive = product.flashSalePrice > 0 && product.flashSaleEndDate && new Date(product.flashSaleEndDate) > currentTime;
+    const hasSizes = product.sizes && typeof product.sizes === 'object' && Object.keys(product.sizes).length > 0;
 
     const currentPrice = isFlashSaleActive ? product.flashSalePrice : product.offerPrice;
     const originalPrice = isFlashSaleActive ? product.price : (product.offerPrice < product.price ? product.price : null);
@@ -88,7 +89,7 @@ const ProductCard = ({ product }) => {
     const handleAddToCartClick = (e) => {
         e.stopPropagation();
         if (isOutOfStock) return;
-        if (product.sizes && product.sizes.length > 0) {
+        if (hasSizes) {
             openSizeModal(product);
         } else {
             addToCart(product._id);
@@ -99,7 +100,7 @@ const ProductCard = ({ product }) => {
         e.stopPropagation();
         if (isOutOfStock) return;
         
-        if (product.sizes && product.sizes.length > 0) {
+        if (hasSizes) {
             openSizeModal(product);
         } else {
             addToCart(product._id);
