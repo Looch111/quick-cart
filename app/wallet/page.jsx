@@ -24,7 +24,7 @@ const WalletPage = () => {
     
     const flutterwaveConfig = {
         public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-        tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        tx_ref: `QUICKCART-WALLET-${userData?._id}-${Date.now()}`,
         amount: Number(amount),
         currency: 'NGN',
         payment_options: 'card,mobilemoney,ussd',

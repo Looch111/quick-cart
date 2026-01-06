@@ -1,71 +1,75 @@
 import { NextResponse } from 'next/server';
 import admin from '@/app/lib/firebase-admin';
+import { db } from '@/app/lib/firebase-admin';
 
 export async function POST(req) {
     const secretHash = process.env.FLUTTERWAVE_WEBHOOK_SECRET;
     const signature = req.headers.get('verif-hash');
 
     if (!signature || (signature !== secretHash)) {
-        // This request isn't from Flutterwave; discard
         return NextResponse.json({ message: "Invalid signature" }, { status: 401 });
     }
 
     try {
         const payload = await req.json();
         const { event, data: transactionData } = payload;
-
-        // Ensure we are handling a completed charge event
+        
         if (event === 'charge.completed' && transactionData.status === 'successful') {
             
-            // Check if this is a wallet funding transaction by looking at the metadata
-            if (transactionData.meta && transactionData.meta.type === 'wallet-funding') {
-                const { tx_ref, amount, meta } = transactionData;
-                const userId = meta.user_id;
+            const tx_ref = transactionData.tx_ref;
+            if (tx_ref && tx_ref.includes('WALLET')) {
+                 const { amount, customer } = transactionData;
+                const userEmail = customer.email;
 
-                if (!userId || !amount) {
+                if (!userEmail || !amount) {
                     return NextResponse.json({ message: "Missing metadata for wallet funding" }, { status: 400 });
                 }
 
-                const userRef = admin.firestore().collection('users').doc(userId);
+                const usersRef = db.collection('users');
+                const q = usersRef.where('email', '==', userEmail).limit(1);
+                const querySnapshot = await q.get();
 
-                // Use a Firestore transaction to ensure atomic and safe updates
-                await admin.firestore().runTransaction(async (transaction) => {
-                    const userDoc = await transaction.get(userRef);
+                if (querySnapshot.empty) {
+                    throw new Error(`User with email ${userEmail} not found.`);
+                }
+                
+                const userDoc = querySnapshot.docs[0];
+                const userRef = userDoc.ref;
 
-                    if (!userDoc.exists) {
-                        throw new Error(`User with ID ${userId} not found.`);
+
+                await db.runTransaction(async (transaction) => {
+                    const freshUserDoc = await transaction.get(userRef);
+
+                    if (!freshUserDoc.exists) {
+                        throw new Error(`User with email ${userEmail} not found during transaction.`);
                     }
                     
-                    const userData = userDoc.data();
+                    const userData = freshUserDoc.data();
                     const transactions = userData.walletTransactions || [];
 
-                    // --- Idempotency Check ---
-                    // Prevent processing the same transaction twice by checking the unique tx_ref
                     if (transactions.some(tx => tx.id === tx_ref)) {
                         console.log(`Webhook: Transaction ${tx_ref} already processed.`);
-                        return; // Exit transaction gracefully if already handled
+                        return; 
                     }
                     
                     const newTransaction = {
-                        id: tx_ref, // Use tx_ref for idempotency
+                        id: tx_ref,
                         type: 'Top Up',
                         amount: amount,
                         date: new Date().toISOString(),
                         method: 'Flutterwave',
                     };
                     
-                    // Update user's wallet balance and transaction history using Admin SDK FieldValues
                     transaction.update(userRef, {
                         walletBalance: admin.firestore.FieldValue.increment(amount),
                         walletTransactions: admin.firestore.FieldValue.arrayUnion(newTransaction)
                     });
                 });
 
-                console.log(`Webhook: Successfully credited ${amount} to user ${userId}'s wallet.`);
+                console.log(`Webhook: Successfully credited ${amount} to user ${userEmail}'s wallet.`);
             }
         }
 
-        // Acknowledge receipt of the webhook
         return NextResponse.json({ status: "success" });
 
     } catch (error) {
