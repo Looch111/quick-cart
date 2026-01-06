@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { useAuth } from "@/src/firebase/auth/use-user";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -14,12 +15,13 @@ const GoogleIcon = () => (
 );
 
 const LoginPopup = () => {
-    const { showLogin, setShowLogin, authLoading, userData } = useAppContext();
+    const { showLogin, setShowLogin, userData } = useAppContext();
     const { signInWithEmail, signUpWithEmail } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
 
     useEffect(() => {
         if (showLogin) {
@@ -28,6 +30,7 @@ const LoginPopup = () => {
             setError('');
             setEmail('');
             setPassword('');
+            setPasswordVisible(false);
         }
     }, [showLogin]);
     
@@ -104,17 +107,28 @@ const LoginPopup = () => {
                             required
                         />
                     </div>
-                    <div>
+                    <div className="relative">
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                         <input
                             id="password"
                             className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
-                            type="password"
+                            type={passwordVisible ? "text" : "password"}
                             placeholder="Enter your password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                         <button
+                            type="button"
+                            onClick={() => setPasswordVisible(!passwordVisible)}
+                            className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-sm leading-5"
+                        >
+                            {passwordVisible ? (
+                                <EyeOff className="h-5 w-5 text-gray-500" />
+                            ) : (
+                                <Eye className="h-5 w-5 text-gray-500" />
+                            )}
+                        </button>
                     </div>
                     <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
                         Continue
@@ -138,5 +152,3 @@ const LoginPopup = () => {
 };
 
 export default LoginPopup;
-
-    
