@@ -13,7 +13,7 @@ const GoogleIcon = () => (
 );
 
 const LoginPopup = () => {
-    const { showLogin, setShowLogin } = useAppContext();
+    const { showLogin, setShowLogin, authLoading, userData } = useAppContext();
     const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
@@ -29,18 +29,27 @@ const LoginPopup = () => {
             setPassword('');
         }
     }, [showLogin]);
+    
+    useEffect(() => {
+        // If user data becomes available (i.e., successful login) while the popup is open, close it.
+        if (userData && showLogin) {
+            setShowLogin(false);
+        }
+    }, [userData, showLogin, setShowLogin]);
 
-    if (!showLogin) {
+    if (!showLogin || authLoading) {
         return null;
     }
 
     const handleAuthAction = async (authPromise) => {
+        setError('');
         try {
-            const result = await authPromise;
+            await authPromise;
             // The isNewUser flag from the auth result will trigger the context to show the tour
-            setShowLogin(false);
+            // The useEffect above will handle closing the popup on successful login.
         } catch (err) {
-            setError(err.message);
+            // Error toasts are now handled in the useAuth hook.
+            // We can still set a local error if needed for UI, but for now it's not necessary.
         }
     };
 
@@ -50,7 +59,6 @@ const LoginPopup = () => {
 
     const handleEmailAuth = (e) => {
         e.preventDefault();
-        setError('');
         if (isLogin) {
             handleAuthAction(signInWithEmail(email, password));
         } else {
