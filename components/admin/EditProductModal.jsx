@@ -53,13 +53,23 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 
     const handleSave = () => {
         const dataToSave = { ...productData };
+        
+        // Convert numeric fields from string to number
+        dataToSave.price = Number(dataToSave.price) || 0;
+        dataToSave.offerPrice = Number(dataToSave.offerPrice) || 0;
+        dataToSave.flashSalePrice = Number(dataToSave.flashSalePrice) || null;
+        dataToSave.stock = Number(dataToSave.stock) || 0;
+
         if (typeof dataToSave.sizes === 'string') {
             dataToSave.sizes = dataToSave.sizes.split(',').map(s => s.trim()).filter(s => s);
         }
         if (!dataToSave.flashSaleEndDate) {
             dataToSave.flashSaleEndDate = null;
+        } else {
+            dataToSave.flashSaleEndDate = new Date(dataToSave.flashSaleEndDate).toISOString();
         }
         dataToSave.image = imageUrls.map(url => getImageUrl(url)).filter(url => url !== assets.upload_area);
+        
         updateProduct(dataToSave);
         onSave(dataToSave);
     };
