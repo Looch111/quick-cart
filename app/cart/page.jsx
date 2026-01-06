@@ -5,94 +5,35 @@ import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
-import { Plus, Minus } from "lucide-react";
-import Loading from "@/components/Loading";
+import toast from "react-hot-toast";
 
 const Cart = () => {
 
-  const { router, cartItems, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts, productsLoading, addToCart } = useAppContext();
-  
-  if (productsLoading || userData === undefined) {
-    return (
-      <>
-        <Navbar />
-        <Loading />
-      </>
-    )
+  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount } = useAppContext();
+
+  const handleQuantityChange = (product, newQuantity) => {
+    if (newQuantity > product.stock) {
+      toast.error(`Only ${product.stock} items available`);
+      // Optionally, reset the input to the max stock
+      updateCartQuantity(product._id, product.stock);
+    } else {
+      updateCartQuantity(product._id, newQuantity);
+    }
   }
 
-  if (!userData && getCartCount() > 0) {
-    setShowLogin(true);
-    return (
-        <>
-            <Navbar />
-            <Loading />
-        </>
-    );
-  }
-
-  if (getCartCount() === 0) {
-    return (
-      <>
-        <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 md:px-16 lg:px-32 pt-28 mb-20">
-          <p className="text-2xl text-gray-600">Your cart is empty.</p>
-          <p className="text-gray-500 mt-2">Looks like you haven't added anything to your cart yet.</p>
-          <button onClick={() => router.push('/all-products')} className="group flex items-center mt-8 gap-2 px-6 py-3 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition">
-            Continue Shopping
-          </button>
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
       <Navbar />
-      <div className="flex flex-col md:flex-row gap-10 px-6 md:px-16 lg:px-32 pt-32 md:pt-28 mb-20">
+      <div className="flex flex-col md:flex-row gap-10 px-6 md:px-16 lg:px-32 pt-14 mb-20">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-8 border-b border-gray-500/30 pb-6">
             <p className="text-2xl md:text-3xl text-gray-500">
               Your <span className="font-medium text-orange-600">Cart</span>
             </p>
+            <p className="text-lg md:text-xl text-gray-500/80">{getCartCount()} Items</p>
           </div>
-
-          {/* Mobile View */}
-          <div className="md:hidden space-y-4">
-              {Object.keys(cartItems).map((itemId) => {
-                  const product = allRawProducts.find(p => p._id === itemId);
-                  if (!product || cartItems[itemId] <= 0) return null;
-                  const isStockLimitReached = cartItems[itemId] >= product.stock;
-
-                  return (
-                      <div key={itemId} className="bg-white border rounded-lg p-4 shadow-sm">
-                          <div className="flex gap-4">
-                              <div className="flex-shrink-0">
-                                  <div className="rounded-lg overflow-hidden bg-gray-100 p-1 w-20 h-20 flex items-center justify-center">
-                                      <Image src={product.image[0]} alt={product.name} width={80} height={80} className="object-contain" />
-                                  </div>
-                              </div>
-                              <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-800 text-base">{product.name}</h3>
-                                  <p className="text-sm text-gray-600 mt-1">{currency}{Number(product.offerPrice).toFixed(2)}</p>
-                                  <div className="mt-3 flex items-center border border-gray-300 rounded-full w-fit">
-                                      <button onClick={() => updateCartQuantity(product._id, cartItems[itemId] - 1)} className="p-1.5"><Minus className="w-4 h-4 text-gray-600" /></button>
-                                      <input onChange={e => updateCartQuantity(product._id, Number(e.target.value))} type="number" value={cartItems[itemId]} className="w-10 border-none text-center appearance-none focus:outline-none bg-transparent" />
-                                      <button onClick={() => addToCart(product._id)} className="p-1.5 disabled:opacity-50 disabled:cursor-not-allowed" disabled={isStockLimitReached}><Plus className="w-4 h-4 text-gray-600" /></button>
-                                  </div>
-                              </div>
-                          </div>
-                          <div className="flex justify-between items-center mt-3 pt-3 border-t">
-                              <button onClick={() => updateCartQuantity(product._id, 0)} className="text-xs text-orange-600">Remove</button>
-                              <p className="text-sm font-medium text-gray-800">Subtotal: <span className='font-bold'>{currency}{(Number(product.offerPrice) * cartItems[itemId]).toFixed(2)}</span></p>
-                          </div>
-                      </div>
-                  );
-              })}
-          </div>
-
-          {/* Desktop View */}
-          <div className="overflow-x-auto hidden md:block">
+          <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead className="text-left">
                 <tr>
@@ -112,27 +53,31 @@ const Cart = () => {
               </thead>
               <tbody>
                 {Object.keys(cartItems).map((itemId) => {
-                  const product = allRawProducts.find(p => p._id === itemId);
+                  const product = products.find(product => product._id === itemId);
 
                   if (!product || cartItems[itemId] <= 0) return null;
-
-                  const isStockLimitReached = cartItems[itemId] >= product.stock;
 
                   return (
                     <tr key={itemId}>
                       <td className="flex items-center gap-4 py-4 md:px-4 px-1">
                         <div>
-                          <div className="rounded-lg overflow-hidden bg-gray-100 p-2">
+                          <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2">
                             <Image
-                              src={product.image[0]}
+                              src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
                               alt={product.name}
-                              className="w-16 h-16 object-contain"
-                              width={64}
-                              height={64}
+                              className="w-16 h-auto object-cover mix-blend-multiply"
+                              width={1280}
+                              height={720}
                             />
                           </div>
+                          <button
+                            className="md:hidden text-xs text-orange-600 mt-1"
+                            onClick={() => updateCartQuantity(product._id, 0)}
+                          >
+                            Remove
+                          </button>
                         </div>
-                        <div className="text-sm">
+                        <div className="text-sm hidden md:block">
                           <p className="text-gray-800">{product.name}</p>
                           <button
                             className="text-xs text-orange-600 mt-1"
@@ -142,31 +87,27 @@ const Cart = () => {
                           </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{Number(product.offerPrice).toFixed(2)}</td>
+                      <td className="py-4 md:px-4 px-1 text-gray-600">₦{product.offerPrice}</td>
                       <td className="py-4 md:px-4 px-1">
-                        <div className="flex items-center border border-gray-300 rounded-full">
-                            <button 
-                                onClick={() => updateCartQuantity(product._id, cartItems[itemId] - 1)}
-                                className="p-1.5"
-                            >
-                                <Minus className="w-4 h-4 text-gray-600" />
-                            </button>
-                            <input 
-                                onChange={e => updateCartQuantity(product._id, Number(e.target.value))} 
-                                type="number" 
-                                value={cartItems[itemId]} 
-                                className="w-10 border-none text-center appearance-none focus:outline-none bg-transparent"
+                        <div className="flex items-center md:gap-2 gap-1">
+                          <button onClick={() => updateCartQuantity(product._id, cartItems[itemId] - 1)}>
+                            <Image
+                              src={assets.decrease_arrow}
+                              alt="decrease_arrow"
+                              className="w-4 h-4"
                             />
-                            <button 
-                                onClick={() => addToCart(product._id)}
-                                className="p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={isStockLimitReached}
-                            >
-                                <Plus className="w-4 h-4 text-gray-600" />
-                            </button>
+                          </button>
+                          <input onChange={e => handleQuantityChange(product, Number(e.target.value))} type="number" value={cartItems[itemId]} className="w-8 border text-center appearance-none"></input>
+                          <button onClick={() => addToCart(product._id)}>
+                            <Image
+                              src={assets.increase_arrow}
+                              alt="increase_arrow"
+                              className="w-4 h-4"
+                            />
+                          </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{(Number(product.offerPrice) * cartItems[itemId]).toFixed(2)}</td>
+                      <td className="py-4 md:px-4 px-1 text-gray-600">₦{(product.offerPrice * cartItems[itemId]).toFixed(2)}</td>
                     </tr>
                   );
                 })}

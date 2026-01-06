@@ -569,26 +569,21 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
-        const product = allRawProducts.find(p => p._id === itemId);
-        if (!product) {
-            toast.error("Product not found.");
-            return;
-        }
-
-        if (quantity > product.stock) {
-            toast.error(`Only ${product.stock} items available for ${product.name}`);
-            quantity = product.stock;
-        }
-
         const newCart = { ...cartItems };
         if (quantity <= 0) {
             delete newCart[itemId];
             toast.success("Item removed from cart");
         } else {
-            newCart[itemId] = quantity;
+            const product = allRawProducts.find(p => p._id === itemId);
+            if (product && quantity > product.stock) {
+                toast.error(`Only ${product.stock} items available`);
+                newCart[itemId] = product.stock;
+            } else {
+                newCart[itemId] = quantity;
+            }
         }
         updateUserField('cartItems', newCart);
-    }
+    };
 
     const getCartCount = () => {
         if (!cartItems) return 0;
