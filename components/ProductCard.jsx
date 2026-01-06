@@ -72,7 +72,7 @@ const ProductCard = ({ product }) => {
     }, []);
 
     const isWishlisted = wishlistItems[product._id];
-    const isOutOfStock = product.stock === 0;
+    const isOutOfStock = !product.stock || product.stock <= 0;
 
     const isFlashSaleActive = product.flashSalePrice > 0 && product.flashSaleEndDate && new Date(product.flashSaleEndDate) > currentTime;
 
