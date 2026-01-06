@@ -63,7 +63,7 @@ const WalletPage = () => {
                         toast.error('Payment amount mismatch. Please contact support.');
                     }
                 } else {
-                    toast.error('Payment verification failed. Please contact support if you were charged.');
+                    toast.error(verificationResponse.message || 'Payment verification failed. Please contact support if you were charged.');
                 }
                 closePaymentModal();
                 setIsDepositing(false);
@@ -122,7 +122,7 @@ const WalletPage = () => {
                                     </label>
                                     <div className="relative mt-1">
                                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                            <DollarSign className="h-5 w-5 text-gray-400" />
+                                            <span className="h-5 w-5 text-gray-400">{currency}</span>
                                         </div>
                                         <input
                                             type="number"

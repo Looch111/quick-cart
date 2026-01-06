@@ -132,7 +132,7 @@
         "address": { "$ref": "#/entities/address" },
         "status": { "type": "string", "enum": ["pending", "failed", "Order Placed", "Processing", "Shipped", "Delivered"] },
         "date": { "type": "string", "format": "date-time" },
-        "paymentMethod": { "type": "string", "enum": ["wallet", "online"] }
+        "paymentMethod": { "type": "string", "enum": ["wallet", "flutterwave"] }
       },
       "required": ["userId", "items", "amount", "address", "status", "date"]
     },

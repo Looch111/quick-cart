@@ -81,7 +81,7 @@ export const AppContextProvider = (props) => {
             const newUser = {
               email: currentUser.email,
               name: currentUser.displayName || '',
-              photoURL: null,
+              photoURL: currentUser.photoURL,
               role: 'buyer',
               cartItems: {},
               wishlistItems: {},
@@ -386,7 +386,6 @@ export const AppContextProvider = (props) => {
             batch.update(userDocRef, { cartItems: {} });
 
             await batch.commit();
-            router.push('/order-placed');
             return { success: true };
         } catch (error) {
             toast.error(error.message);
@@ -440,7 +439,6 @@ export const AppContextProvider = (props) => {
                 walletTransactions: arrayUnion(newTransaction)
             });
             await batch.commit();
-            router.push('/order-placed');
             return { success: true };
         } catch (error) {
             toast.error(error.message);
