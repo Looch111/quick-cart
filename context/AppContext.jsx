@@ -573,17 +573,15 @@ export const AppContextProvider = (props) => {
                 const currentQuantityInCart = currentCart[itemId] || 0;
     
                 if (currentQuantityInCart >= product.stock) {
-                    // This toast will be displayed, but the transaction will not fail.
-                    // The user will see the message and the cart state will remain unchanged.
                     toast.error(`No more stock available for ${product.name}`);
-                    return; // Exit transaction without making changes
+                    return; 
                 }
     
                 const newCart = { ...currentCart };
                 newCart[itemId] = currentQuantityInCart + 1;
                 transaction.update(userDocRef, { cartItems: newCart });
+                toast.success("Product added to cart");
             });
-            toast.success("Product added to cart");
         } catch (error) {
             console.error("Add to cart transaction failed: ", error);
             toast.error("Could not add item to cart.");
