@@ -159,8 +159,7 @@ const OrderSummary = () => {
   }
 
   const isWalletDisabled = userData ? walletBalance < totalAmount : true;
-  const buttonClass = orderStatus === 'loading' ? 'loading' : orderStatus === 'done' ? 'done' : '';
-
+  
   return (
     <>
     <div className="w-full md:w-96 bg-gray-500/5 p-5 rounded-lg">
@@ -280,9 +279,12 @@ const OrderSummary = () => {
         </div>
       </div>
 
-      <button onClick={handlePlaceOrder} className={`order-button ${buttonClass} w-full mt-5`}>
-        <span className="default">Place Order</span>
-        <span className="success">✔ Order Placed</span>
+      <button 
+        onClick={handlePlaceOrder} 
+        disabled={orderStatus === 'loading' || orderStatus === 'done'}
+        className="w-full bg-orange-600 text-white py-3 rounded-md hover:bg-orange-700 transition font-semibold disabled:bg-orange-400 disabled:cursor-wait mt-5"
+      >
+        {orderStatus === 'loading' ? 'Placing Order...' : orderStatus === 'done' ? 'Order Placed!' : 'Place Order'}
       </button>
     </div>
     <PaymentCancellationModal
