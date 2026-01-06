@@ -563,7 +563,7 @@ export const AppContextProvider = (props) => {
         toast.success("Product added to cart");
     }
 
-    const updateCartQuantity = (itemId, quantity) => {
+    const updateCartQuantity = async (itemId, quantity) => {
         if (!userData) {
             toast.error("Please log in to modify your cart.");
             setShowLogin(true);
@@ -582,7 +582,7 @@ export const AppContextProvider = (props) => {
                 newCart[itemId] = quantity;
             }
         }
-        updateUserField('cartItems', newCart);
+        await updateUserField('cartItems', newCart);
     };
 
     const getCartCount = () => {
