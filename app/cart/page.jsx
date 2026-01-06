@@ -28,6 +28,8 @@ const Cart = () => {
         return product ? { ...product, quantity: cartItems[itemId] } : null;
     }).filter(Boolean);
 
+    // Sort products by name to maintain a consistent order
+    cartProducts.sort((a, b) => a.name.localeCompare(b.name));
 
     if (authLoading || userData === undefined) {
         return (
