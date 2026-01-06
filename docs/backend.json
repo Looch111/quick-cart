@@ -73,6 +73,15 @@
                             "netEarnings": { "type": "number" }
                         }
                     }
+                },
+                "bankDetails": {
+                    "type": "object",
+                    "properties": {
+                        "accountHolder": { "type": "string" },
+                        "accountNumber": { "type": "string" },
+                        "bankName": { "type": "string" },
+                        "ifscCode": { "type": "string" }
+                    }
                 }
             }
         }

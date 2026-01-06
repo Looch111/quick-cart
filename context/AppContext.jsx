@@ -89,7 +89,13 @@ export const AppContextProvider = (props) => {
               walletTransactions: [],
               sellerWallet: {
                 balance: 0,
-                transactions: []
+                transactions: [],
+                bankDetails: {
+                  accountHolder: '',
+                  accountNumber: '',
+                  bankName: '',
+                  ifscCode: ''
+                }
               },
               createdAt: serverTimestamp()
             };
@@ -552,6 +558,16 @@ export const AppContextProvider = (props) => {
         await setDoc(userDocRef, { [field]: value }, { merge: true });
     }
 
+    const updateSellerBankDetails = async (bankDetails) => {
+        if (!userData || (!isSeller && !isAdmin)) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const userDocRef = doc(firestore, 'users', userData._id);
+        await setDoc(userDocRef, { sellerWallet: { bankDetails: bankDetails } }, { merge: true });
+        toast.success("Bank details updated successfully!");
+    }
+
     const addToCart = (itemId) => {
         if (!userData) {
             toast.error("Please log in to add items to your cart.");
@@ -671,7 +687,7 @@ export const AppContextProvider = (props) => {
         sellerWalletBalance, sellerWalletTransactions,
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct, updateProductStatus,
-        updateUserField,
+        updateUserField, updateSellerBankDetails,
         platformSettings, updateSettings, settingsLoading,
         verifyFlutterwaveTransaction,
         depositToWallet,
