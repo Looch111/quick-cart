@@ -3,19 +3,19 @@ import { useState, useEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Image from 'next/image';
 import { assets } from '@/assets/assets';
+import { Plus, Trash2 } from 'lucide-react';
 
 const EditProductModal = ({ product, onSave, onCancel }) => {
     const { updateProduct } = useAppContext();
     const [productData, setProductData] = useState({ ...product });
     const [imageUrls, setImageUrls] = useState(['', '', '', '']);
+    const [sizes, setSizes] = useState([{ size: '', stock: '' }]);
+    const [hasSizes, setHasSizes] = useState(false);
+    const [totalStock, setTotalStock] = useState('');
 
     useEffect(() => {
         const data = { ...product };
-        if (data.sizes && Array.isArray(data.sizes)) {
-            data.sizes = data.sizes.join(', ');
-        }
         if (data.flashSaleEndDate) {
-            // Format for datetime-local input
             const d = new Date(data.flashSaleEndDate);
             data.flashSaleEndDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
         } else {
@@ -26,8 +26,19 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
             while (urls.length < 4) {
                 urls.push('');
             }
-            setImageUrls(urls.slice(0,4));
+            setImageUrls(urls.slice(0, 4));
         }
+
+        if (data.sizes && typeof data.sizes === 'object' && Object.keys(data.sizes).length > 0) {
+            setHasSizes(true);
+            const sizeArray = Object.entries(data.sizes).map(([size, stock]) => ({ size, stock }));
+            setSizes(sizeArray);
+        } else {
+            setHasSizes(false);
+            setTotalStock(data.stock || '');
+            setSizes([{ size: '', stock: '' }])
+        }
+
         setProductData(data);
     }, [product]);
 
@@ -37,32 +48,58 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         if (!url) return assets.upload_area;
         let correctedUrl = url;
         if (correctedUrl.includes('imgur.com') && !correctedUrl.includes('i.imgur.com')) {
-          correctedUrl = correctedUrl.replace('imgur.com', 'i.imgur.com');
+            correctedUrl = correctedUrl.replace('imgur.com', 'i.imgur.com');
         }
         if (correctedUrl.startsWith('https://i.imgur.com/') && !/\.(png|jpg|jpeg|gif)$/.test(correctedUrl)) {
-          return `${correctedUrl}.png`;
+            return `${correctedUrl}.png`;
         }
         return correctedUrl;
     };
-    
+
     const handleImageUrlChange = (index, value) => {
         const newImageUrls = [...imageUrls];
         newImageUrls[index] = value;
         setImageUrls(newImageUrls);
     };
 
+    const handleSizeChange = (index, field, value) => {
+        const newSizes = [...sizes];
+        newSizes[index][field] = value;
+        setSizes(newSizes);
+    };
+
+    const addSizeField = () => {
+        setSizes([...sizes, { size: '', stock: '' }]);
+    };
+
+    const removeSizeField = (index) => {
+        const newSizes = sizes.filter((_, i) => i !== index);
+        setSizes(newSizes);
+    };
+
     const handleSave = () => {
         const dataToSave = { ...productData };
         
-        // Convert numeric fields from string to number
         dataToSave.price = Number(dataToSave.price) || 0;
         dataToSave.offerPrice = Number(dataToSave.offerPrice) || 0;
         dataToSave.flashSalePrice = Number(dataToSave.flashSalePrice) || null;
-        dataToSave.stock = Number(dataToSave.stock) || 0;
+        
+        let productSizes = {};
+        let stock = 0;
 
-        if (typeof dataToSave.sizes === 'string') {
-            dataToSave.sizes = dataToSave.sizes.split(',').map(s => s.trim()).filter(s => s);
+        if (hasSizes) {
+            sizes.forEach(s => {
+                if (s.size && s.stock) {
+                    productSizes[s.size.trim()] = Number(s.stock);
+                    stock += Number(s.stock);
+                }
+            });
+        } else {
+            stock = Number(totalStock);
         }
+        dataToSave.stock = stock;
+        dataToSave.sizes = productSizes;
+
         if (!dataToSave.flashSaleEndDate) {
             dataToSave.flashSaleEndDate = null;
         } else {
@@ -203,27 +240,55 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                 <option value="Clothes">Clothes</option>
                             </select>
                         </div>
-                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                            <input
-                                type="number"
-                                name="stock"
-                                className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                value={productData.stock}
-                                onChange={handleChange}
-                            />
+                        <div className="flex items-center gap-4 pt-6">
+                            <input type="checkbox" id="has-sizes-edit" checked={hasSizes} onChange={(e) => setHasSizes(e.target.checked)} className="h-4 w-4 rounded text-orange-600 focus:ring-orange-500" />
+                            <label htmlFor="has-sizes-edit" className="text-sm font-medium">This product has multiple sizes</label>
                         </div>
                     </div>
                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sizes (comma-separated)</label>
-                        <input
-                            type="text"
-                            name="sizes"
-                            placeholder="e.g. S, M, L, XL"
-                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            value={productData.sizes}
-                            onChange={handleChange}
-                        />
+                        {hasSizes ? (
+                            <div className="space-y-2 border p-4 rounded-md">
+                                <label className="text-sm font-medium text-gray-700">Sizes & Stock</label>
+                                {sizes.map((s, index) => (
+                                    <div key={index} className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Size (e.g., M)"
+                                            value={s.size}
+                                            onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
+                                            className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                                        />
+                                        <input
+                                            type="number"
+                                            placeholder="Stock"
+                                            value={s.stock}
+                                            onChange={(e) => handleSizeChange(index, 'stock', e.target.value)}
+                                            className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                                        />
+                                        <button type="button" onClick={() => removeSizeField(index)} className="p-2 text-red-500">
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addSizeField} className="flex items-center gap-2 text-sm text-orange-600 font-medium mt-2">
+                                    <Plus className="w-4 h-4" /> Add another size
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700" htmlFor="stock-quantity-edit">
+                                    Total Stock Quantity
+                                </label>
+                                <input
+                                    id="stock-quantity-edit"
+                                    type="number"
+                                    placeholder="0"
+                                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                                    onChange={(e) => setTotalStock(e.target.value)}
+                                    value={totalStock}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">

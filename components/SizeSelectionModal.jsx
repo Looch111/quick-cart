@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Plus, Minus } from 'lucide-react';
+import { X, Plus, Minus, Info } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 
 const SizeSelectionModal = () => {
@@ -12,7 +12,8 @@ const SizeSelectionModal = () => {
     useEffect(() => {
         if (productForSizeSelection) {
             const initialQuantities = {};
-            productForSizeSelection.sizes.forEach(size => {
+            // productForSizeSelection.sizes is now an object like { "S": 10, "M": 5 }
+            Object.keys(productForSizeSelection.sizes).forEach(size => {
                 initialQuantities[size] = 0;
             });
             setQuantities(initialQuantities);
@@ -25,7 +26,9 @@ const SizeSelectionModal = () => {
 
     const handleQuantityChange = (size, delta) => {
         const newQuantity = (quantities[size] || 0) + delta;
-        if (newQuantity >= 0) {
+        const stockForSize = productForSizeSelection.sizes[size];
+
+        if (newQuantity >= 0 && newQuantity <= stockForSize) {
             setQuantities(prev => ({ ...prev, [size]: newQuantity }));
         }
     };
@@ -34,8 +37,6 @@ const SizeSelectionModal = () => {
         const itemsToAdd = [];
         for (const size in quantities) {
             if (quantities[size] > 0) {
-                // We need a unique ID for each size variant of the product.
-                // A common convention is to use `productId_size`.
                 const itemId = `${productForSizeSelection._id}_${size}`;
                 itemsToAdd.push({ id: itemId, quantity: quantities[size] });
             }
@@ -47,6 +48,10 @@ const SizeSelectionModal = () => {
     };
 
     const totalQuantity = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+
+    const availableSizes = productForSizeSelection.sizes && Object.keys(productForSizeSelection.sizes).length > 0
+        ? Object.entries(productForSizeSelection.sizes)
+        : [];
 
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
@@ -75,20 +80,30 @@ const SizeSelectionModal = () => {
                 <div className="mt-6">
                     <h3 className="text-base font-semibold text-gray-700 mb-3">Select Size & Quantity</h3>
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                        {productForSizeSelection.sizes.map(size => (
+                        {availableSizes.length > 0 ? availableSizes.map(([size, stock]) => (
                             <div key={size} className="flex justify-between items-center p-3 border rounded-md">
-                                <span className="font-medium text-gray-800">{size}</span>
+                                <div>
+                                    <span className="font-medium text-gray-800">{size}</span>
+                                    <p className={`text-xs ${stock > 0 ? 'text-gray-500' : 'text-red-500'}`}>
+                                        {stock > 0 ? `${stock} units available` : 'Out of stock'}
+                                    </p>
+                                </div>
                                 <div className="flex items-center gap-3">
-                                    <button onClick={() => handleQuantityChange(size, -1)} className="p-1.5 border rounded-full hover:bg-gray-100">
+                                    <button onClick={() => handleQuantityChange(size, -1)} className="p-1.5 border rounded-full hover:bg-gray-100" disabled={stock === 0}>
                                         <Minus className="w-4 h-4 text-gray-600" />
                                     </button>
                                     <span className="w-8 text-center font-medium text-lg">{quantities[size] || 0}</span>
-                                    <button onClick={() => handleQuantityChange(size, 1)} className="p-1.5 border rounded-full hover:bg-gray-100">
+                                    <button onClick={() => handleQuantityChange(size, 1)} className="p-1.5 border rounded-full hover:bg-gray-100" disabled={stock === 0}>
                                         <Plus className="w-4 h-4 text-gray-600" />
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="flex items-center gap-2 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+                                <Info className="w-5 h-5" />
+                                <p className='text-sm'>This product does not have size variants.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

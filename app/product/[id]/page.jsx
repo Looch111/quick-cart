@@ -63,8 +63,8 @@ const Product = () => {
             setProductData(product);
             if (product) {
                 setMainImage(product.image[0]);
-                if (product.sizes && product.sizes.length > 0) {
-                    setSelectedSize(product.sizes[0]);
+                if (product.sizes && typeof product.sizes === 'object' && Object.keys(product.sizes).length > 0) {
+                    setSelectedSize(Object.keys(product.sizes)[0]);
                 }
             }
         }
@@ -86,6 +86,7 @@ const Product = () => {
     }
     
     const isOutOfStock = productData && productData.stock === 0;
+    const hasSizes = productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0;
     
     // Determine if flash sale is active
     const isFlashSaleActive = productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > currentTime;
@@ -95,7 +96,7 @@ const Product = () => {
     const originalPrice = isFlashSaleActive ? productData.price : (productData.offerPrice < productData.price ? productData.price : null);
 
     const handleAddToCart = () => {
-        if (productData.sizes && productData.sizes.length > 0) {
+        if (hasSizes) {
             openSizeModal(productData);
         } else {
             addToCart(productData._id);
@@ -104,7 +105,7 @@ const Product = () => {
 
     const handleBuyNow = () => {
         if (isOutOfStock) return;
-        if (productData.sizes && productData.sizes.length > 0) {
+        if (hasSizes) {
             openSizeModal(productData);
         } else {
             addToCart(productData._id);
@@ -173,11 +174,11 @@ const Product = () => {
                             </span>
                         )}
                     </p>
-                    {productData.sizes && productData.sizes.length > 0 && (
+                    {hasSizes && (
                         <div className="mt-6">
                             <p className="text-gray-600 font-medium mb-2">Size:</p>
-                            <div className="flex gap-2">
-                                {productData.sizes.map(size => (
+                            <div className="flex gap-2 flex-wrap">
+                                {Object.keys(productData.sizes).map(size => (
                                     <button 
                                         key={size}
                                         onClick={() => setSelectedSize(size)}

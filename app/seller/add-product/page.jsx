@@ -4,6 +4,7 @@ import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import toast from "react-hot-toast";
+import { Plus, Trash2 } from "lucide-react";
 
 const AddProduct = () => {
 
@@ -16,9 +17,11 @@ const AddProduct = () => {
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
   const [flashSalePrice, setFlashSalePrice] = useState('');
-  const [sizes, setSizes] = useState('');
-  const [stock, setStock] = useState('');
+  const [sizes, setSizes] = useState([{ size: '', stock: '' }]);
   const [flashSaleEndDate, setFlashSaleEndDate] = useState('');
+  const [hasSizes, setHasSizes] = useState(false);
+  const [totalStock, setTotalStock] = useState('');
+
 
   const handleImageUrlChange = (index, value) => {
     const newImageUrls = [...imageUrls];
@@ -26,8 +29,46 @@ const AddProduct = () => {
     setImageUrls(newImageUrls);
   };
 
+  const handleSizeChange = (index, field, value) => {
+    const newSizes = [...sizes];
+    newSizes[index][field] = value;
+    setSizes(newSizes);
+  };
+
+  const addSizeField = () => {
+    setSizes([...sizes, { size: '', stock: '' }]);
+  };
+
+  const removeSizeField = (index) => {
+    const newSizes = sizes.filter((_, i) => i !== index);
+    setSizes(newSizes);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    let productSizes = {};
+    let stock = 0;
+
+    if (hasSizes) {
+        sizes.forEach(s => {
+            if (s.size && s.stock) {
+                productSizes[s.size.trim()] = Number(s.stock);
+                stock += Number(s.stock);
+            }
+        });
+        if (Object.keys(productSizes).length === 0) {
+          toast.error("Please add at least one size with stock.");
+          return;
+        }
+    } else {
+        stock = Number(totalStock);
+        if(stock <= 0) {
+          toast.error("Please enter a valid stock quantity.");
+          return;
+        }
+    }
+
     const productData = {
         name,
         description,
@@ -36,8 +77,8 @@ const AddProduct = () => {
         offerPrice: Number(offerPrice),
         flashSalePrice: Number(flashSalePrice) || null,
         image: imageUrls.filter(url => url).map(url => getImageUrl(url)),
-        stock: Number(stock),
-        sizes: sizes.split(',').map(s => s.trim()).filter(s => s),
+        stock: stock,
+        sizes: productSizes,
         flashSaleEndDate: flashSaleEndDate || null,
     }
 
@@ -56,9 +97,10 @@ const AddProduct = () => {
     setPrice('');
     setOfferPrice('');
     setFlashSalePrice('');
-    setSizes('');
-    setStock('');
+    setSizes([{ size: '', stock: '' }]);
+    setTotalStock('');
     setFlashSaleEndDate('');
+    setHasSizes(false);
   };
   
   const getImageUrl = (url) => {
@@ -200,55 +242,79 @@ const AddProduct = () => {
             </div>
         </div>
 
-        <div className="flex items-center gap-5 flex-wrap">
-          <div className="flex flex-col gap-1 w-40">
-            <label className="text-base font-medium" htmlFor="category">
-              Category
-            </label>
-            <select
-              id="category"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setCategory(e.target.value)}
-              value={category}
-            >
-              <option value="Earphone">Earphone</option>
-              <option value="Headphone">Headphone</option>
-              <option value="Watch">Watch</option>
-              <option value="Smartphone">Smartphone</option>
-              <option value="Laptop">Laptop</option>
-              <option value="Camera">Camera</option>
-              <option value="Accessories">Accessories</option>
-              <option value="Clothes">Clothes</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="stock-quantity">
-              Stock Quantity
-            </label>
-            <input
-              id="stock-quantity"
-              type="number"
-              placeholder="0"
-              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-              onChange={(e) => setStock(e.target.value)}
-              value={stock}
-              required
-            />
-          </div>
+         <div className="max-w-md">
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-base font-medium" htmlFor="category">
+                Category
+              </label>
+              <select
+                id="category"
+                className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                onChange={(e) => setCategory(e.target.value)}
+                value={category}
+              >
+                <option value="Earphone">Earphone</option>
+                <option value="Headphone">Headphone</option>
+                <option value="Watch">Watch</option>
+                <option value="Smartphone">Smartphone</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Camera">Camera</option>
+                <option value="Accessories">Accessories</option>
+                <option value="Clothes">Clothes</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-4 mb-4">
+                <input type="checkbox" id="has-sizes" checked={hasSizes} onChange={(e) => setHasSizes(e.target.checked)} className="h-4 w-4 rounded text-orange-600 focus:ring-orange-500" />
+                <label htmlFor="has-sizes" className="text-base font-medium">This product has multiple sizes</label>
+            </div>
+
+            {hasSizes ? (
+                <div className="space-y-2 border p-4 rounded-md">
+                    <label className="text-base font-medium">Sizes & Stock</label>
+                    {sizes.map((s, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                placeholder="Size (e.g., M)"
+                                value={s.size}
+                                onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
+                                className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                            />
+                            <input
+                                type="number"
+                                placeholder="Stock"
+                                value={s.stock}
+                                onChange={(e) => handleSizeChange(index, 'stock', e.target.value)}
+                                className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                            />
+                            <button type="button" onClick={() => removeSizeField(index)} className="p-2 text-red-500">
+                                <Trash2 className="w-5 h-5" />
+                            </button>
+                        </div>
+                    ))}
+                    <button type="button" onClick={addSizeField} className="flex items-center gap-2 text-sm text-orange-600 font-medium mt-2">
+                        <Plus className="w-4 h-4" /> Add another size
+                    </button>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-1">
+                    <label className="text-base font-medium" htmlFor="stock-quantity">
+                        Total Stock Quantity
+                    </label>
+                    <input
+                        id="stock-quantity"
+                        type="number"
+                        placeholder="0"
+                        className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                        onChange={(e) => setTotalStock(e.target.value)}
+                        value={totalStock}
+                        required
+                    />
+                </div>
+            )}
         </div>
-         <div className="flex flex-col gap-1 max-w-md">
-          <label className="text-base font-medium" htmlFor="product-sizes">
-            Sizes (comma-separated)
-          </label>
-          <input
-            id="product-sizes"
-            type="text"
-            placeholder="e.g. S, M, L, XL"
-            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-            onChange={(e) => setSizes(e.target.value)}
-            value={sizes}
-          />
-        </div>
+
         <button type="submit" className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded">
           {isAdmin ? 'Add & Approve Product' : 'Submit for Approval'}
         </button>
