@@ -68,7 +68,6 @@ const OnboardingTour = () => {
                 top: `${topPosition}px`,
                 left: `${rect.left + rect.width / 2}px`,
                 transform: 'translateX(-50%)',
-                width: '300px',
                 zIndex: 1002
             });
 
@@ -156,7 +155,7 @@ const OnboardingTour = () => {
 
             <div
                 ref={tourRef}
-                className={`bg-white rounded-lg shadow-2xl p-6 ${step === 0 ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md z-[1002]' : ''}`}
+                className={`bg-white rounded-lg shadow-2xl p-6 w-[90%] max-w-sm ${step === 0 ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1002]' : ''}`}
                 style={step > 0 ? style : {}}
             >
                 <button onClick={finishTour} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
