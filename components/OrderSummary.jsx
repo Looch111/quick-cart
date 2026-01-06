@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Wallet, X } from "lucide-react";
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+import PaymentCancellationModal from "./PaymentCancellationModal";
 
 const OrderSummary = () => {
 
@@ -19,6 +20,8 @@ const OrderSummary = () => {
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [appliedPromo, setAppliedPromo] = useState(null);
+  const [orderStatus, setOrderStatus] = useState('idle'); // idle, loading, done
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     if (userAddresses.length > 0) {
@@ -96,6 +99,42 @@ const OrderSummary = () => {
     toast.success("Promo code removed.");
   };
 
+  const executeOrderPlacement = async () => {
+    setOrderStatus('loading');
+    
+    let result;
+    if (paymentMethod === 'wallet') {
+        result = await placeOrderWithWallet(selectedAddress, totalAmount);
+    } else {
+        result = await new Promise((resolve) => {
+             handleFlutterwavePayment({
+                callback: async (response) => {
+                    const orderResult = await placeOrder(selectedAddress, response, totalAmount);
+                    resolve(orderResult);
+                    closePaymentModal();
+                },
+                onClose: () => {
+                    setShowCancelModal(true);
+                    resolve({ success: false });
+                },
+            });
+        });
+    }
+
+    if (result.success) {
+        setOrderStatus('done');
+        setTimeout(() => {
+            router.push('/order-placed');
+        }, 1000);
+    } else {
+        setOrderStatus('idle'); // Reset on failure
+        if(!showCancelModal) { // Avoid double toast
+          toast.error("Order could not be placed.");
+        }
+    }
+  }
+
+
   const handlePlaceOrder = async () => {
     if (!userData) {
       toast.error("Please log in to place an order.");
@@ -111,26 +150,19 @@ const OrderSummary = () => {
       return;
     }
 
-    if (paymentMethod === 'wallet') {
-        if (walletBalance < totalAmount) {
-            toast.error("Insufficient wallet balance.");
-            return;
-        }
-        await placeOrderWithWallet(selectedAddress, totalAmount);
-    } else { // Flutterwave
-        handleFlutterwavePayment({
-            callback: async (response) => {
-                await placeOrder(selectedAddress, response, totalAmount);
-                closePaymentModal();
-            },
-            onClose: () => {},
-        });
+    if (paymentMethod === 'wallet' && walletBalance < totalAmount) {
+        toast.error("Insufficient wallet balance.");
+        return;
     }
+
+    executeOrderPlacement();
   }
 
   const isWalletDisabled = userData ? walletBalance < totalAmount : true;
+  const buttonClass = orderStatus === 'loading' ? 'loading' : orderStatus === 'done' ? 'done' : '';
 
   return (
+    <>
     <div className="w-full md:w-96 bg-gray-500/5 p-5 rounded-lg">
       <h2 className="text-xl md:text-2xl font-medium text-gray-700">
         Order Summary
@@ -248,10 +280,20 @@ const OrderSummary = () => {
         </div>
       </div>
 
-      <button onClick={handlePlaceOrder} className="w-full bg-orange-600 text-white py-3 mt-5 hover:bg-orange-700 rounded-full">
-        Place Order
+      <button onClick={handlePlaceOrder} className={`order-button ${buttonClass} w-full mt-5`}>
+        <span className="default">Place Order</span>
+        <span className="success">✔ Order Placed</span>
       </button>
     </div>
+    <PaymentCancellationModal
+        show={showCancelModal}
+        onCancel={() => setShowCancelModal(false)}
+        onResume={() => {
+            setShowCancelModal(false);
+            executeOrderPlacement();
+        }}
+    />
+    </>
   );
 };
 

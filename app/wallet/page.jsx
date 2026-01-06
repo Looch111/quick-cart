@@ -7,11 +7,13 @@ import toast from 'react-hot-toast';
 import { Wallet, History, DollarSign } from 'lucide-react';
 import Loading from '@/components/Loading';
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+import PaymentCancellationModal from '@/components/PaymentCancellationModal';
 
 const WalletPage = () => {
     const { userData, walletBalance, walletTransactions, setShowLogin, router, currency, verifyFlutterwaveTransaction } = useAppContext();
     const [amount, setAmount] = useState('');
     const [isDepositing, setIsDepositing] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
 
     useEffect(() => {
         if (userData === null) {
@@ -43,26 +45,19 @@ const WalletPage = () => {
 
     const handleFlutterwavePayment = useFlutterwave(flutterwaveConfig);
 
-    const handleDeposit = () => {
-        const depositAmount = Number(amount);
-        if (!depositAmount || depositAmount <= 0) {
-            toast.error('Please enter a valid amount.');
-            return;
-        }
-
+    const executeDeposit = () => {
         handleFlutterwavePayment({
             callback: async (response) => {
                 setIsDepositing(true);
                 toast.loading('Verifying your payment...');
 
-                // Server-side verification is CRITICAL
                 const verificationResponse = await verifyFlutterwaveTransaction(response.transaction_id);
                 
-                toast.dismiss(); // Dismiss the loading toast
+                toast.dismiss();
 
                 if (verificationResponse.success && verificationResponse.data.status === 'successful') {
-                     if (verificationResponse.data.amount === depositAmount) {
-                        toast.success('Payment verified! Your balance will be updated shortly via webhook.');
+                     if (verificationResponse.data.amount === Number(amount)) {
+                        toast.success('Payment verified! Your balance will be updated shortly.');
                         setAmount('');
                     } else {
                         toast.error('Payment amount mismatch. Please contact support.');
@@ -75,8 +70,18 @@ const WalletPage = () => {
             },
             onClose: () => {
                 setIsDepositing(false);
+                setShowCancelModal(true);
             },
         });
+    }
+
+    const handleDeposit = () => {
+        const depositAmount = Number(amount);
+        if (!depositAmount || depositAmount <= 0) {
+            toast.error('Please enter a valid amount.');
+            return;
+        }
+        executeDeposit();
     };
 
      if (userData === undefined) {
@@ -194,6 +199,14 @@ const WalletPage = () => {
                 </div>
             </div>
             <Footer />
+            <PaymentCancellationModal
+                show={showCancelModal}
+                onCancel={() => setShowCancelModal(false)}
+                onResume={() => {
+                    setShowCancelModal(false);
+                    handleDeposit();
+                }}
+            />
         </>
     );
 };
