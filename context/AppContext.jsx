@@ -28,6 +28,7 @@ export const AppContextProvider = (props) => {
     const { data: bannersData, loading: bannersLoading } = useCollection('banners');
     const { data: promotionsData, loading: promotionsLoading } = useCollection('promotions');
     const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
+    const { data: usersData, loading: usersLoading } = useCollection('users');
 
     const [products, setProducts] = useState([]);
     const [allRawProducts, setAllRawProducts] = useState([]);
@@ -357,6 +358,45 @@ export const AppContextProvider = (props) => {
         }
     };
     
+    const generateNotifications = async (order, orderId) => {
+        const adminUsers = usersData.filter(u => u.role === 'admin');
+        const sellerIds = [...new Set(order.items.map(item => item.userId))];
+    
+        const notifications = [];
+    
+        // Admin notifications
+        adminUsers.forEach(admin => {
+            notifications.push({
+                userId: admin.id,
+                message: `New order #${orderId.slice(-6)} has been placed.`,
+                link: '/admin/orders',
+                read: false,
+                createdAt: serverTimestamp()
+            });
+        });
+    
+        // Seller notifications
+        sellerIds.forEach(sellerId => {
+            if (sellerId) {
+                notifications.push({
+                    userId: sellerId,
+                    message: `You have a new order for your product(s)! Order #${orderId.slice(-6)}.`,
+                    link: '/seller/orders',
+                    read: false,
+                    createdAt: serverTimestamp()
+                });
+            }
+        });
+    
+        const batch = writeBatch(firestore);
+        notifications.forEach(notif => {
+            const notifRef = doc(collection(firestore, `users/${notif.userId}/notifications`));
+            batch.set(notifRef, notif);
+        });
+    
+        await batch.commit();
+    };
+    
     const placeOrder = async (address, paymentResponse, totalAmount, itemsToOrder) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
@@ -393,7 +433,7 @@ export const AppContextProvider = (props) => {
             }
 
             const newOrderRef = doc(collection(firestore, 'orders'));
-            batch.set(newOrderRef, {
+            const newOrderData = {
                 userId: userData._id,
                 items: orderItems.map(({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice})),
                 amount: totalAmount,
@@ -402,12 +442,14 @@ export const AppContextProvider = (props) => {
                 date: serverTimestamp(),
                 paymentMethod: 'flutterwave',
                 paymentTransactionId: paymentResponse.transaction_id,
-            });
+            };
+            batch.set(newOrderRef, newOrderData);
 
             const userDocRef = doc(firestore, 'users', userData._id);
             batch.update(userDocRef, { cartItems: updatedCartItems });
 
             await batch.commit();
+            await generateNotifications(newOrderData, newOrderRef.id);
             return { success: true };
         } catch (error) {
             toast.error(error.message);
@@ -443,7 +485,7 @@ export const AppContextProvider = (props) => {
             }
 
             const newOrderRef = doc(collection(firestore, 'orders'));
-            batch.set(newOrderRef, {
+            const newOrderData = {
                 userId: userData._id,
                 items: orderItems.map(({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, userId, price, flashSalePrice})),
                 amount: totalAmount,
@@ -451,7 +493,8 @@ export const AppContextProvider = (props) => {
                 status: "Order Placed",
                 date: serverTimestamp(),
                 paymentMethod: 'wallet'
-            });
+            };
+            batch.set(newOrderRef, newOrderData);
             const userDocRef = doc(firestore, 'users', userData._id);
             const newTransaction = {
                 id: newOrderRef.id,
@@ -465,6 +508,7 @@ export const AppContextProvider = (props) => {
                 walletTransactions: arrayUnion(newTransaction)
             });
             await batch.commit();
+            await generateNotifications(newOrderData, newOrderRef.id);
             return { success: true };
         } catch (error) {
             toast.error(error.message);
@@ -599,6 +643,7 @@ export const AppContextProvider = (props) => {
                 const newCart = { ...currentCart };
                 newCart[itemId] = currentQuantityInCart + 1;
                 transaction.update(userDocRef, { cartItems: newCart });
+                toast.success("Product added to cart", { id: `add-toast-${itemId}` });
             });
         } catch (error) {
             console.error("Add to cart transaction failed: ", error);
@@ -628,9 +673,11 @@ export const AppContextProvider = (props) => {
                         allItemsAdded = false;
                         continue;
                     }
+                    const stockForSize = product.sizes ? product.sizes[size] : product.stock;
                     const currentQuantityInCart = newCart[item.id] || 0;
-                    if ((currentQuantityInCart + item.quantity) > product.stock) {
-                        toast.error(`Not enough stock for ${product.name} (Size: ${size}). Only ${product.stock - currentQuantityInCart} more available.`);
+
+                    if ((currentQuantityInCart + item.quantity) > stockForSize) {
+                        toast.error(`Not enough stock for ${product.name} (Size: ${size}). Only ${stockForSize - currentQuantityInCart} more available.`);
                         allItemsAdded = false;
                     } else {
                          newCart[item.id] = currentQuantityInCart + item.quantity;
@@ -675,9 +722,10 @@ export const AppContextProvider = (props) => {
                 if (quantity <= 0) {
                     delete newCart[itemId];
                 } else {
-                    if (product && quantity > product.stock) {
-                        toast.error(`Only ${product.stock} items available for ${product.name}${size ? ` (Size: ${size})` : ''}`, { id: `stock-toast-${itemId}` });
-                        newCart[itemId] = product.stock;
+                    const stockForSize = product.sizes ? product.sizes[size] : product.stock;
+                    if (product && quantity > stockForSize) {
+                        toast.error(`Only ${stockForSize} items available for ${product.name}${size ? ` (Size: ${size})` : ''}`, { id: `stock-toast-${itemId}` });
+                        newCart[itemId] = stockForSize;
                     } else {
                         newCart[itemId] = quantity;
                     }

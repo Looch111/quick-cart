@@ -6,6 +6,7 @@ import { useAppContext } from '@/context/AppContext'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LogOut, Menu, X } from 'lucide-react'
+import NotificationPanel from '../NotificationPanel'
 
 const Navbar = () => {
 
@@ -72,6 +73,7 @@ const Navbar = () => {
       </div>
 
       <div className="flex items-center gap-4">
+        <NotificationPanel />
         <button onClick={onLogout} className='flex items-center gap-2 bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>
           <LogOut className="w-4 h-4" />
           <span className="hidden sm:inline">Logout</span>

@@ -105,7 +105,11 @@
         "image": { "type": "array", "items": { "type": "string", "format": "uri" } },
         "category": { "type": "string" },
         "stock": { "type": "number" },
-        "sizes": { "type": "array", "items": { "type": "string" } },
+        "sizes": {
+          "type": "object",
+          "description": "A map of available sizes to their stock quantity.",
+          "additionalProperties": { "type": "number" }
+        },
         "userId": { "type": "string", "description": "The UID of the seller who owns this product." },
         "flashSaleEndDate": { "type": "string", "format": "date-time", "description": "The date and time when the flash sale ends." },
         "status": {
@@ -193,6 +197,19 @@
         "shippingFee": { "type": "number" },
         "freeShippingThreshold": { "type": "number" }
       }
+    },
+    "notification": {
+        "title": "Notification",
+        "description": "A notification for a user.",
+        "type": "object",
+        "properties": {
+            "userId": { "type": "string" },
+            "message": { "type": "string" },
+            "link": { "type": "string" },
+            "read": { "type": "boolean" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["userId", "message", "read", "createdAt"]
     }
   },
   "auth": {
@@ -226,6 +243,10 @@
     "/settings/platform": {
         "schema": { "$ref": "#/entities/settings" },
         "description": "Stores global platform settings."
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+        "schema": { "$ref": "#/entities/notification" },
+        "description": "Stores notifications for a specific user."
     }
   }
 }
