@@ -1,60 +1,64 @@
-import React from "react";
+
+'use client';
+import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 
-const products = [
-  {
-    id: 1,
-    image: assets.girl_with_headphone_image,
-    title: "Unparalleled Sound",
-    description: "Experience crystal-clear audio with premium headphones.",
-    link: "/all-products"
-  },
-  {
-    id: 2,
-    image: assets.girl_with_earphone_image,
-    title: "Stay Connected",
-    description: "Compact and stylish earphones for every occasion.",
-    link: "/all-products"
-  },
-  {
-    id: 3,
-    image: assets.boy_with_laptop_image,
-    title: "Power in Every Pixel",
-    description: "Shop the latest laptops for work, gaming, and more.",
-    link: "/all-products"
-  },
-];
-
 const FeaturedProduct = () => {
-  const { router } = useAppContext();
+  const { router, products, currency } = useAppContext();
+  const [featuredProduct, setFeaturedProduct] = useState(null);
+
+  useEffect(() => {
+    // Find a specific product to feature.
+    // In a real app, this could be fetched from a 'featured' flag in the CMS
+    const productToFeature = products.find(p => p.name.includes("Venu 2S Smartwatch"));
+    if (productToFeature) {
+        setFeaturedProduct(productToFeature);
+    } else if (products.length > 0) {
+        // Fallback to the first product if the specific one isn't found
+        setFeaturedProduct(products[0]);
+    }
+  }, [products]);
+
+  if (!featuredProduct) {
+    return null; // Don't render anything if there's no product to feature
+  }
+
+  const { _id, name, description, image, offerPrice } = featuredProduct;
+
   return (
-    <div className="mt-14">
-      <div className="flex flex-col items-center">
-        <p className="text-3xl font-medium">Featured Products</p>
-        <div className="w-28 h-0.5 bg-orange-600 mt-2"></div>
+    <div className="mt-14 py-12">
+      <div className="flex flex-col items-center text-center">
+        <p className="text-3xl font-medium">Product of the Month</p>
+        <div className="w-32 h-0.5 bg-orange-600 mt-2"></div>
+        <p className="text-gray-500 mt-2">Check out this month's featured product, picked just for you.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-14 mt-12 md:px-14 px-4">
-        {products.map(({ id, image, title, description, link }) => (
-          <div key={id} className="relative group">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mt-12 bg-gray-50 rounded-lg p-8">
+        <div className="bg-white rounded-lg p-6 flex items-center justify-center aspect-square">
             <Image
-              src={image}
-              alt={title}
-              className="group-hover:brightness-75 transition duration-300 w-full h-auto object-cover rounded-lg"
+                src={image[0]}
+                alt={name}
+                className="group-hover:brightness-75 transition duration-300 w-full h-auto object-contain max-h-80"
+                width={400}
+                height={400}
             />
-            <div className="group-hover:-translate-y-4 transition duration-300 absolute bottom-8 left-8 text-white space-y-2">
-              <p className="font-medium text-xl lg:text-2xl">{title}</p>
-              <p className="text-sm lg:text-base leading-5 max-w-60">
+        </div>
+        <div className="flex flex-col items-start text-left">
+            <h2 className="text-4xl font-bold text-gray-800">{name}</h2>
+            <p className="text-gray-600 my-4 text-base leading-relaxed">
                 {description}
-              </p>
-              <button onClick={() => router.push(link)} className="flex items-center gap-1.5 bg-orange-600 px-4 py-2 rounded">
-                Buy now <Image className="h-3 w-3" src={assets.redirect_icon} alt="Redirect Icon" />
-              </button>
-            </div>
-          </div>
-        ))}
+            </p>
+            <p className="text-3xl font-semibold text-orange-600 mb-6">{currency}{offerPrice}</p>
+            <button 
+              onClick={() => router.push(`/product/${_id}`)} 
+              className="group flex items-center gap-2 bg-orange-600 px-8 py-3 rounded text-white font-semibold text-lg hover:bg-orange-700 transition"
+            >
+                Buy now 
+                <Image className="group-hover:translate-x-1 transition h-4 w-4" src={assets.arrow_icon_white} alt="Arrow Icon" />
+            </button>
+        </div>
       </div>
     </div>
   );
