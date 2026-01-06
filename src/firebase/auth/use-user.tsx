@@ -101,9 +101,10 @@ export function useAuth() {
     };
 
     return {
-        signInWithGoogle,
         signUpWithEmail,
         signInWithEmail,
         signOut,
     };
 }
+
+    

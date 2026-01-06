@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { useAuth } from "@/src/firebase/auth/use-user";
+import toast from "react-hot-toast";
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -14,7 +15,7 @@ const GoogleIcon = () => (
 
 const LoginPopup = () => {
     const { showLogin, setShowLogin, authLoading, userData } = useAppContext();
-    const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+    const { signInWithEmail, signUpWithEmail } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,7 +38,7 @@ const LoginPopup = () => {
         }
     }, [userData, showLogin, setShowLogin]);
 
-    if (!showLogin || authLoading) {
+    if (!showLogin) {
         return null;
     }
 
@@ -48,13 +49,12 @@ const LoginPopup = () => {
             // The isNewUser flag from the auth result will trigger the context to show the tour
             // The useEffect above will handle closing the popup on successful login.
         } catch (err) {
-            // Error toasts are now handled in the useAuth hook.
-            // We can still set a local error if needed for UI, but for now it's not necessary.
+            // Errors are handled in useAuth, but you could add more specific UI error handling here if needed.
         }
     };
 
     const handleGoogleSignIn = () => {
-        handleAuthAction(signInWithGoogle());
+        toast.error("Google Sign-in is not available yet. Please use email and password.");
     };
 
     const handleEmailAuth = (e) => {
@@ -138,3 +138,5 @@ const LoginPopup = () => {
 };
 
 export default LoginPopup;
+
+    
