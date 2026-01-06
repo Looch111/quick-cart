@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react'
 import { assets } from '@/assets/assets'
 import Image from 'next/image';
@@ -59,7 +60,7 @@ const CountdownTimer = ({ endDate }) => {
 
 const ProductCard = ({ product }) => {
 
-    const { currency, router, wishlistItems, toggleWishlist, addToCart } = useAppContext()
+    const { currency, router, wishlistItems, toggleWishlist, addToCart, openSizeModal } = useAppContext()
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -87,7 +88,23 @@ const ProductCard = ({ product }) => {
     const handleAddToCartClick = (e) => {
         e.stopPropagation();
         if (isOutOfStock) return;
-        addToCart(product._id);
+        if (product.sizes && product.sizes.length > 0) {
+            openSizeModal(product);
+        } else {
+            addToCart(product._id);
+        }
+    }
+    
+    const handleBuyNowClick = (e) => {
+        e.stopPropagation();
+        if (isOutOfStock) return;
+        
+        if (product.sizes && product.sizes.length > 0) {
+            openSizeModal(product);
+        } else {
+            addToCart(product._id);
+            router.push('/cart');
+        }
     }
 
     return (
@@ -155,7 +172,7 @@ const ProductCard = ({ product }) => {
                             +
                         </button>
                         <button 
-                            onClick={(e) => { e.stopPropagation(); if(!isOutOfStock) { addToCart(product._id); router.push('/cart')} }}
+                            onClick={handleBuyNowClick}
                             disabled={isOutOfStock}
                             className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition disabled:cursor-not-allowed disabled:bg-gray-200"
                         >

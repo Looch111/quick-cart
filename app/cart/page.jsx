@@ -1,5 +1,6 @@
+
 'use client'
-import React from "react";
+import React, { useMemo } from "react";
 import { assets } from "@/assets/assets";
 import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
@@ -11,25 +12,38 @@ import { Plus, Minus, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const Cart = () => {
-    const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency } = useAppContext();
+    const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, allRawProducts } = useAppContext();
 
-    const handleQuantityChange = (product, newQuantity) => {
-        if (newQuantity > product.stock) {
-            toast.error(`Only ${product.stock} items available`);
-            updateCartQuantity(product._id, product.stock);
+    const handleQuantityChange = (itemId, currentQuantity, stock) => {
+        if (currentQuantity > stock) {
+            toast.error(`Only ${stock} items available`);
+            updateCartQuantity(itemId, stock);
         } else {
-            updateCartQuantity(product._id, newQuantity);
+            updateCartQuantity(itemId, currentQuantity);
         }
     };
     
-    const cartProductIds = Object.keys(cartItems).filter(itemId => cartItems[itemId] > 0);
-    const cartProducts = cartProductIds.map(itemId => {
-        const product = products.find(p => p._id === itemId);
-        return product ? { ...product, quantity: cartItems[itemId] } : null;
-    }).filter(Boolean);
+    const cartProducts = useMemo(() => {
+        return Object.entries(cartItems)
+            .map(([itemId, quantity]) => {
+                if (quantity > 0) {
+                    const [productId, size] = itemId.split('_');
+                    const product = allRawProducts.find(p => p._id === productId);
+                    if (product) {
+                        return {
+                            ...product,
+                            itemId: itemId, // Unique ID for this cart item (e.g., 'prod1_M')
+                            size: size || null,
+                            quantity: quantity
+                        };
+                    }
+                }
+                return null;
+            })
+            .filter(Boolean)
+            .sort((a, b) => a.name.localeCompare(b.name) || (a.size && b.size ? a.size.localeCompare(b.size) : 0));
+    }, [cartItems, allRawProducts]);
 
-    // Sort products by name to maintain a consistent order
-    cartProducts.sort((a, b) => a.name.localeCompare(b.name));
 
     if (authLoading || userData === undefined) {
         return (
@@ -67,7 +81,7 @@ const Cart = () => {
                         {/* Mobile View */}
                         <div className="md:hidden space-y-4">
                             {cartProducts.map(product => (
-                                <div key={product._id} className="bg-white border rounded-lg p-4 shadow-sm">
+                                <div key={product.itemId} className="bg-white border rounded-lg p-4 shadow-sm">
                                     <div className="flex gap-4">
                                         <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-24 h-24 flex items-center justify-center">
                                             <Image
@@ -80,20 +94,21 @@ const Cart = () => {
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-gray-800">{product.name}</h3>
+                                            {product.size && <p className="text-xs text-gray-500">Size: {product.size}</p>}
                                             <p className="text-sm text-gray-600 mt-1">{currency}{product.offerPrice}</p>
                                              <div className="flex items-center gap-2 mt-2">
-                                                <button onClick={() => updateCartQuantity(product._id, product.quantity - 1)} className="p-1 border rounded-full">
+                                                <button onClick={() => updateCartQuantity(product.itemId, product.quantity - 1)} className="p-1 border rounded-full">
                                                     <Minus className="w-4 h-4 text-gray-600"/>
                                                 </button>
                                                 <span className="w-10 text-center">{product.quantity}</span>
-                                                <button onClick={() => addToCart(product._id)} className="p-1 border rounded-full">
+                                                <button onClick={() => addToCart(product.itemId)} className="p-1 border rounded-full">
                                                     <Plus className="w-4 h-4 text-gray-600" />
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center mt-3 pt-3 border-t">
-                                        <button onClick={() => updateCartQuantity(product._id, 0)} className="flex items-center gap-1 text-xs text-red-600">
+                                        <button onClick={() => updateCartQuantity(product.itemId, 0)} className="flex items-center gap-1 text-xs text-red-600">
                                             <Trash2 className="w-3 h-3"/> Remove
                                         </button>
                                         <p className="font-semibold text-gray-800">{currency}{(product.offerPrice * product.quantity).toFixed(2)}</p>
@@ -123,7 +138,7 @@ const Cart = () => {
                                 </thead>
                                 <tbody>
                                     {cartProducts.map((product) => (
-                                        <tr key={product._id} className="border-t">
+                                        <tr key={product.itemId} className="border-t">
                                             <td className="py-4 md:px-4 px-1">
                                                 <div className="flex items-center gap-4">
                                                     <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-20 h-20 flex items-center justify-center">
@@ -137,9 +152,10 @@ const Cart = () => {
                                                     </div>
                                                     <div className="text-sm">
                                                         <p className="text-gray-800 font-medium">{product.name}</p>
+                                                        {product.size && <p className="text-xs text-gray-500">Size: {product.size}</p>}
                                                         <button
                                                             className="text-xs text-orange-600 mt-1 hover:underline"
-                                                            onClick={() => updateCartQuantity(product._id, 0)}
+                                                            onClick={() => updateCartQuantity(product.itemId, 0)}
                                                         >
                                                             Remove
                                                         </button>
@@ -149,11 +165,11 @@ const Cart = () => {
                                             <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{product.offerPrice}</td>
                                             <td className="py-4 md:px-4 px-1">
                                                 <div className="flex items-center md:gap-2 gap-1 border rounded-full p-1 max-w-fit">
-                                                    <button onClick={() => updateCartQuantity(product._id, product.quantity - 1)} className="p-1 hover:bg-gray-100 rounded-full">
+                                                    <button onClick={() => updateCartQuantity(product.itemId, product.quantity - 1)} className="p-1 hover:bg-gray-100 rounded-full">
                                                         <Minus className="w-4 h-4 text-gray-600"/>
                                                     </button>
                                                     <span className="w-10 text-center">{product.quantity}</span>
-                                                    <button onClick={() => addToCart(product._id)} className="p-1 hover:bg-gray-100 rounded-full">
+                                                    <button onClick={() => addToCart(product.itemId)} className="p-1 hover:bg-gray-100 rounded-full">
                                                         <Plus className="w-4 h-4 text-gray-600" />
                                                     </button>
                                                 </div>

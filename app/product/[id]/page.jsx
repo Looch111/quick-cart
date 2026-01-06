@@ -1,3 +1,4 @@
+
 "use client"
 import { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
@@ -45,7 +46,7 @@ const StarRating = ({ rating, onRatingChange }) => {
 
 const Product = () => {
     const params = useParams();
-    const { products, router, addToCart, currency } = useAppContext()
+    const { products, router, addToCart, currency, openSizeModal } = useAppContext()
 
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
@@ -92,6 +93,24 @@ const Product = () => {
     // Determine current price and original price for display
     const currentPrice = isFlashSaleActive ? productData.flashSalePrice : productData.offerPrice;
     const originalPrice = isFlashSaleActive ? productData.price : (productData.offerPrice < productData.price ? productData.price : null);
+
+    const handleAddToCart = () => {
+        if (productData.sizes && productData.sizes.length > 0) {
+            openSizeModal(productData);
+        } else {
+            addToCart(productData._id);
+        }
+    };
+
+    const handleBuyNow = () => {
+        if (isOutOfStock) return;
+        if (productData.sizes && productData.sizes.length > 0) {
+            openSizeModal(productData);
+        } else {
+            addToCart(productData._id);
+            router.push('/cart');
+        }
+    };
 
 
     return (
@@ -200,14 +219,14 @@ const Product = () => {
 
                     <div className="flex items-center mt-10 gap-4">
                         <button 
-                            onClick={() => addToCart(productData._id)} 
+                            onClick={handleAddToCart} 
                             disabled={isOutOfStock}
                             className="w-full py-3.5 bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition rounded-full disabled:bg-gray-200 disabled:cursor-not-allowed disabled:text-gray-400"
                         >
                             Add to Cart
                         </button>
                         <button 
-                            onClick={() => { if (!isOutOfStock) { addToCart(productData._id); router.push('/cart') } }} 
+                            onClick={handleBuyNow} 
                             disabled={isOutOfStock}
                             className="w-full py-3.5 bg-orange-500 text-white hover:bg-orange-600 transition rounded-full disabled:bg-orange-300 disabled:cursor-not-allowed"
                         >

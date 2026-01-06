@@ -1,3 +1,4 @@
+
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -40,6 +41,9 @@ export const AppContextProvider = (props) => {
     const [isSeller, setIsSeller] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
+
+    const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
+    const [productForSizeSelection, setProductForSizeSelection] = useState(null);
     
     const cartItems = userData?.cartItems || {};
     const wishlistItems = userData?.wishlistItems || {};
@@ -47,6 +51,16 @@ export const AppContextProvider = (props) => {
     const walletTransactions = userData?.walletTransactions || [];
     const sellerWalletBalance = userData?.sellerWallet?.balance || 0;
     const sellerWalletTransactions = userData?.sellerWallet?.transactions || [];
+
+    const openSizeModal = (product) => {
+        setProductForSizeSelection(product);
+        setIsSizeModalOpen(true);
+    };
+
+    const closeSizeModal = () => {
+        setProductForSizeSelection(null);
+        setIsSizeModalOpen(false);
+    };
 
     useEffect(() => { 
         if (!productsLoading) {
@@ -325,6 +339,7 @@ export const AppContextProvider = (props) => {
     }
 
     const verifyFlutterwaveTransaction = async (transactionId, userId) => {
+        const loadingToast = toast.loading('Verifying your payment...');
         try {
             const response = await fetch('/api/verify-flutterwave', {
                 method: 'POST',
@@ -337,6 +352,8 @@ export const AppContextProvider = (props) => {
         } catch (error) {
             console.error("Verification API call failed:", error);
             return { success: false, message: "Failed to connect to verification service." };
+        } finally {
+            toast.dismiss(loadingToast);
         }
     };
     
@@ -549,14 +566,7 @@ export const AppContextProvider = (props) => {
 
     const addToCart = async (itemId) => {
         if (!userData) {
-            toast.error("Please log in to add items to your cart.", { id: 'login-toast' });
             setShowLogin(true);
-            return;
-        }
-    
-        const product = allRawProducts.find(p => p._id === itemId);
-        if (!product) {
-            toast.error("Product not found.", { id: `not-found-${itemId}` });
             return;
         }
     
@@ -568,12 +578,21 @@ export const AppContextProvider = (props) => {
                 if (!userDoc.exists()) {
                     throw "User document does not exist!";
                 }
+
+                // Check for size variants
+                const [productId, size] = itemId.split('_');
+                const product = allRawProducts.find(p => p._id === productId);
+
+                if (!product) {
+                    toast.error("Product not found.", { id: `not-found-${itemId}` });
+                    return; // Stop transaction
+                }
     
                 const currentCart = userDoc.data().cartItems || {};
                 const currentQuantityInCart = currentCart[itemId] || 0;
     
                 if (currentQuantityInCart >= product.stock) {
-                    toast.error(`No more stock available for ${product.name}`, { id: `stock-toast-${itemId}` });
+                    toast.error(`No more stock available for ${product.name}${size ? ` (Size: ${size})` : ''}`, { id: `stock-toast-${itemId}` });
                     return; 
                 }
     
@@ -584,13 +603,57 @@ export const AppContextProvider = (props) => {
             });
         } catch (error) {
             console.error("Add to cart transaction failed: ", error);
-            toast.error("Could not add item to cart.", { id: `add-cart-error-${itemId}` });
         }
     };
     
+    const addMultipleToCart = async (items) => {
+        if (!userData) {
+            setShowLogin(true);
+            return;
+        }
+        const userDocRef = doc(firestore, 'users', userData._id);
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) throw "User document does not exist!";
+
+                const currentCart = userDoc.data().cartItems || {};
+                const newCart = { ...currentCart };
+                let allItemsAdded = true;
+
+                for (const item of items) {
+                    const [productId, size] = item.id.split('_');
+                    const product = allRawProducts.find(p => p._id === productId);
+                    if (!product) {
+                        toast.error(`Product with ID ${productId} not found.`);
+                        allItemsAdded = false;
+                        continue;
+                    }
+                    const currentQuantityInCart = newCart[item.id] || 0;
+                    if ((currentQuantityInCart + item.quantity) > product.stock) {
+                        toast.error(`Not enough stock for ${product.name} (Size: ${size}). Only ${product.stock - currentQuantityInCart} more available.`);
+                        allItemsAdded = false;
+                    } else {
+                         newCart[item.id] = currentQuantityInCart + item.quantity;
+                    }
+                }
+                
+                transaction.update(userDocRef, { cartItems: newCart });
+                if(allItemsAdded) {
+                    toast.success("Selected items added to cart!");
+                } else {
+                    toast.warn("Some items could not be fully added due to stock limits.");
+                }
+            });
+        } catch (error) {
+            console.error("Add multiple to cart transaction failed: ", error);
+            toast.error("Could not update cart.");
+        }
+    }
+
+
     const updateCartQuantity = async (itemId, quantity) => {
         if (!userData) {
-            toast.error("Please log in to modify your cart.", { id: 'login-toast' });
             setShowLogin(true);
             return;
         }
@@ -606,13 +669,15 @@ export const AppContextProvider = (props) => {
     
                 const currentCart = userDoc.data().cartItems || {};
                 const newCart = { ...currentCart };
+
+                const [productId, size] = itemId.split('_');
+                const product = allRawProducts.find(p => p._id === productId);
     
                 if (quantity <= 0) {
                     delete newCart[itemId];
                 } else {
-                    const product = allRawProducts.find(p => p._id === itemId);
                     if (product && quantity > product.stock) {
-                        toast.error(`Only ${product.stock} items available`, { id: `stock-toast-${itemId}` });
+                        toast.error(`Only ${product.stock} items available for ${product.name}${size ? ` (Size: ${size})` : ''}`, { id: `stock-toast-${itemId}` });
                         newCart[itemId] = product.stock;
                     } else {
                         newCart[itemId] = quantity;
@@ -626,7 +691,6 @@ export const AppContextProvider = (props) => {
             }
         } catch (error) {
             console.error("Update cart quantity transaction failed: ", error);
-            toast.error("Could not update cart.", { id: `update-cart-error-${itemId}` });
         }
     };
     
@@ -640,7 +704,9 @@ export const AppContextProvider = (props) => {
         if (!allRawProducts.length || !cartItems) return 0;
         
         for (const itemId in cartItems) {
-            let itemInfo = allRawProducts.find((product) => product._id === itemId);
+            const [productId] = itemId.split('_');
+            let itemInfo = allRawProducts.find((product) => product._id === productId);
+
             if (itemInfo && cartItems[itemId] > 0) {
                 const isFlashSale = itemInfo.flashSalePrice && itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
                 const currentPrice = isFlashSale ? itemInfo.flashSalePrice : itemInfo.offerPrice;
@@ -652,7 +718,6 @@ export const AppContextProvider = (props) => {
 
     const toggleWishlist = (productId) => {
         if (!userData) {
-            toast.error("Please log in to manage your wishlist.");
             setShowLogin(true);
             return;
         }
@@ -685,7 +750,7 @@ export const AppContextProvider = (props) => {
         allRawProducts, 
         productsLoading,
         cartItems,
-        addToCart, updateCartQuantity,
+        addToCart, updateCartQuantity, addMultipleToCart,
         getCartCount, getCartAmount,
         wishlistItems, toggleWishlist,
         getWishlistCount,
@@ -703,7 +768,8 @@ export const AppContextProvider = (props) => {
         updateUserField, updateSellerBankDetails,
         platformSettings, updateSettings, settingsLoading,
         verifyFlutterwaveTransaction,
-        placeOrderWithWallet
+        placeOrderWithWallet,
+        isSizeModalOpen, openSizeModal, closeSizeModal, productForSizeSelection
     }
 
     return (
