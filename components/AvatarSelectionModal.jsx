@@ -14,17 +14,6 @@ const avatarUrls = [
     'https://i.imgur.com/0l053R3.png',
     'https://i.imgur.com/Q3XV0bn.png',
     'https://i.imgur.com/7gGF0p2.png',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Leo',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Misty',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jasper',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Zoe',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Max',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Coco',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Oscar',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Loki',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Toby',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Rocky',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Bandit',
 ];
 
 const AvatarSelectionModal = ({ currentAvatar, onSave, onCancel }) => {
