@@ -549,14 +549,14 @@ export const AppContextProvider = (props) => {
 
     const addToCart = async (itemId) => {
         if (!userData) {
-            toast.error("Please log in to add items to your cart.");
+            toast.error("Please log in to add items to your cart.", { id: 'login-toast' });
             setShowLogin(true);
             return;
         }
     
         const product = allRawProducts.find(p => p._id === itemId);
         if (!product) {
-            toast.error("Product not found.");
+            toast.error("Product not found.", { id: `not-found-${itemId}` });
             return;
         }
     
@@ -573,24 +573,24 @@ export const AppContextProvider = (props) => {
                 const currentQuantityInCart = currentCart[itemId] || 0;
     
                 if (currentQuantityInCart >= product.stock) {
-                    toast.error(`No more stock available for ${product.name}`);
+                    toast.error(`No more stock available for ${product.name}`, { id: `stock-toast-${itemId}` });
                     return; 
                 }
     
                 const newCart = { ...currentCart };
                 newCart[itemId] = currentQuantityInCart + 1;
                 transaction.update(userDocRef, { cartItems: newCart });
-                toast.success("Product added to cart");
+                toast.success("Product added to cart", { id: `add-cart-success-${itemId}` });
             });
         } catch (error) {
             console.error("Add to cart transaction failed: ", error);
-            toast.error("Could not add item to cart.");
+            toast.error("Could not add item to cart.", { id: `add-cart-error-${itemId}` });
         }
     };
     
     const updateCartQuantity = async (itemId, quantity) => {
         if (!userData) {
-            toast.error("Please log in to modify your cart.");
+            toast.error("Please log in to modify your cart.", { id: 'login-toast' });
             setShowLogin(true);
             return;
         }
@@ -612,7 +612,7 @@ export const AppContextProvider = (props) => {
                 } else {
                     const product = allRawProducts.find(p => p._id === itemId);
                     if (product && quantity > product.stock) {
-                        toast.error(`Only ${product.stock} items available`);
+                        toast.error(`Only ${product.stock} items available`, { id: `stock-toast-${itemId}` });
                         newCart[itemId] = product.stock;
                     } else {
                         newCart[itemId] = quantity;
@@ -622,11 +622,11 @@ export const AppContextProvider = (props) => {
             });
     
             if (quantity <= 0) {
-                toast.success("Item removed from cart");
+                toast.success("Item removed from cart", { id: `remove-item-${itemId}` });
             }
         } catch (error) {
             console.error("Update cart quantity transaction failed: ", error);
-            toast.error("Could not update cart.");
+            toast.error("Could not update cart.", { id: `update-cart-error-${itemId}` });
         }
     };
     
