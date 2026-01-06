@@ -53,7 +53,7 @@ const Navbar = () => {
         <Link href="/" className="hover:text-gray-900 transition">
           Home
         </Link>
-        <Link href="/all-products" className="hover:text-gray-900 transition">
+        <Link href="/all-products" id="nav-shop-link" className="hover:text-gray-900 transition">
           Shop
         </Link>
         <Link href="/" className="hover:text-gray-900 transition">
@@ -69,11 +69,11 @@ const Navbar = () => {
         <Link href="/all-products?focus=search" className="hover:text-gray-900 transition">
           <Search className="w-5 h-5" />
         </Link>
-        <Link href="/wishlist" className="relative">
+        <Link href="/wishlist" id="nav-wishlist-link" className="relative">
           <Heart className="w-5 h-5" />
           {wishlistCount > 0 && <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>}
         </Link>
-        <Link href="/cart" className="relative">
+        <Link href="/cart" id="nav-cart-link" className="relative">
           <ShoppingCart className="w-5 h-5" />
           {cartCount > 0 && <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{cartCount}</span>}
         </Link>

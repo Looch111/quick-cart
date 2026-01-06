@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 const steps = [
     {
         title: "Welcome to QuickCart!",
-        content: "We're glad to have you here. Let's take a quick moment to get your account set up.",
+        content: "We're glad to have you here. Let's take a quick tour of the app.",
         target: null
     },
     {
@@ -15,11 +15,27 @@ const steps = [
         target: "nav-account-button"
     },
     {
+        title: "Shop for Products",
+        content: "Click here to browse all available products in our store.",
+        target: "nav-shop-link"
+    },
+    {
+        title: "Save Your Favorites",
+        content: "Add products to your wishlist to save them for later.",
+        target: "nav-wishlist-link"
+    },
+    {
+        title: "View Your Cart",
+        content: "See the items you've added and proceed to checkout from here.",
+        target: "nav-cart-link"
+    },
+    {
         title: "Manage Your Account",
-        content: "From here, you can manage your profile details, wallet, and orders. Let's go there now!",
+        content: "Finally, let's go to your account page to set up your profile and addresses.",
         target: "nav-manage-account-link"
     }
 ];
+
 
 const OnboardingTour = () => {
     const { userData, updateUserField } = useAppContext();
@@ -54,21 +70,21 @@ const OnboardingTour = () => {
             setStyle({
                 position: 'absolute',
                 top: `${topPosition}px`,
-                left: `${rect.left}px`,
+                left: `${rect.left + rect.width / 2}px`,
                 transform: 'translateX(-50%)',
                 width: '300px',
                 zIndex: 1000
             });
 
-            // If we are on step 2, we need to artificially open the dropdown
-            if (step === 2) {
+            // If we are on the last step, we need to artificially open the dropdown
+            if (step === steps.length - 1) {
                 const accountButton = document.getElementById('nav-account-button');
                 if(accountButton && !document.getElementById('nav-manage-account-link')) {
                    accountButton.click(); // Open dropdown if it's not already open
                 }
             }
 
-        } else if (step === 2) {
+        } else if (step === steps.length - 1) {
             // Retry finding the element if it's not immediately available (e.g., due to dropdown animation)
             const accountButton = document.getElementById('nav-account-button');
             if(accountButton) accountButton.click();
@@ -118,10 +134,10 @@ const OnboardingTour = () => {
 
     return (
         <div className="fixed inset-0 bg-black/50 z-[999] backdrop-blur-sm">
-             {currentStep.target && <div 
+             {currentStep.target && document.getElementById(currentStep.target) && <div 
                 className="absolute bg-white rounded-lg animate-pulse" 
                 style={{ 
-                    top: style.top ? `${parseInt(style.top) - 10 - style.height}px` : `${document.getElementById(currentStep.target)?.getBoundingClientRect().top - 4}px`, 
+                    top: `${document.getElementById(currentStep.target)?.getBoundingClientRect().top - 4}px`, 
                     left: `${document.getElementById(currentStep.target)?.getBoundingClientRect().left - 4}px`,
                     width: `${document.getElementById(currentStep.target)?.getBoundingClientRect().width + 8}px`,
                     height: `${document.getElementById(currentStep.target)?.getBoundingClientRect().height + 8}px`,
