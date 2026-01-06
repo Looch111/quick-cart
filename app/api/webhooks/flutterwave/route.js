@@ -46,8 +46,6 @@ export async function POST(req) {
                         return; // Exit transaction gracefully if already handled
                     }
                     
-                    const newBalance = (userData.walletBalance || 0) + amount;
-
                     const newTransaction = {
                         id: tx_ref, // Use tx_ref for idempotency
                         type: 'Top Up',
@@ -55,13 +53,11 @@ export async function POST(req) {
                         date: new Date().toISOString(),
                         method: 'Flutterwave',
                     };
-
-                    const updatedTransactions = [newTransaction, ...transactions];
-
-                    // Update user's wallet balance and transaction history
+                    
+                    // Update user's wallet balance and transaction history using Admin SDK FieldValues
                     transaction.update(userRef, {
-                        walletBalance: newBalance,
-                        walletTransactions: updatedTransactions
+                        walletBalance: admin.firestore.FieldValue.increment(amount),
+                        walletTransactions: admin.firestore.FieldValue.arrayUnion(newTransaction)
                     });
                 });
 
