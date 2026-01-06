@@ -53,71 +53,93 @@ const OnboardingTour = () => {
         const targetElement = document.getElementById(targetId);
         if (targetElement) {
             const rect = targetElement.getBoundingClientRect();
+            const tourPopup = tourRef.current;
+            if (!tourPopup) return;
             
-            // For the popup position
-            const tourPopupHeight = tourRef.current ? tourRef.current.offsetHeight : 200;
+            const tourPopupHeight = tourPopup.offsetHeight;
+            const tourPopupWidth = tourPopup.offsetWidth;
             const spaceBelow = window.innerHeight - rect.bottom;
-            
-            let topPosition = rect.bottom + 10;
-            if (spaceBelow < tourPopupHeight && rect.top > tourPopupHeight) {
-                topPosition = rect.top - tourPopupHeight - 10;
+            const margin = 10;
+    
+            // Determine vertical position
+            let topPosition = rect.bottom + margin;
+            if (spaceBelow < tourPopupHeight && rect.top > tourPopupHeight + margin) {
+                topPosition = rect.top - tourPopupHeight - margin;
             }
-
+    
+            // Determine horizontal position
+            let leftPosition = rect.left + rect.width / 2 - tourPopupWidth / 2;
+    
+            // Adjust if it overflows the screen
+            if (leftPosition < margin) {
+                leftPosition = margin;
+            } else if (leftPosition + tourPopupWidth > window.innerWidth - margin) {
+                leftPosition = window.innerWidth - tourPopupWidth - margin;
+            }
+    
             setStyle({
                 position: 'absolute',
                 top: `${topPosition}px`,
-                left: `${rect.left + rect.width / 2}px`,
-                transform: 'translateX(-50%)',
+                left: `${leftPosition}px`,
+                transform: 'none', // Remove translateX as we now calculate the exact left position
                 zIndex: 1002
             });
-
+    
             // For the spotlight effect
             const padding = 4;
             setHighlightStyle({
                 top: rect.top - padding,
                 left: rect.left - padding,
                 width: rect.width + padding * 2,
-                height: rect.height + padding * 2
+                height: rect.height + padding * 2,
             });
-
+    
             return true;
         }
         return false;
     }
 
     useEffect(() => {
-        if (!userData || !userData.isNewUser || !isClient || step === 0) {
-            setStyle({});
+        if (!userData || !userData.isNewUser || !isClient) {
             setHighlightStyle({});
             return;
         }
 
         const currentStep = steps[step];
+
+        // For step 0, no target is needed, so clear styles.
+        if(step === 0) {
+            setHighlightStyle({});
+            setStyle({});
+            return;
+        }
+
         const targetId = currentStep.target;
 
-        // Immediately try to find the element
-        const found = updateHighlightAndPopup(targetId);
-
-        if (!found && step === steps.length - 1) {
-            // Special handling for the last step, which might be in a dropdown
-            const accountButton = document.getElementById('nav-account-button');
-            if(accountButton) {
-                // If the target isn't visible, click the button to reveal it
-                if (!document.getElementById(targetId)) {
+        const updatePositions = () => {
+            const found = updateHighlightAndPopup(targetId);
+            if (!found && step === steps.length - 1) {
+                const accountButton = document.getElementById('nav-account-button');
+                if (accountButton && !document.getElementById(targetId)) {
                    accountButton.click(); 
                 }
-                
-                // Retry after a short delay to allow for dropdown animation
-                setTimeout(() => {
-                    updateHighlightAndPopup(targetId);
-                }, 300);
+                setTimeout(() => updateHighlightAndPopup(targetId), 300);
             }
-        }
+        };
+        
+        // Initial update
+        updatePositions();
+
+        // Update on resize
+        window.addEventListener('resize', updatePositions);
+        return () => window.removeEventListener('resize', updatePositions);
+
     }, [step, userData, isClient]);
 
 
     const finishTour = async () => {
         if (!userData) return;
+        setHighlightStyle({}); // Hide highlight immediately
         await updateUserField('isNewUser', false);
         setStep(0);
     };
@@ -141,17 +163,29 @@ const OnboardingTour = () => {
     const currentStep = steps[step];
 
     const overlayPanels = highlightStyle.width ? [
-        { top: 0, left: 0, width: '100%', height: highlightStyle.top }, // Top
-        { top: highlightStyle.top, left: 0, width: highlightStyle.left, height: highlightStyle.height }, // Left
-        { top: highlightStyle.top, left: highlightStyle.left + highlightStyle.width, right: 0, height: highlightStyle.height }, // Right
-        { top: highlightStyle.top + highlightStyle.height, left: 0, width: '100%', bottom: 0 } // Bottom
-    ] : [{ top: 0, left: 0, width: '100%', height: '100%' }];
+        { top: 0, left: 0, width: '100%', height: highlightStyle.top, zIndex: 1000 }, // Top
+        { top: highlightStyle.top, left: 0, width: highlightStyle.left, height: highlightStyle.height, zIndex: 1000 }, // Left
+        { top: highlightStyle.top, left: highlightStyle.left + highlightStyle.width, right: 0, height: highlightStyle.height, zIndex: 1000 }, // Right
+        { top: highlightStyle.top + highlightStyle.height, left: 0, width: '100%', bottom: 0, zIndex: 1000 } // Bottom
+    ] : [{ top: 0, left: 0, width: '100%', height: '100%', zIndex: 1000 }];
 
     return (
         <div className="fixed inset-0 z-[999]">
             {overlayPanels.map((style, i) => (
                 <div key={i} className="absolute bg-black/50 backdrop-blur-sm" style={style} />
             ))}
+             <div
+                style={{
+                    position: 'absolute',
+                    ...highlightStyle,
+                    border: '2px solid white',
+                    borderRadius: '6px',
+                    boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
+                    zIndex: 1001,
+                    pointerEvents: 'none',
+                    display: highlightStyle.width ? 'block' : 'none',
+                }}
+            />
 
             <div
                 ref={tourRef}
