@@ -527,8 +527,16 @@ export const AppContextProvider = (props) => {
             setShowLogin(true);
             return;
         }
+        
+        // Deep copy to avoid mutation issues
+        const newUserData = JSON.parse(JSON.stringify(userData));
+        newUserData[field] = value;
+        
         const userDocRef = doc(firestore, 'users', userData._id);
         await setDoc(userDocRef, { [field]: value }, { merge: true });
+
+        // Update local state after successful Firestore update
+        setUserData(newUserData);
     }
 
     const updateSellerBankDetails = async (bankDetails) => {
