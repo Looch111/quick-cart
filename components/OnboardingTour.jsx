@@ -42,23 +42,19 @@ const OnboardingTour = () => {
     const [step, setStep] = useState(0);
     const [isClient, setIsClient] = useState(false);
     const [style, setStyle] = useState({});
+    const [highlightStyle, setHighlightStyle] = useState({});
     const tourRef = useRef(null);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    useEffect(() => {
-        if (!userData || !userData.isNewUser || !isClient || step === 0) {
-            setStyle({});
-            return;
-        }
-
-        const currentStep = steps[step];
-        const targetElement = document.getElementById(currentStep.target);
-
+    const updateHighlightAndPopup = (targetId) => {
+        const targetElement = document.getElementById(targetId);
         if (targetElement) {
             const rect = targetElement.getBoundingClientRect();
+            
+            // For the popup position
             const tourPopupHeight = tourRef.current ? tourRef.current.offsetHeight : 200;
             const spaceBelow = window.innerHeight - rect.bottom;
             
@@ -73,49 +69,62 @@ const OnboardingTour = () => {
                 left: `${rect.left + rect.width / 2}px`,
                 transform: 'translateX(-50%)',
                 width: '300px',
-                zIndex: 1000
+                zIndex: 1002
             });
 
-            // If we are on the last step, we need to artificially open the dropdown
-            if (step === steps.length - 1) {
-                const accountButton = document.getElementById('nav-account-button');
-                if(accountButton && !document.getElementById('nav-manage-account-link')) {
-                   accountButton.click(); // Open dropdown if it's not already open
-                }
-            }
+            // For the spotlight effect
+            const padding = 4;
+            setHighlightStyle({
+                top: rect.top - padding,
+                left: rect.left - padding,
+                width: rect.width + padding * 2,
+                height: rect.height + padding * 2
+            });
 
-        } else if (step === steps.length - 1) {
-            // Retry finding the element if it's not immediately available (e.g., due to dropdown animation)
-            const accountButton = document.getElementById('nav-account-button');
-            if(accountButton) accountButton.click();
-            setTimeout(() => {
-                 const target = document.getElementById(currentStep.target);
-                 if (target) {
-                    const rect = target.getBoundingClientRect();
-                     setStyle({
-                        position: 'absolute',
-                        top: `${rect.bottom + 10}px`,
-                        left: `${rect.left + rect.width / 2}px`,
-                        transform: 'translateX(-50%)',
-                        width: '300px',
-                        zIndex: 1000
-                    });
-                 }
-            }, 300);
+            return true;
+        }
+        return false;
+    }
+
+    useEffect(() => {
+        if (!userData || !userData.isNewUser || !isClient || step === 0) {
+            setStyle({});
+            setHighlightStyle({});
+            return;
         }
 
+        const currentStep = steps[step];
+        const targetId = currentStep.target;
+
+        // Immediately try to find the element
+        const found = updateHighlightAndPopup(targetId);
+
+        if (!found && step === steps.length - 1) {
+            // Special handling for the last step, which might be in a dropdown
+            const accountButton = document.getElementById('nav-account-button');
+            if(accountButton) {
+                // If the target isn't visible, click the button to reveal it
+                if (!document.getElementById(targetId)) {
+                   accountButton.click(); 
+                }
+                
+                // Retry after a short delay to allow for dropdown animation
+                setTimeout(() => {
+                    updateHighlightAndPopup(targetId);
+                }, 300);
+            }
+        }
     }, [step, userData, isClient]);
 
 
     const finishTour = async () => {
         if (!userData) return;
         await updateUserField('isNewUser', false);
-        setStep(0); // Reset for next time (though it won't show)
+        setStep(0);
     };
     
     const handleNext = () => {
         if (step === steps.length - 1) {
-            // Last step, finish tour and redirect
             finishTour();
             const manageAccountLink = document.getElementById('nav-manage-account-link');
             if (manageAccountLink) {
@@ -132,21 +141,22 @@ const OnboardingTour = () => {
     
     const currentStep = steps[step];
 
+    const overlayPanels = highlightStyle.width ? [
+        { top: 0, left: 0, width: '100%', height: highlightStyle.top }, // Top
+        { top: highlightStyle.top, left: 0, width: highlightStyle.left, height: highlightStyle.height }, // Left
+        { top: highlightStyle.top, left: highlightStyle.left + highlightStyle.width, right: 0, height: highlightStyle.height }, // Right
+        { top: highlightStyle.top + highlightStyle.height, left: 0, width: '100%', bottom: 0 } // Bottom
+    ] : [{ top: 0, left: 0, width: '100%', height: '100%' }];
+
     return (
-        <div className="fixed inset-0 bg-black/50 z-[999] backdrop-blur-sm">
-             {currentStep.target && document.getElementById(currentStep.target) && <div 
-                className="absolute bg-transparent border-2 border-white rounded-lg animate-pulse" 
-                style={{ 
-                    top: `${document.getElementById(currentStep.target)?.getBoundingClientRect().top - 4}px`, 
-                    left: `${document.getElementById(currentStep.target)?.getBoundingClientRect().left - 4}px`,
-                    width: `${document.getElementById(currentStep.target)?.getBoundingClientRect().width + 8}px`,
-                    height: `${document.getElementById(currentStep.target)?.getBoundingClientRect().height + 8}px`,
-                    zIndex: 1000
-                }}
-            />}
+        <div className="fixed inset-0 z-[999]">
+            {overlayPanels.map((style, i) => (
+                <div key={i} className="absolute bg-black/50 backdrop-blur-sm" style={style} />
+            ))}
+
             <div
                 ref={tourRef}
-                className={`bg-white rounded-lg shadow-2xl p-6 ${step === 0 ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md' : ''}`}
+                className={`bg-white rounded-lg shadow-2xl p-6 ${step === 0 ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md z-[1002]' : ''}`}
                 style={step > 0 ? style : {}}
             >
                 <button onClick={finishTour} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
