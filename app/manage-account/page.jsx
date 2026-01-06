@@ -8,6 +8,7 @@ import { User, Mail, Save, PlusCircle, Home, Phone, Edit } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AvatarSelectionModal from '@/components/AvatarSelectionModal';
+import Loading from '@/components/Loading';
 
 const ManageAccount = () => {
     const { userData, setShowLogin, userAddresses, router, updateUserField } = useAppContext();
@@ -16,12 +17,12 @@ const ManageAccount = () => {
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
     useEffect(() => {
-        if (userData) {
-            setName(userData.name || '');
-            setEmail(userData.email);
-        } else {
+        if (userData === null) {
            router.push('/');
            setShowLogin(true);
+        } else if (userData) {
+            setName(userData.name || '');
+            setEmail(userData.email);
         }
     }, [userData, setShowLogin, router]);
 
@@ -41,8 +42,18 @@ const ManageAccount = () => {
         toast.success("Avatar updated!");
     };
 
+    if (userData === undefined) {
+        return (
+            <>
+                <Navbar />
+                <Loading />
+                <Footer />
+            </>
+        )
+    }
+
     if (!userData) {
-        return null; // Or a loading spinner, while redirecting to login
+        return null;
     }
 
     return (

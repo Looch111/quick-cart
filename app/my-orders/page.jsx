@@ -39,12 +39,12 @@ const MyOrders = () => {
     const router = useRouter();
 
     useEffect(() => {
-        if (!userData && !userOrders) {
-            setLoading(false);
+        if (userData === undefined) {
+            setLoading(true);
+        } else if (userData === null) {
             router.push('/');
             setShowLogin(true);
-        }
-        if (userOrders) {
+        } else if (userOrders) {
             setOrders(userOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
             setLoading(false);
         }

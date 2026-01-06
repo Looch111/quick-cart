@@ -6,14 +6,29 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
 import { Plus, Minus } from "lucide-react";
+import Loading from "@/components/Loading";
 
 const Cart = () => {
 
-  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts } = useAppContext();
+  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts, productsLoading } = useAppContext();
+
+  if (productsLoading || userData === undefined) {
+    return (
+      <>
+        <Navbar />
+        <Loading />
+      </>
+    )
+  }
 
   if (!userData && getCartCount() > 0) {
     setShowLogin(true);
-    return null;
+    return (
+        <>
+            <Navbar />
+            <Loading />
+        </>
+    );
   }
 
   if (getCartCount() === 0) {

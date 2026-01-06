@@ -87,7 +87,13 @@ const WalletPage = () => {
     };
 
      if (userData === undefined) {
-        return <Loading />;
+        return (
+            <>
+                <Navbar />
+                <Loading />
+                <Footer />
+            </>
+        )
     }
 
     const sortedTransactions = [...walletTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
