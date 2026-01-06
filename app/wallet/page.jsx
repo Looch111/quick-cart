@@ -49,30 +49,33 @@ const WalletPage = () => {
         handleFlutterwavePayment({
             callback: async (response) => {
                 setIsDepositing(true);
-                toast.loading('Verifying your payment...');
+                const loadingToast = toast.loading('Verifying your payment...');
 
-                const verificationResponse = await verifyFlutterwaveTransaction(response.transaction_id, userData._id);
-                
-                toast.dismiss();
+                try {
+                    const verificationResponse = await verifyFlutterwaveTransaction(response.transaction_id, userData._id);
 
-                if (verificationResponse.success && verificationResponse.data.status === 'successful') {
-                     if (verificationResponse.data.amount === Number(amount)) {
-                        toast.success('Payment successful! Your balance has been updated.');
-                        setAmount('');
+                    if (verificationResponse.success && verificationResponse.data.status === 'successful') {
+                         if (verificationResponse.data.amount === Number(amount)) {
+                            toast.success('Payment successful! Your balance has been updated.');
+                            setAmount('');
+                        } else {
+                            toast.error('Payment amount mismatch. Please contact support.');
+                        }
                     } else {
-                        toast.error('Payment amount mismatch. Please contact support.');
+                        toast.error(verificationResponse.message || 'Payment verification failed. Please contact support if you were charged.');
                     }
-                } else {
-                    toast.error(verificationResponse.message || 'Payment verification failed. Please contact support if you were charged.');
+                } finally {
+                    toast.dismiss(loadingToast);
+                    closePaymentModal();
+                    setIsDepositing(false);
                 }
-                closePaymentModal();
-                setIsDepositing(false);
             },
             onClose: () => {
-                setIsDepositing(false);
-                if(!isDepositing) { // Avoid showing modal if callback is processing
+                // This condition prevents the cancellation modal from showing if the payment is already being verified
+                if(!isDepositing) {
                     setShowCancelModal(true);
                 }
+                setIsDepositing(false);
             },
         });
     }
