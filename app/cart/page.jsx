@@ -10,38 +10,8 @@ import Loading from "@/components/Loading";
 
 const Cart = () => {
 
-  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts, productsLoading } = useAppContext();
-  const [selectedItems, setSelectedItems] = useState({});
-
-  useEffect(() => {
-    // Initially, select all items in the cart
-    const initialSelection = {};
-    Object.keys(cartItems).forEach(itemId => {
-        initialSelection[itemId] = true;
-    });
-    setSelectedItems(initialSelection);
-  }, [cartItems]);
+  const { router, cartItems, addToCart, updateCartQuantity, getCartCount, userData, setShowLogin, currency, allRawProducts, productsLoading } = useAppContext();
   
-  const handleItemSelect = (itemId) => {
-    setSelectedItems(prev => ({
-      ...prev,
-      [itemId]: !prev[itemId]
-    }));
-  };
-
-  const handleSelectAll = (e) => {
-    const isChecked = e.target.checked;
-    const newSelection = {};
-    if (isChecked) {
-      Object.keys(cartItems).forEach(itemId => {
-        newSelection[itemId] = true;
-      });
-    }
-    setSelectedItems(newSelection);
-  };
-  
-  const isAllSelected = Object.keys(cartItems).length > 0 && Object.keys(cartItems).every(itemId => selectedItems[itemId]);
-
   if (productsLoading || userData === undefined) {
     return (
       <>
@@ -85,16 +55,6 @@ const Cart = () => {
             <p className="text-2xl md:text-3xl text-gray-500">
               Your <span className="font-medium text-orange-600">Cart</span>
             </p>
-             <div className="flex items-center gap-3">
-                 <input 
-                    type="checkbox" 
-                    id="select-all"
-                    className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                    checked={isAllSelected}
-                    onChange={handleSelectAll}
-                  />
-                  <label htmlFor="select-all" className="text-sm text-gray-600">Select All</label>
-             </div>
           </div>
 
           {/* Mobile View */}
@@ -121,12 +81,6 @@ const Cart = () => {
                                       <button onClick={() => addToCart(product._id)} className="p-1.5 disabled:opacity-50 disabled:cursor-not-allowed" disabled={isStockLimitReached}><Plus className="w-4 h-4 text-gray-600" /></button>
                                   </div>
                               </div>
-                               <input 
-                                  type="checkbox"
-                                  className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 self-start"
-                                  checked={!!selectedItems[itemId]}
-                                  onChange={() => handleItemSelect(itemId)}
-                                />
                           </div>
                           <div className="flex justify-between items-center mt-3 pt-3 border-t">
                               <button onClick={() => updateCartQuantity(product._id, 0)} className="text-xs text-orange-600">Remove</button>
@@ -142,9 +96,6 @@ const Cart = () => {
             <table className="min-w-full table-auto">
               <thead className="text-left">
                 <tr>
-                   <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
-                      {/* Placeholder for select all */}
-                  </th>
                   <th className="text-nowrap pb-6 md:px-4 px-1 text-gray-600 font-medium">
                     Product Details
                   </th>
@@ -161,7 +112,7 @@ const Cart = () => {
               </thead>
               <tbody>
                 {Object.keys(cartItems).map((itemId) => {
-                  const product = allRawProducts.find(product => product._id === itemId);
+                  const product = allRawProducts.find(p => p._id === itemId);
 
                   if (!product || cartItems[itemId] <= 0) return null;
 
@@ -169,14 +120,6 @@ const Cart = () => {
 
                   return (
                     <tr key={itemId}>
-                      <td className="py-4 md:px-4 px-1">
-                        <input 
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                          checked={!!selectedItems[itemId]}
-                          onChange={() => handleItemSelect(itemId)}
-                        />
-                      </td>
                       <td className="flex items-center gap-4 py-4 md:px-4 px-1">
                         <div>
                           <div className="rounded-lg overflow-hidden bg-gray-100 p-2">
@@ -239,7 +182,7 @@ const Cart = () => {
             Continue Shopping
           </button>
         </div>
-        <OrderSummary selectedItems={selectedItems} />
+        <OrderSummary />
       </div>
     </>
   );
