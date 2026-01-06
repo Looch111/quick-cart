@@ -282,7 +282,7 @@ const OrderSummary = () => {
       <button 
         onClick={handlePlaceOrder} 
         disabled={orderStatus === 'loading' || orderStatus === 'done'}
-        className="w-full bg-orange-600 text-white py-3 rounded-md hover:bg-orange-700 transition font-semibold disabled:bg-orange-400 disabled:cursor-wait mt-5"
+        className="w-full bg-orange-600 text-white py-3 rounded-full hover:bg-orange-700 transition font-semibold disabled:bg-orange-400 disabled:cursor-wait mt-5"
       >
         {orderStatus === 'loading' ? 'Placing Order...' : orderStatus === 'done' ? 'Order Placed!' : 'Place Order'}
       </button>
