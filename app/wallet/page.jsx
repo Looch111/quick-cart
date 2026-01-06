@@ -34,7 +34,7 @@ const WalletPage = () => {
         },
         meta: {
             user_id: userData?._id,
-            type: 'wallet-funding' // Important for webhook processing
+            type: 'wallet-funding'
         },
         customizations: {
             title: 'Wallet Deposit',
@@ -51,13 +51,13 @@ const WalletPage = () => {
                 setIsDepositing(true);
                 toast.loading('Verifying your payment...');
 
-                const verificationResponse = await verifyFlutterwaveTransaction(response.transaction_id);
+                const verificationResponse = await verifyFlutterwaveTransaction(response.transaction_id, userData._id);
                 
                 toast.dismiss();
 
                 if (verificationResponse.success && verificationResponse.data.status === 'successful') {
                      if (verificationResponse.data.amount === Number(amount)) {
-                        toast.success('Payment verified! Your balance will be updated shortly.');
+                        toast.success('Payment successful! Your balance has been updated.');
                         setAmount('');
                     } else {
                         toast.error('Payment amount mismatch. Please contact support.');
@@ -70,7 +70,9 @@ const WalletPage = () => {
             },
             onClose: () => {
                 setIsDepositing(false);
-                setShowCancelModal(true);
+                if(!isDepositing) { // Avoid showing modal if callback is processing
+                    setShowCancelModal(true);
+                }
             },
         });
     }

@@ -321,14 +321,14 @@ export const AppContextProvider = (props) => {
         toast.success("Product deleted successfully");
     }
 
-    const verifyFlutterwaveTransaction = async (transactionId) => {
+    const verifyFlutterwaveTransaction = async (transactionId, userId) => {
         try {
             const response = await fetch('/api/verify-flutterwave', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ transactionId }),
+                body: JSON.stringify({ transactionId, userId }),
             });
             return await response.json();
         } catch (error) {
@@ -343,7 +343,7 @@ export const AppContextProvider = (props) => {
             return { success: false };
         }
 
-        const verificationResponse = await verifyFlutterwaveTransaction(paymentResponse.transaction_id);
+        const verificationResponse = await verifyFlutterwaveTransaction(paymentResponse.transaction_id, userData._id);
 
         if (!verificationResponse.success || verificationResponse.data.status !== 'successful') {
             toast.error("Payment verification failed.");
