@@ -79,7 +79,7 @@ const Navbar = () => {
         </Link>
 
         <div className="relative" ref={dropdownRef}>
-          <button onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition overflow-hidden">
+          <button id="nav-account-button" onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition overflow-hidden">
             {userData ? (
                 userData.photoURL ? (
                     <Image src={userData.photoURL} alt={userData.name || 'User Avatar'} width={32} height={32} className="object-cover" />
@@ -120,7 +120,7 @@ const Navbar = () => {
                 </button>
               </div>
               <div className="py-2">
-                <Link onClick={() => setIsDropdownOpen(false)} href="/manage-account" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
+                <Link id="nav-manage-account-link" onClick={() => setIsDropdownOpen(false)} href="/manage-account" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
                   <Settings className="w-5 h-5 text-gray-500" />
                   Manage account
                 </Link>

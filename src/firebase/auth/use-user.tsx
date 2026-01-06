@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile,
+  getAdditionalUserInfo,
 } from 'firebase/auth';
 import { useAuth as useFirebaseAuth } from '../provider';
 import toast from 'react-hot-toast';
@@ -38,8 +39,15 @@ export function useAuth() {
     const signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
         try {
-            await signInWithPopup(auth, provider);
-            toast.success('Signed in with Google successfully!');
+            const result = await signInWithPopup(auth, provider);
+            const additionalInfo = getAdditionalUserInfo(result);
+            if (additionalInfo?.isNewUser) {
+                toast.success('Account created successfully! Welcome!');
+                // The onboarding tour will be triggered by the isNewUser flag in the user's document
+            } else {
+                toast.success('Signed in with Google successfully!');
+            }
+            return {isNewUser: additionalInfo?.isNewUser};
         } catch (error) {
             console.error("Error signing in with Google: ", error);
             toast.error('Failed to sign in with Google.');
@@ -50,9 +58,9 @@ export function useAuth() {
     const signUpWithEmail = async (email, password) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            // You can optionally update the user's profile here
-            // await updateProfile(userCredential.user, { displayName: "New User" });
-            toast.success('Account created successfully!');
+            toast.success('Account created successfully! Welcome!');
+            // The onboarding tour will be triggered by the isNewUser flag in the user's document
+            return {isNewUser: true};
         } catch (error) {
             console.error("Error signing up: ", error);
             toast.error(error.message || 'Failed to create account.');
@@ -64,6 +72,7 @@ export function useAuth() {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             toast.success('Signed in successfully!');
+             return {isNewUser: false};
         } catch (error) {
             console.error("Error signing in: ", error);
             toast.error(error.message || 'Failed to sign in.');

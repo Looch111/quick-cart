@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import LoginPopup from "@/components/LoginPopup";
 import { FirebaseClientProvider } from "@/src/firebase/client-provider";
 import FirebaseErrorListener from "@/src/components/FirebaseErrorListener";
+import OnboardingTour from "@/components/OnboardingTour";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
             <AppContextProvider>
               <Toaster position="top-center" reverseOrder={false} />
               <LoginPopup />
+              <OnboardingTour />
               {children}
               <FirebaseErrorListener />
             </AppContextProvider>

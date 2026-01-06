@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import toast from "react-hot-toast";
 import { useFirestore, useCollection, useDoc } from "@/src/firebase";
 import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc, runTransaction, increment, arrayUnion } from "firebase/firestore";
+import { getAdditionalUserInfo } from "firebase/auth";
 
 export const AppContext = createContext();
 
@@ -72,7 +73,8 @@ export const AppContextProvider = (props) => {
               setIsSeller(dbUser.role === 'seller' || dbUser.role === 'admin');
               setIsAdmin(dbUser.role === 'admin');
             } else {
-              setUserData(null);
+              // This case might happen briefly if the document is being created.
+               setUserData(null);
             }
           });
     
@@ -97,10 +99,11 @@ export const AppContextProvider = (props) => {
                   ifscCode: ''
                 }
               },
-              createdAt: serverTimestamp()
+              createdAt: serverTimestamp(),
+              isNewUser: true // Flag for onboarding tour
             };
             await setDoc(userDocRef, newUser);
-             setUserData({ ...newUser, _id: currentUser.uid });
+             // The onSnapshot listener will pick this up and set userData
           }
     
           setShowLogin(false);
@@ -514,7 +517,7 @@ export const AppContextProvider = (props) => {
 
     const updateUserField = async (field, value) => {
         if (!userData) {
-            toast.error("Please log in to update your profile.");
+            if(showLogin) toast.error("Please log in to update your profile.");
             setShowLogin(true);
             return;
         }
@@ -631,7 +634,7 @@ export const AppContextProvider = (props) => {
 
     const value = {
         currency, router,
-        userData, setUserData, isSeller, isAdmin,
+        userData, setUserData, isSeller, isAdmin, authLoading,
         products,
         allRawProducts, 
         productsLoading,

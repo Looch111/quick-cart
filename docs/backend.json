@@ -29,6 +29,10 @@
           "enum": ["buyer", "seller", "admin"],
           "description": "The role of the user."
         },
+        "isNewUser": {
+            "type": "boolean",
+            "description": "Flag to determine if the user is new and needs to see the onboarding tour."
+        },
         "cartItems": {
             "type": "object",
             "description": "A map of product IDs to quantities in the user's cart."

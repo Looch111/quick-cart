@@ -34,29 +34,30 @@ const LoginPopup = () => {
         return null;
     }
 
-    const handleGoogleSignIn = async () => {
+    const handleAuthAction = async (authPromise) => {
         try {
-            await signInWithGoogle();
+            const result = await authPromise;
+            // The isNewUser flag from the auth result will trigger the context to show the tour
             setShowLogin(false);
         } catch (err) {
             setError(err.message);
         }
     };
 
-    const handleEmailAuth = async (e) => {
+    const handleGoogleSignIn = () => {
+        handleAuthAction(signInWithGoogle());
+    };
+
+    const handleEmailAuth = (e) => {
         e.preventDefault();
         setError('');
-        try {
-            if (isLogin) {
-                await signInWithEmail(email, password);
-            } else {
-                await signUpWithEmail(email, password);
-            }
-            setShowLogin(false);
-        } catch (err) {
-            setError(err.message);
+        if (isLogin) {
+            handleAuthAction(signInWithEmail(email, password));
+        } else {
+            handleAuthAction(signUpWithEmail(email, password));
         }
     };
+
 
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
