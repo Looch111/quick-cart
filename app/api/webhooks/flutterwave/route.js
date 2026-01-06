@@ -14,8 +14,10 @@ export async function POST(req) {
         const payload = await req.json();
         const { event, data: transactionData } = payload;
 
+        // Ensure we are handling a completed charge event
         if (event === 'charge.completed' && transactionData.status === 'successful') {
-            // Check if this is a wallet funding transaction
+            
+            // Check if this is a wallet funding transaction by looking at the metadata
             if (transactionData.meta && transactionData.meta.type === 'wallet-funding') {
                 const { tx_ref, amount, meta } = transactionData;
                 const userId = meta.user_id;
@@ -26,7 +28,7 @@ export async function POST(req) {
 
                 const userRef = admin.firestore().collection('users').doc(userId);
 
-                // Use a transaction to ensure atomicity
+                // Use a Firestore transaction to ensure atomic and safe updates
                 await admin.firestore().runTransaction(async (transaction) => {
                     const userDoc = await transaction.get(userRef);
 
@@ -38,10 +40,10 @@ export async function POST(req) {
                     const transactions = userData.walletTransactions || [];
 
                     // --- Idempotency Check ---
-                    // Prevent processing the same transaction twice
+                    // Prevent processing the same transaction twice by checking the unique tx_ref
                     if (transactions.some(tx => tx.id === tx_ref)) {
                         console.log(`Webhook: Transaction ${tx_ref} already processed.`);
-                        return; // Exit transaction gracefully
+                        return; // Exit transaction gracefully if already handled
                     }
                     
                     const newBalance = (userData.walletBalance || 0) + amount;
@@ -56,6 +58,7 @@ export async function POST(req) {
 
                     const updatedTransactions = [newTransaction, ...transactions];
 
+                    // Update user's wallet balance and transaction history
                     transaction.update(userRef, {
                         walletBalance: newBalance,
                         walletTransactions: updatedTransactions
@@ -66,6 +69,7 @@ export async function POST(req) {
             }
         }
 
+        // Acknowledge receipt of the webhook
         return NextResponse.json({ status: "success" });
 
     } catch (error) {

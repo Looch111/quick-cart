@@ -31,6 +31,8 @@ export async function POST(request) {
         }
 
         if (data.status === "success") {
+            // This endpoint only confirms the payment was successful.
+            // The webhook is responsible for fulfilling the order/crediting the wallet.
             return NextResponse.json({ success: true, data: data.data });
         } else {
             return NextResponse.json({ success: false, message: data.message || "Payment not successful." });

@@ -336,45 +336,11 @@ export const AppContextProvider = (props) => {
             return { success: false, message: "Failed to connect to verification service." };
         }
     };
-
-    const depositToWallet = async (amount, transactionId) => {
-        if (!userData) {
-            return { success: false, message: "User not authenticated." };
-        }
-        const userRef = doc(firestore, 'users', userData._id);
-        try {
-            await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userRef);
-                if (!userDoc.exists()) {
-                    throw "User does not exist.";
-                }
-                const transactions = userDoc.data().walletTransactions || [];
-                const isDuplicate = transactions.some(tx => tx.id === transactionId);
-                if (isDuplicate) {
-                    toast.error("This transaction has already been processed.");
-                    throw "This transaction has already been processed.";
-                }
-                transaction.update(userRef, {
-                    walletBalance: increment(amount),
-                    walletTransactions: arrayUnion({
-                        id: transactionId,
-                        type: 'Top Up',
-                        amount: amount,
-                        date: new Date().toISOString(),
-                    })
-                });
-            });
-            return { success: true };
-        } catch (error) {
-            console.error("Error depositing to wallet:", error);
-            return { success: false, message: error.toString() };
-        }
-    };
     
     const placeOrder = async (address, paymentResponse, totalAmount) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
-            return;
+            return { success: false };
         }
 
         const verificationResponse = await verifyFlutterwaveTransaction(paymentResponse.transaction_id);
@@ -431,7 +397,7 @@ export const AppContextProvider = (props) => {
     const placeOrderWithWallet = async (address, totalAmount) => {
         if (!userData) {
             toast.error("Please log in to place an order.");
-            return;
+            return { success: false };
         }
         if (walletBalance < totalAmount) {
             toast.error("Insufficient wallet balance.");
@@ -690,7 +656,6 @@ export const AppContextProvider = (props) => {
         updateUserField, updateSellerBankDetails,
         platformSettings, updateSettings, settingsLoading,
         verifyFlutterwaveTransaction,
-        depositToWallet,
         placeOrderWithWallet
     }
 

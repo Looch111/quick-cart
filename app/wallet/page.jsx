@@ -9,8 +9,9 @@ import Loading from '@/components/Loading';
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 
 const WalletPage = () => {
-    const { userData, walletBalance, walletTransactions, setShowLogin, router, currency, verifyFlutterwaveTransaction, depositToWallet } = useAppContext();
+    const { userData, walletBalance, walletTransactions, setShowLogin, router, currency, verifyFlutterwaveTransaction } = useAppContext();
     const [amount, setAmount] = useState('');
+    const [isDepositing, setIsDepositing] = useState(false);
 
     useEffect(() => {
         if (userData === null) {
@@ -19,6 +20,29 @@ const WalletPage = () => {
         }
     }, [userData, router, setShowLogin]);
     
+    const flutterwaveConfig = {
+        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
+        tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        amount: Number(amount),
+        currency: 'NGN',
+        payment_options: 'card,mobilemoney,ussd',
+        customer: {
+            email: userData?.email,
+            name: userData?.name,
+        },
+        meta: {
+            user_id: userData?._id,
+            type: 'wallet-funding' // Important for webhook processing
+        },
+        customizations: {
+            title: 'Wallet Deposit',
+            description: 'Add funds to your QuickCart wallet',
+            logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
+        },
+    };
+
+    const handleFlutterwavePayment = useFlutterwave(flutterwaveConfig);
+
     const handleDeposit = () => {
         const depositAmount = Number(amount);
         if (!depositAmount || depositAmount <= 0) {
@@ -26,47 +50,32 @@ const WalletPage = () => {
             return;
         }
 
-        const flutterwaveConfig = {
-            public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-            tx_ref: `QUICKCART-WALLET-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            amount: depositAmount,
-            currency: 'NGN',
-            payment_options: 'card,mobilemoney,ussd',
-            customer: {
-                email: userData?.email,
-                name: userData?.name,
-            },
-            customizations: {
-                title: 'Wallet Deposit',
-                description: 'Add funds to your QuickCart wallet',
-                logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
-            },
-        };
-        
-        const handleFlutterwavePayment = useFlutterwave(flutterwaveConfig);
-        
         handleFlutterwavePayment({
             callback: async (response) => {
+                setIsDepositing(true);
+                toast.loading('Verifying your payment...');
+
+                // Server-side verification is CRITICAL
                 const verificationResponse = await verifyFlutterwaveTransaction(response.transaction_id);
+                
+                toast.dismiss(); // Dismiss the loading toast
 
                 if (verificationResponse.success && verificationResponse.data.status === 'successful') {
-                    if (verificationResponse.data.amount === depositAmount) {
-                        const depositResponse = await depositToWallet(depositAmount, response.transaction_id);
-                        if (depositResponse.success) {
-                            toast.success('Funds deposited successfully!');
-                            setAmount('');
-                        } else {
-                            toast.error(depositResponse.message || 'Failed to update wallet balance.');
-                        }
+                     if (verificationResponse.data.amount === depositAmount) {
+                        toast.success('Payment verified! Your balance will be updated shortly via webhook.');
+                        setAmount('');
                     } else {
                         toast.error('Payment amount mismatch. Please contact support.');
                     }
                 } else {
-                    toast.error('Payment verification failed.');
+                    toast.error('Payment verification failed. Please contact support if you were charged.');
                 }
                 closePaymentModal();
+                setIsDepositing(false);
             },
-            onClose: () => {},
+            onClose: () => {
+                setIsDepositing(false);
+            },
         });
     };
 
@@ -104,7 +113,7 @@ const WalletPage = () => {
                             <div className="space-y-4">
                                 <div>
                                     <label htmlFor="amount" className="text-sm font-medium text-gray-700">
-                                        Amount (NGN)
+                                        Amount ({flutterwaveConfig.currency})
                                     </label>
                                     <div className="relative mt-1">
                                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -123,9 +132,10 @@ const WalletPage = () => {
                                 </div>
                                 <button
                                     onClick={handleDeposit}
-                                    className="w-full bg-orange-600 text-white py-2.5 rounded-md hover:bg-orange-700 transition font-semibold"
+                                    className="w-full bg-orange-600 text-white py-2.5 rounded-md hover:bg-orange-700 transition font-semibold disabled:bg-orange-400"
+                                    disabled={isDepositing}
                                 >
-                                    Deposit with Flutterwave
+                                    {isDepositing ? 'Processing...' : 'Deposit with Flutterwave'}
                                 </button>
                             </div>
                         </div>

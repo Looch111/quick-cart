@@ -7,6 +7,7 @@ import * as admin from 'firebase-admin';
 
 let serviceAccount;
 try {
+    // We expect the service account key to be a Base64 encoded string in the environment variables
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
         serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY, 'base64').toString('ascii'));
     } else {
