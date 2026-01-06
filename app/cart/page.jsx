@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { assets } from "@/assets/assets";
 import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
