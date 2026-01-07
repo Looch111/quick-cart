@@ -1,10 +1,10 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { X } from "lucide-react";
 
 const AddAddressModal = () => {
-    const { addAddress, isAddressModalOpen, closeAddressModal } = useAppContext();
+    const { userData, addAddress, isAddressModalOpen, closeAddressModal, updateUserField } = useAppContext();
 
     const [address, setAddress] = useState({
         fullName: '',
@@ -15,6 +15,12 @@ const AddAddressModal = () => {
         state: '',
     });
     const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (isAddressModalOpen && userData) {
+            setAddress(prev => ({ ...prev, fullName: userData.name || '' }));
+        }
+    }, [isAddressModalOpen, userData]);
 
     if (!isAddressModalOpen) {
         return null;
@@ -28,6 +34,12 @@ const AddAddressModal = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSaving(true);
+
+        // If user's name doesn't exist, update it in the profile
+        if (!userData.name && address.fullName) {
+            await updateUserField('name', address.fullName);
+        }
+
         await addAddress(address);
         setIsSaving(false);
         // Reset form for next time
@@ -41,6 +53,8 @@ const AddAddressModal = () => {
         });
     };
 
+    const isNameSet = userData && userData.name;
+
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
             <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg relative">
@@ -52,13 +66,14 @@ const AddAddressModal = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input
-                            className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
+                            className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 disabled:bg-gray-100 disabled:cursor-not-allowed"
                             type="text"
                             name="fullName"
                             placeholder="Full name"
                             onChange={handleInputChange}
                             value={address.fullName}
                             required
+                            disabled={isNameSet}
                         />
                         <input
                             className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
