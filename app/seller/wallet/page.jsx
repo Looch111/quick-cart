@@ -7,9 +7,10 @@ import { useAppContext } from '@/context/AppContext';
 import Loading from '@/components/Loading';
 
 const WalletPage = () => {
-    const { userData, sellerWalletBalance, sellerWalletTransactions, setShowLogin, router, currency, updateSellerBankDetails } = useAppContext();
+    const { userData, sellerWalletBalance, sellerWalletTransactions, setShowLogin, router, currency, updateSellerBankDetails, requestWithdrawal } = useAppContext();
     const [withdrawalAmount, setWithdrawalAmount] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
     const [bankDetails, setBankDetails] = useState({
         accountHolder: '',
         accountNumber: '',
@@ -18,15 +19,15 @@ const WalletPage = () => {
     });
 
     useEffect(() => {
-        if (!userData) {
+        if (userData === null) {
            router.push('/');
            setShowLogin(true);
-        } else if (userData.sellerWallet && userData.sellerWallet.bankDetails) {
+        } else if (userData?.sellerWallet?.bankDetails) {
             setBankDetails(userData.sellerWallet.bankDetails);
         }
     }, [userData, router, setShowLogin]);
 
-    const handleWithdrawal = (e) => {
+    const handleWithdrawal = async (e) => {
         e.preventDefault();
         const amount = parseFloat(withdrawalAmount);
         if (isNaN(amount) || amount <= 0) {
@@ -37,9 +38,17 @@ const WalletPage = () => {
             toast.error("Insufficient balance.");
             return;
         }
-        console.log(`Withdrawal request for ${currency}${amount}`);
-        toast.success(`Successfully requested withdrawal of ${currency}${amount.toFixed(2)}`);
-        setWithdrawalAmount('');
+        if (!bankDetails.accountNumber || !bankDetails.bankName) {
+            toast.error("Please complete your bank details before withdrawing.");
+            return;
+        }
+
+        setIsWithdrawing(true);
+        const success = await requestWithdrawal(amount, bankDetails);
+        if (success) {
+            setWithdrawalAmount('');
+        }
+        setIsWithdrawing(false);
     };
     
     const handleBankDetailsSave = () => {
@@ -51,7 +60,7 @@ const WalletPage = () => {
         setIsEditing(false);
     }
 
-    if (!userData) {
+    if (userData === undefined) {
         return <Loading />;
     }
 
@@ -92,8 +101,8 @@ const WalletPage = () => {
                                         />
                                     </div>
                                 </div>
-                                <button type="submit" className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
-                                    Request Withdrawal
+                                <button type="submit" className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400" disabled={isWithdrawing}>
+                                    {isWithdrawing ? 'Processing...' : 'Request Withdrawal'}
                                 </button>
                             </form>
                         </div>
@@ -110,26 +119,19 @@ const WalletPage = () => {
                                     <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
                                             <th scope="col" className="px-6 py-3">Date</th>
-                                            <th scope="col" className="px-6 py-3">Gross Sale</th>
-                                            <th scope="col" className="px-6 py-3">Commission</th>
-                                            <th scope="col" className="px-6 py-3">Net Earnings</th>
+                                            <th scope="col" className="px-6 py-3">Type</th>
+                                            <th scope="col" className="px-6 py-3 text-right">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {sortedTransactions.map(tx => (
                                             <tr key={tx.id} className="bg-white border-b">
                                                 <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
+                                                <td className="px-6 py-4 capitalize">{tx.type}</td>
                                                 {tx.type === 'Sale' ? (
-                                                    <>
-                                                        <td className="px-6 py-4">{currency}{(tx.grossSale || 0).toFixed(2)}</td>
-                                                        <td className="px-6 py-4 text-red-600">-{currency}{(tx.commission || 0).toFixed(2)}</td>
-                                                        <td className="px-6 py-4 font-medium text-green-600">+{currency}{(tx.netEarnings || 0).toFixed(2)}</td>
-                                                    </>
+                                                    <td className="px-6 py-4 font-medium text-green-600 text-right">+{currency}{(tx.netEarnings || 0).toFixed(2)}</td>
                                                 ) : (
-                                                    <>
-                                                        <td colSpan="2" className="px-6 py-4 italic">{tx.type}</td>
-                                                        <td className="px-6 py-4 font-medium text-red-600">-{currency}{Math.abs(tx.amount || 0).toFixed(2)}</td>
-                                                    </>
+                                                    <td className="px-6 py-4 font-medium text-red-600 text-right">-{currency}{Math.abs(tx.amount || 0).toFixed(2)}</td>
                                                 )}
                                             </tr>
                                         ))}
@@ -186,3 +188,5 @@ const WalletPage = () => {
 };
 
 export default WalletPage;
+
+    

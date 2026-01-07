@@ -675,6 +675,40 @@ export const AppContextProvider = (props) => {
         }
     };
     
+    const requestWithdrawal = async (amount, bankDetails) => {
+        if (!userData || !isSeller) {
+            toast.error("You are not authorized to perform this action.");
+            return false;
+        }
+
+        try {
+            const response = await fetch('/api/withdraw', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount,
+                    bankDetails,
+                    userId: userData._id
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                toast.success('Withdrawal successful! The funds are on their way.');
+                return true;
+            } else {
+                toast.error(result.message || 'Withdrawal failed. Please try again.');
+                return false;
+            }
+        } catch (error) {
+            console.error("Withdrawal API call failed:", error);
+            toast.error("Failed to connect to withdrawal service.");
+            return false;
+        }
+    };
 
     const updateUserField = async (field, value) => {
         if (!userData) {
@@ -909,7 +943,8 @@ export const AppContextProvider = (props) => {
         verifyFlutterwaveTransaction,
         placeOrderWithWallet,
         isSizeModalOpen, openSizeModal, closeSizeModal, productForSizeSelection,
-        reverseSellerPayouts
+        reverseSellerPayouts,
+        requestWithdrawal
     }
 
     return (
@@ -921,4 +956,4 @@ export const AppContextProvider = (props) => {
 
     
 
-
+    
