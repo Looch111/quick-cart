@@ -6,7 +6,7 @@ import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
 import { useFirestore } from "@/src/firebase";
-import { doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, writeBatch } from 'firebase/firestore';
 import toast from "react-hot-toast";
 
 const getStatusClass = (status) => {
