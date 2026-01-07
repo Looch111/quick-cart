@@ -3,22 +3,27 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { X } from "lucide-react";
 
+const halls = ["Hall A", "Hall B", "Hall C", "Hall D", "Hall E", "Hall F", "Hall G", "Hall H"];
+
 const AddAddressModal = () => {
     const { userData, addAddress, isAddressModalOpen, closeAddressModal, updateUserField } = useAppContext();
 
     const [address, setAddress] = useState({
         fullName: '',
         phoneNumber: '',
-        pincode: '',
-        area: '',
-        city: '',
-        state: '',
+        hall: halls[0],
+        roomNumber: '',
     });
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (isAddressModalOpen && userData) {
-            setAddress(prev => ({ ...prev, fullName: userData.name || '' }));
+            setAddress(prev => ({ 
+                ...prev, 
+                fullName: userData.name || '',
+                hall: halls[0],
+                roomNumber: '',
+            }));
         }
     }, [isAddressModalOpen, userData]);
 
@@ -46,10 +51,8 @@ const AddAddressModal = () => {
         setAddress({
             fullName: '',
             phoneNumber: '',
-            pincode: '',
-            area: '',
-            city: '',
-            state: '',
+            hall: halls[0],
+            roomNumber: '',
         });
     };
 
@@ -61,7 +64,7 @@ const AddAddressModal = () => {
                 <button onClick={closeAddressModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <X className="h-6 w-6" />
                 </button>
-                <h1 className="text-2xl font-bold text-gray-800 mb-4">Add Shipping Address</h1>
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">Add Delivery Address</h1>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -85,41 +88,25 @@ const AddAddressModal = () => {
                             required
                         />
                     </div>
-                     <textarea
-                        className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 resize-none"
-                        name="area"
-                        rows={3}
-                        placeholder="Address (Area and Street)"
-                        onChange={handleInputChange}
-                        value={address.area}
-                        required
-                    ></textarea>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                         <input
-                            className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
-                            type="text"
-                            name="city"
-                            placeholder="City/District/Town"
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select
+                            name="hall"
+                            value={address.hall}
                             onChange={handleInputChange}
-                            value={address.city}
+                            className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
                             required
-                        />
+                        >
+                            {halls.map(hall => (
+                                <option key={hall} value={hall}>{hall}</option>
+                            ))}
+                        </select>
                         <input
                             className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
                             type="text"
-                            name="state"
-                            placeholder="State"
+                            name="roomNumber"
+                            placeholder="Room number"
                             onChange={handleInputChange}
-                            value={address.state}
-                            required
-                        />
-                        <input
-                            className="px-3 py-2.5 focus:border-orange-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700"
-                            type="text"
-                            name="pincode"
-                            placeholder="Pin code"
-                            onChange={handleInputChange}
-                            value={address.pincode}
+                            value={address.roomNumber}
                             required
                         />
                     </div>

@@ -98,7 +98,7 @@ const Orders = () => {
                                         <td className="px-6 py-4">{new Date(item.orderDate).toLocaleDateString()}</td>
                                         <td className="px-6 py-4">
                                             <p className="font-medium">{item.address.fullName}</p>
-                                            <p className="text-xs text-gray-500">{item.address.city}</p>
+                                            <p className="text-xs text-gray-500">{item.address.hall}, Room {item.address.roomNumber}</p>
                                         </td>
                                         <td className="px-6 py-4 font-medium">{currency}{(item.offerPrice * item.quantity).toFixed(2)}</td>
                                         <td className="px-6 py-4">

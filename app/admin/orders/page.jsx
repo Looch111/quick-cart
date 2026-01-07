@@ -162,7 +162,7 @@ const Orders = () => {
                                         <td className="px-6 py-4">
                                             <div>
                                                 <p className="font-medium text-gray-800">{order.address.fullName}</p>
-                                                <p className="text-gray-500">{order.address.city}</p>
+                                                <p className="text-gray-500">{order.address.hall}, Room {order.address.roomNumber}</p>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">{currency}{order.amount.toFixed(2)}</td>

@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { User, Mail, Save, PlusCircle, Home, Phone, Edit } from 'lucide-react';
+import { User, Mail, Save, PlusCircle, Home, Phone, Edit, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AvatarSelectionModal from '@/components/AvatarSelectionModal';
@@ -137,14 +137,14 @@ const ManageAccount = () => {
 
                          <div className="lg:col-span-1">
                             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Shipping Addresses</h3>
+                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Delivery Addresses</h3>
                                 <div className="space-y-4">
                                     {userAddresses.length > 0 ? userAddresses.map(addr => (
                                         <div key={addr._id} className="border-b pb-4">
                                             <p className="font-semibold">{addr.fullName}</p>
                                             <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                                                <Home className="w-4 h-4 text-gray-400" />
-                                                <span>{`${addr.area}, ${addr.city}, ${addr.state} ${addr.pincode}`}</span>
+                                                <MapPin className="w-4 h-4 text-gray-400" />
+                                                <span>{`${addr.hall}, Room ${addr.roomNumber}`}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                                                 <Phone className="w-4 h-4 text-gray-400" />
