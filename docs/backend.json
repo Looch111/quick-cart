@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "user": {
@@ -39,6 +40,11 @@
         "wishlistItems": {
             "type": "object",
             "description": "A map of product IDs in the user's wishlist."
+        },
+        "purchasedProducts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "An array of product IDs that the user has purchased."
         },
         "walletBalance": {
           "type": "number",
@@ -116,9 +122,25 @@
           "type": "string",
           "enum": ["pending", "approved", "rejected"],
           "description": "The approval status of the product."
-        }
+        },
+        "averageRating": { "type": "number" },
+        "reviewCount": { "type": "number" }
       },
       "required": ["name", "price", "offerPrice", "image", "category", "stock", "userId", "status"]
+    },
+    "review": {
+      "title": "Review",
+      "description": "A product review from a user.",
+      "type": "object",
+      "properties": {
+          "userId": { "type": "string" },
+          "userName": { "type": "string" },
+          "userPhotoURL": { "type": "string", "format": "uri" },
+          "rating": { "type": "number" },
+          "comment": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "rating", "comment", "createdAt"]
     },
     "order": {
       "title": "Order",
@@ -228,6 +250,10 @@
     "/products/{productId}": {
       "schema": { "$ref": "#/entities/product" },
       "description": "Stores all products available in the store."
+    },
+     "/products/{productId}/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/review" },
+      "description": "Stores reviews for a specific product."
     },
     "/orders/{orderId}": {
       "schema": { "$ref": "#/entities/order" },

@@ -103,6 +103,7 @@ export const AppContextProvider = (props) => {
               role: 'buyer',
               cartItems: {},
               wishlistItems: {},
+              purchasedProducts: [],
               walletBalance: 0,
               walletTransactions: [],
               sellerWallet: {
@@ -163,6 +164,51 @@ export const AppContextProvider = (props) => {
             setUserOrders([]);
         }
     }, [userData, firestore]);
+
+    const addProductReview = async (productId, rating, comment) => {
+        if (!userData) {
+            toast.error("You must be logged in to leave a review.");
+            setShowLogin(true);
+            return;
+        }
+
+        const reviewRef = doc(collection(firestore, `products/${productId}/reviews`));
+        const productRef = doc(firestore, 'products', productId);
+
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const productDoc = await transaction.get(productRef);
+                if (!productDoc.exists()) {
+                    throw "Product not found!";
+                }
+
+                const productData = productDoc.data();
+                const oldReviewCount = productData.reviewCount || 0;
+                const oldAverageRating = productData.averageRating || 0;
+
+                const newReviewCount = oldReviewCount + 1;
+                const newAverageRating = ((oldAverageRating * oldReviewCount) + rating) / newReviewCount;
+
+                transaction.set(reviewRef, {
+                    userId: userData._id,
+                    userName: userData.name,
+                    userPhotoURL: userData.photoURL,
+                    rating: rating,
+                    comment: comment,
+                    createdAt: serverTimestamp()
+                });
+
+                transaction.update(productRef, {
+                    reviewCount: newReviewCount,
+                    averageRating: newAverageRating
+                });
+            });
+            toast.success("Review submitted successfully!");
+        } catch (error) {
+            console.error("Error submitting review: ", error);
+            toast.error("Failed to submit review.");
+        }
+    };
 
     const updateSettings = async (newSettings) => {
         if (!isAdmin) {
@@ -276,7 +322,9 @@ export const AppContextProvider = (props) => {
             ...productData,
             userId: userData._id,
             date: serverTimestamp(),
-            status: isAdmin ? 'approved' : 'pending'
+            status: isAdmin ? 'approved' : 'pending',
+            reviewCount: 0,
+            averageRating: 0
         });
         toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
     }
@@ -420,6 +468,7 @@ export const AppContextProvider = (props) => {
         try {
             const orderItems = [];
             const updatedCartItems = { ...cartItems };
+            const purchasedProductIds = [];
 
             for (const itemId in itemsToOrder) {
                 const [productId, size] = itemId.split('_');
@@ -439,6 +488,7 @@ export const AppContextProvider = (props) => {
                     status: 'Processing',
                     sellerId: product.userId
                 });
+                purchasedProductIds.push(productId);
                 
                 const productRef = doc(firestore, 'products', productId);
                 if (size) {
@@ -467,7 +517,10 @@ export const AppContextProvider = (props) => {
             batch.set(newOrderRef, newOrderData);
 
             const userDocRef = doc(firestore, 'users', userData._id);
-            batch.update(userDocRef, { cartItems: updatedCartItems });
+            batch.update(userDocRef, { 
+                cartItems: updatedCartItems,
+                purchasedProducts: arrayUnion(...purchasedProductIds)
+             });
 
             await batch.commit();
             await generateNotifications(newOrderData, newOrderRef.id);
@@ -492,6 +545,7 @@ export const AppContextProvider = (props) => {
         try {
             const orderItems = [];
             const updatedCartItems = { ...cartItems };
+            const purchasedProductIds = [];
 
             for (const itemId in itemsToOrder) {
                 const [productId, size] = itemId.split('_');
@@ -511,6 +565,7 @@ export const AppContextProvider = (props) => {
                     status: 'Processing',
                     sellerId: product.userId
                 });
+                purchasedProductIds.push(productId);
 
                 const productRef = doc(firestore, 'products', productId);
                 if (size) {
@@ -547,7 +602,8 @@ export const AppContextProvider = (props) => {
             batch.update(userDocRef, {
                 cartItems: updatedCartItems,
                 walletBalance: increment(-totalAmount),
-                walletTransactions: arrayUnion(newTransaction)
+                walletTransactions: arrayUnion(newTransaction),
+                purchasedProducts: arrayUnion(...purchasedProductIds)
             });
             await batch.commit();
             await generateNotifications(newOrderData, newOrderRef.id);
@@ -944,7 +1000,8 @@ export const AppContextProvider = (props) => {
         placeOrderWithWallet,
         isSizeModalOpen, openSizeModal, closeSizeModal, productForSizeSelection,
         reverseSellerPayouts,
-        requestWithdrawal
+        requestWithdrawal,
+        addProductReview
     }
 
     return (

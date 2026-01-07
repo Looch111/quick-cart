@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
@@ -80,6 +81,8 @@ const AddProduct = () => {
         stock: stock,
         sizes: productSizes,
         flashSaleEndDate: flashSaleEndDate || null,
+        reviewCount: 0,
+        averageRating: 0
     }
 
     if(productData.image.length === 0) {

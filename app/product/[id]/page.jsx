@@ -11,12 +11,14 @@ import { useAppContext } from "@/context/AppContext";
 import React from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { useCollection } from "@/src/firebase";
+import { User, Send } from "lucide-react";
 
-const StarRating = ({ rating, onRatingChange }) => {
+const StarRating = ({ rating, onRatingChange, isInteractive = true }) => {
     const [hoverRating, setHoverRating] = useState(0);
 
     const handleRating = (rate) => {
-        onRatingChange(rate);
+        if (isInteractive) onRatingChange(rate);
     };
 
     return (
@@ -25,9 +27,10 @@ const StarRating = ({ rating, onRatingChange }) => {
                 <button
                     key={star}
                     onClick={() => handleRating(star)}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    className="focus:outline-none"
+                    onMouseEnter={() => isInteractive && setHoverRating(star)}
+                    onMouseLeave={() => isInteractive && setHoverRating(0)}
+                    className={`focus:outline-none ${isInteractive ? 'cursor-pointer' : 'cursor-default'}`}
+                    disabled={!isInteractive}
                 >
                     <Image
                         className="h-5 w-5"
@@ -42,6 +45,106 @@ const StarRating = ({ rating, onRatingChange }) => {
     );
 };
 
+const ReviewForm = ({ productId }) => {
+    const { addProductReview, userData } = useAppContext();
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const hasPurchased = userData?.purchasedProducts?.includes(productId);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (rating === 0) {
+            toast.error("Please select a rating.");
+            return;
+        }
+        if (!comment) {
+            toast.error("Please enter a comment.");
+            return;
+        }
+        setIsSubmitting(true);
+        await addProductReview(productId, rating, comment);
+        setRating(0);
+        setComment("");
+        setIsSubmitting(false);
+    };
+
+    if (!userData) {
+        return <p className="text-sm text-gray-500 bg-gray-100 p-4 rounded-md">Please log in to write a review.</p>;
+    }
+    
+    if (!hasPurchased) {
+        return (
+            <div className="text-sm text-gray-500 bg-gray-100 p-4 rounded-md">
+                <p>You can only review products you have purchased.</p>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="p-4 border rounded-lg bg-gray-50">
+            <h3 className="font-semibold text-lg mb-2">Write a Review</h3>
+            <div className="mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Rating</label>
+                <StarRating rating={rating} onRatingChange={setRating} />
+            </div>
+            <div className="mb-4">
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
+                <textarea
+                    className="w-full p-2 border rounded-md focus:ring-orange-500 focus:border-orange-500"
+                    rows="3"
+                    placeholder="Share your thoughts..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                ></textarea>
+            </div>
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:bg-orange-300"
+            >
+                <Send className="w-4 h-4" />
+                {isSubmitting ? "Submitting..." : "Submit Review"}
+            </button>
+        </form>
+    );
+};
+
+const ReviewsList = ({ productId }) => {
+    const { data: reviews, loading } = useCollection(`products/${productId}/reviews`, {
+        orderBy: ['createdAt', 'desc']
+    });
+
+    if (loading) return <p>Loading reviews...</p>;
+    if (reviews.length === 0) return <p className="text-sm text-gray-500">No reviews yet.</p>;
+
+    return (
+        <div className="space-y-6">
+            {reviews.map(review => (
+                <div key={review.id} className="flex gap-4 border-b pb-6 last:border-b-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                         {review.userPhotoURL ? (
+                            <Image src={review.userPhotoURL} alt={review.userName} width={40} height={40} className="object-cover" />
+                        ) : (
+                            <User className="w-6 h-6 text-gray-500" />
+                        )}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-4">
+                            <p className="font-semibold">{review.userName}</p>
+                            <p className="text-xs text-gray-400">{new Date(review.createdAt?.toDate()).toLocaleDateString()}</p>
+                        </div>
+                        <div className="my-1">
+                            <StarRating rating={review.rating} isInteractive={false} />
+                        </div>
+                        <p className="text-gray-600 text-sm">{review.comment}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const Product = () => {
     const params = useParams();
@@ -50,7 +153,6 @@ const Product = () => {
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
-    const [userRating, setUserRating] = useState(4);
     const [currentTime, setCurrentTime] = useState(new Date());
 
 
@@ -159,8 +261,8 @@ const Product = () => {
                         {productData.name}
                     </h1>
                     <div className="flex items-center gap-2">
-                        <StarRating rating={userRating} onRatingChange={setUserRating} />
-                        <p className="text-gray-600">({userRating}.0)</p>
+                        <StarRating rating={productData.averageRating || 0} isInteractive={false} />
+                        <p className="text-gray-600">({productData.reviewCount || 0} reviews)</p>
                     </div>
                     <p className="text-gray-600 mt-3">
                         {productData.description}
@@ -235,6 +337,18 @@ const Product = () => {
                     </div>
                 </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10">
+                <div>
+                    <h2 className="text-2xl font-semibold mb-6">Customer Reviews</h2>
+                    <ReviewsList productId={productId} />
+                </div>
+                <div>
+                     <h2 className="text-2xl font-semibold mb-6">Leave a Review</h2>
+                    <ReviewForm productId={productId} />
+                </div>
+            </div>
+
             <div className="flex flex-col items-center">
                 <div className="flex flex-col items-center mb-4 mt-16">
                     <p className="text-3xl font-medium">Related <span className="font-medium text-orange-600">Products</span></p>
