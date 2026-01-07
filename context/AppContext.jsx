@@ -413,7 +413,7 @@ export const AppContextProvider = (props) => {
     
     const generateNotifications = async (order, orderId) => {
         const adminUsers = usersData.filter(u => u.role === 'admin');
-        const sellerIds = [...new Set(order.items.map(item => item.userId))];
+        const sellerIds = [...new Set(order.items.map(item => item.sellerId))];
     
         const notifications = [];
     
@@ -1019,6 +1019,7 @@ export const AppContextProvider = (props) => {
     
 
     
+
 
 
 
