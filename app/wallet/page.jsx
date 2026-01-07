@@ -39,7 +39,7 @@ const WalletPage = () => {
         customizations: {
             title: 'Wallet Deposit',
             description: 'Add funds to your QuickCart wallet',
-            logo: 'https://imgur.com/JCoOWiK.png',
+            logo: 'https://i.imgur.com/JCoOWiK.png',
         },
     };
 
