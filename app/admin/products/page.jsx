@@ -112,8 +112,15 @@ const ProductList = () => {
         }))
         .filter(product =>
             product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.poster?.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+            (product.poster && product.poster.name && product.poster.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        .sort((a, b) => {
+            const statusOrder = { 'pending': 0, 'approved': 1, 'rejected': 2 };
+            if (statusOrder[a.status] !== statusOrder[b.status]) {
+                return statusOrder[a.status] - statusOrder[b.status];
+            }
+            return new Date(b.date) - new Date(a.date);
+        });
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between">
