@@ -1,4 +1,5 @@
 
+
 'use client'
 import { useState, useEffect, useMemo, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
@@ -142,7 +143,7 @@ const AllProducts = () => {
                             type="text"
                             placeholder="Min"
                             value={priceRange.min}
-                            onChange={e => setPriceRange({ ...priceRange, min: e.target.value.replace(/[^0-9.]/g, '') })}
+                            onChange={e => setPriceRange({ ...priceRange, min: e.target.value })}
                             className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
                         />
                     </div>
@@ -153,7 +154,7 @@ const AllProducts = () => {
                             type="text"
                             placeholder="Max"
                             value={priceRange.max}
-                            onChange={e => setPriceRange({ ...priceRange, max: e.target.value.replace(/[^0-9.]/g, '') })}
+                            onChange={e => setPriceRange({ ...priceRange, max: e.target.value })}
                             className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
                         />
                     </div>
