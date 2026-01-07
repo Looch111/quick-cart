@@ -120,6 +120,36 @@ const AllProducts = () => {
         setSortBy('newest');
     };
 
+    const PriceInput = ({ value, onChange }) => {
+        const [inputValue, setInputValue] = useState(value);
+    
+        useEffect(() => {
+            setInputValue(value);
+        }, [value]);
+    
+        const handleBlur = () => {
+            onChange(inputValue);
+        };
+    
+        const handleKeyDown = (e) => {
+            if (e.key === 'Enter') {
+                onChange(inputValue);
+                e.target.blur();
+            }
+        };
+    
+        return (
+            <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value.replace(/[^0-9.]/g, ''))}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
+            />
+        );
+    };
+
     const FilterSidebar = () => (
         <div className="lg:w-64 xl:w-72 space-y-6">
             {/* Sort By */}
@@ -139,23 +169,17 @@ const AllProducts = () => {
                  <div className="flex items-center gap-2">
                     <div className="relative w-full">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
-                        <input
-                            type="text"
-                            placeholder="Min"
+                        <PriceInput
                             value={priceRange.min}
-                            onChange={e => setPriceRange({ ...priceRange, min: e.target.value })}
-                            className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
+                            onChange={(val) => setPriceRange(prev => ({ ...prev, min: val }))}
                         />
                     </div>
                     <span className="text-gray-500">-</span>
                      <div className="relative w-full">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
-                        <input
-                            type="text"
-                            placeholder="Max"
+                         <PriceInput
                             value={priceRange.max}
-                            onChange={e => setPriceRange({ ...priceRange, max: e.target.value })}
-                            className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
+                            onChange={(val) => setPriceRange(prev => ({ ...prev, max: val }))}
                         />
                     </div>
                 </div>
@@ -259,3 +283,5 @@ const AllProducts = () => {
 };
 
 export default AllProducts;
+
+    
