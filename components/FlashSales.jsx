@@ -1,3 +1,4 @@
+
 'use client'
 import React from "react";
 import ProductCard from "./ProductCard";
@@ -27,11 +28,11 @@ const FlashSales = () => {
                 {flashSaleProducts.map((product, index) => <ProductCard key={index} product={product} />)}
             </div>
             <div className="flex items-center gap-4">
-                <button onClick={() => { router.push('/all-products') }} className="px-12 py-2.5 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">
+                <button onClick={() => { router.push('/all-products') }} className="px-6 md:px-12 py-2.5 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">
                     View All Deals
                 </button>
                 {userData?.role === 'admin' && (
-                    <button onClick={() => router.push('/admin/promotions')} className="px-12 py-2.5 border rounded text-white bg-orange-600 hover:bg-orange-700 transition">
+                    <button onClick={() => router.push('/admin/promotions')} className="px-6 md:px-12 py-2.5 border rounded text-white bg-orange-600 hover:bg-orange-700 transition">
                         Manage Promotions
                     </button>
                 )}
