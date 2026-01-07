@@ -10,6 +10,24 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 
+// Custom hook for debouncing
+const useDebounce = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+};
+
+
 const SearchFocus = ({ searchInputRef }) => {
     const searchParams = useSearchParams();
     const focus = searchParams.get('focus');
@@ -32,6 +50,9 @@ const AllProducts = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const searchInputRef = useRef(null);
 
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+    const debouncedPriceRange = useDebounce(priceRange, 500);
+
     const categories = useMemo(() => {
         const allCategories = products.map(p => p.category);
         return [...new Set(allCategories)];
@@ -49,9 +70,9 @@ const AllProducts = () => {
         let filtered = [...products];
 
         // Search term filter
-        if (searchTerm) {
+        if (debouncedSearchTerm) {
             filtered = filtered.filter(p =>
-                p.name.toLowerCase().includes(searchTerm.toLowerCase())
+                p.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
             );
         }
 
@@ -63,8 +84,8 @@ const AllProducts = () => {
         // Price range filter
         filtered = filtered.filter(p => {
             const price = p.flashSalePrice > 0 && new Date(p.flashSaleEndDate) > new Date() ? p.flashSalePrice : p.offerPrice;
-            const minPrice = priceRange.min !== '' ? parseFloat(priceRange.min) : 0;
-            const maxPrice = priceRange.max !== '' ? parseFloat(priceRange.max) : Infinity;
+            const minPrice = debouncedPriceRange.min !== '' ? parseFloat(debouncedPriceRange.min) : 0;
+            const maxPrice = debouncedPriceRange.max !== '' ? parseFloat(debouncedPriceRange.max) : Infinity;
             return price >= minPrice && price <= maxPrice;
         });
 
@@ -89,7 +110,7 @@ const AllProducts = () => {
         }
 
         return filtered;
-    }, [products, searchTerm, categoryFilter, priceRange, sortBy]);
+    }, [products, debouncedSearchTerm, categoryFilter, debouncedPriceRange, sortBy]);
     
     const resetFilters = () => {
         setSearchTerm('');
@@ -118,7 +139,8 @@ const AllProducts = () => {
                     <div className="relative w-full">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
                         <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             placeholder="Min"
                             value={priceRange.min}
                             onChange={e => setPriceRange({ ...priceRange, min: e.target.value })}
@@ -129,7 +151,8 @@ const AllProducts = () => {
                      <div className="relative w-full">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
                         <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             placeholder="Max"
                             value={priceRange.max}
                             onChange={e => setPriceRange({ ...priceRange, max: e.target.value })}
