@@ -52,7 +52,7 @@ const AdminDashboard = () => {
     }, 0);
 
 
-    const recentOrders = allOrders.slice(0, 5);
+    const recentOrders = [...allOrders].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
 
     const processChartData = () => {
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -195,3 +195,5 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+    
