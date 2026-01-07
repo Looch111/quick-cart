@@ -27,7 +27,7 @@ const AllProducts = () => {
     const { products, currency } = useAppContext();
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState([]);
-    const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 });
+    const [priceRange, setPriceRange] = useState({ min: '', max: '' });
     const [sortBy, setSortBy] = useState('newest');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const searchInputRef = useRef(null);
@@ -62,8 +62,10 @@ const AllProducts = () => {
 
         // Price range filter
         filtered = filtered.filter(p => {
-             const price = p.flashSalePrice > 0 && new Date(p.flashSaleEndDate) > new Date() ? p.flashSalePrice : p.offerPrice;
-             return price >= priceRange.min && price <= priceRange.max;
+            const price = p.flashSalePrice > 0 && new Date(p.flashSaleEndDate) > new Date() ? p.flashSalePrice : p.offerPrice;
+            const minPrice = priceRange.min !== '' ? parseFloat(priceRange.min) : 0;
+            const maxPrice = priceRange.max !== '' ? parseFloat(priceRange.max) : Infinity;
+            return price >= minPrice && price <= maxPrice;
         });
 
         // Sorting
@@ -92,7 +94,7 @@ const AllProducts = () => {
     const resetFilters = () => {
         setSearchTerm('');
         setCategoryFilter([]);
-        setPriceRange({ min: 0, max: 2000 });
+        setPriceRange({ min: '', max: '' });
         setSortBy('newest');
     };
 
@@ -112,18 +114,29 @@ const AllProducts = () => {
             {/* Price Range */}
             <div>
                 <h3 className="font-semibold mb-2">Price Range</h3>
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                    <span>{currency}{priceRange.min}</span>
-                    <span>{currency}{priceRange.max}</span>
+                 <div className="flex items-center gap-2">
+                    <div className="relative w-full">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
+                        <input
+                            type="number"
+                            placeholder="Min"
+                            value={priceRange.min}
+                            onChange={e => setPriceRange({ ...priceRange, min: e.target.value })}
+                            className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
+                        />
+                    </div>
+                    <span className="text-gray-500">-</span>
+                     <div className="relative w-full">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
+                        <input
+                            type="number"
+                            placeholder="Max"
+                            value={priceRange.max}
+                            onChange={e => setPriceRange({ ...priceRange, max: e.target.value })}
+                            className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
+                        />
+                    </div>
                 </div>
-                <input
-                    type="range"
-                    min="0"
-                    max="2000"
-                    value={priceRange.max}
-                    onChange={e => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
             </div>
 
             {/* Categories */}
