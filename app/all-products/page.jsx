@@ -140,7 +140,6 @@ const AllProducts = () => {
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
                         <input
                             type="text"
-                            inputMode="decimal"
                             placeholder="Min"
                             value={priceRange.min}
                             onChange={e => setPriceRange({ ...priceRange, min: e.target.value })}
@@ -152,7 +151,6 @@ const AllProducts = () => {
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">{currency}</span>
                         <input
                             type="text"
-                            inputMode="decimal"
                             placeholder="Max"
                             value={priceRange.max}
                             onChange={e => setPriceRange({ ...priceRange, max: e.target.value })}
