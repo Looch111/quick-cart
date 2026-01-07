@@ -120,7 +120,7 @@ const AllProducts = () => {
         setSortBy('newest');
     };
 
-    const PriceInput = ({ value, onChange }) => {
+    const PriceInput = ({ value, onChange, onEnter }) => {
         const [inputValue, setInputValue] = useState(value);
     
         useEffect(() => {
@@ -135,6 +135,7 @@ const AllProducts = () => {
             if (e.key === 'Enter') {
                 onChange(inputValue);
                 e.target.blur();
+                if (onEnter) onEnter();
             }
         };
     
@@ -172,6 +173,7 @@ const AllProducts = () => {
                         <PriceInput
                             value={priceRange.min}
                             onChange={(val) => setPriceRange(prev => ({ ...prev, min: val }))}
+                            onEnter={() => setIsFilterOpen(false)}
                         />
                     </div>
                     <span className="text-gray-500">-</span>
@@ -180,6 +182,7 @@ const AllProducts = () => {
                          <PriceInput
                             value={priceRange.max}
                             onChange={(val) => setPriceRange(prev => ({ ...prev, max: val }))}
+                            onEnter={() => setIsFilterOpen(false)}
                         />
                     </div>
                 </div>
