@@ -294,7 +294,7 @@ const Product = () => {
                     )}
                     <hr className="bg-gray-600 my-6" />
                     <div className="overflow-x-auto">
-                        <table className="table-auto border-collapse w-full max-w-72">
+                        <table className="table-auto border-collapse w-full max-w-sm">
                             <tbody>
                                 <tr>
                                     <td className="text-gray-600 font-medium pr-4 py-1">Brand</td>
@@ -316,6 +316,14 @@ const Product = () => {
                                         {isOutOfStock ? "Out of Stock" : "In Stock"}
                                     </td>
                                 </tr>
+                                {productData.deliveryInfo && (
+                                <tr>
+                                    <td className="text-gray-600 font-medium pr-4 py-1">Delivery</td>
+                                    <td className="font-medium text-gray-800/80 py-1">
+                                       {productData.deliveryInfo}
+                                    </td>
+                                </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

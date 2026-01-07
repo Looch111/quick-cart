@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
@@ -167,6 +168,17 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                             rows={4}
                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
                             value={productData.description}
+                            onChange={handleChange}
+                        />
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Information</label>
+                        <input
+                            type="text"
+                            name="deliveryInfo"
+                            placeholder="e.g., 2-3 business days"
+                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value={productData.deliveryInfo}
                             onChange={handleChange}
                         />
                     </div>

@@ -326,9 +326,7 @@ export const AppContextProvider = (props) => {
             ...productData,
             userId: userData._id,
             date: serverTimestamp(),
-            status: isAdmin ? 'approved' : 'pending',
-            reviewCount: 0,
-            averageRating: 0
+            status: isAdmin ? 'approved' : 'pending'
         });
         toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
     }
@@ -1019,6 +1017,7 @@ export const AppContextProvider = (props) => {
     
 
     
+
 
 
 

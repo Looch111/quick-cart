@@ -116,6 +116,7 @@
           "description": "A map of available sizes to their stock quantity.",
           "additionalProperties": { "type": "number" }
         },
+        "deliveryInfo": { "type": "string", "description": "Information about product delivery timeframes, e.g., '2-3 business days'." },
         "userId": { "type": "string", "description": "The UID of the seller who owns this product." },
         "flashSaleEndDate": { "type": "string", "format": "date-time", "description": "The date and time when the flash sale ends." },
         "status": {

@@ -22,6 +22,7 @@ const AddProduct = () => {
   const [flashSaleEndDate, setFlashSaleEndDate] = useState('');
   const [hasSizes, setHasSizes] = useState(false);
   const [totalStock, setTotalStock] = useState('');
+  const [deliveryInfo, setDeliveryInfo] = useState('');
 
 
   const handleImageUrlChange = (index, value) => {
@@ -81,6 +82,7 @@ const AddProduct = () => {
         stock: stock,
         sizes: productSizes,
         flashSaleEndDate: flashSaleEndDate || null,
+        deliveryInfo: deliveryInfo,
         reviewCount: 0,
         averageRating: 0
     }
@@ -104,6 +106,7 @@ const AddProduct = () => {
     setTotalStock('');
     setFlashSaleEndDate('');
     setHasSizes(false);
+    setDeliveryInfo('');
   };
   
   const getImageUrl = (url) => {
@@ -178,6 +181,19 @@ const AddProduct = () => {
             value={description}
             required
           ></textarea>
+        </div>
+        <div className="flex flex-col gap-1 max-w-md">
+          <label className="text-base font-medium" htmlFor="delivery-info">
+            Delivery Information
+          </label>
+          <input
+            id="delivery-info"
+            type="text"
+            placeholder="e.g., 2-3 business days"
+            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+            onChange={(e) => setDeliveryInfo(e.target.value)}
+            value={deliveryInfo}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
