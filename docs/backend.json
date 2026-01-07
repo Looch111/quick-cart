@@ -68,12 +68,13 @@
                         "type": "object",
                         "properties": {
                             "id": { "type": "string" },
-                            "type": { "type": "string", "enum": ["Withdrawal", "Sale"] },
+                            "type": { "type": "string", "enum": ["Withdrawal", "Sale", "Reversal"] },
                             "date": { "type": "string", "format": "date-time" },
                             "orderId": { "type": "string" },
                             "grossSale": { "type": "number" },
                             "commission": { "type": "number" },
-                            "netEarnings": { "type": "number" }
+                            "netEarnings": { "type": "number" },
+                            "amount": { "type": "number" }
                         }
                     }
                 },

@@ -623,6 +623,59 @@ export const AppContextProvider = (props) => {
         return true;
     }
 
+    const reverseSellerPayouts = async (order) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        if (order.status !== 'Delivered') {
+            toast.error("Cannot reverse payout for an order that is not marked as delivered.");
+            return;
+        }
+    
+        const batch = writeBatch(firestore);
+        const sellerIds = [...new Set(order.items.map(item => item.sellerId))];
+    
+        for (const sellerId of sellerIds) {
+            if (!sellerId) continue;
+            const sellerRef = doc(firestore, 'users', sellerId);
+            const sellerSnap = await getDoc(sellerRef);
+    
+            if (sellerSnap.exists()) {
+                const sellerData = sellerSnap.data();
+                const originalTx = sellerData.sellerWallet.transactions.find(tx => tx.orderId === order._id && tx.type === 'Sale');
+    
+                if (originalTx) {
+                    const reversalTx = {
+                        id: `txn_reversal_${order._id.slice(-6)}_${Date.now()}`,
+                        type: 'Reversal',
+                        amount: -originalTx.netEarnings,
+                        date: new Date().toISOString(),
+                        orderId: order._id,
+                    };
+                    
+                    batch.update(sellerRef, {
+                        'sellerWallet.balance': increment(-originalTx.netEarnings),
+                        'sellerWallet.transactions': arrayUnion(reversalTx)
+                    });
+                }
+            }
+        }
+    
+        // Finally, update the order status back to 'Shipped'
+        const orderRef = doc(firestore, 'orders', order._id);
+        batch.update(orderRef, { status: 'Shipped' });
+    
+        try {
+            await batch.commit();
+            toast.success("Seller payouts reversed and order status updated.");
+        } catch (error) {
+            console.error("Error reversing payout: ", error);
+            toast.error("Failed to reverse payout.");
+        }
+    };
+    
+
     const updateUserField = async (field, value) => {
         if (!userData) {
             toast.error("Please log in to update your profile.");
@@ -855,7 +908,8 @@ export const AppContextProvider = (props) => {
         platformSettings, updateSettings, settingsLoading,
         verifyFlutterwaveTransaction,
         placeOrderWithWallet,
-        isSizeModalOpen, openSizeModal, closeSizeModal, productForSizeSelection
+        isSizeModalOpen, openSizeModal, closeSizeModal, productForSizeSelection,
+        reverseSellerPayouts
     }
 
     return (
@@ -866,4 +920,5 @@ export const AppContextProvider = (props) => {
 }
 
     
+
 

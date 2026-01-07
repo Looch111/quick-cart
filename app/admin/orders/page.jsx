@@ -4,13 +4,17 @@ import { useAppContext } from "@/context/AppContext";
 import Loading from "@/components/Loading";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { RotateCcw } from "lucide-react";
+import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
 
 const Orders = () => {
 
-    const { currency, updateOrderStatus, allOrders, productsLoading } = useAppContext();
+    const { currency, updateOrderStatus, allOrders, productsLoading, reverseSellerPayouts } = useAppContext();
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showReverseModal, setShowReverseModal] = useState(false);
+    const [orderToReverse, setOrderToReverse] = useState(null);
 
     useEffect(() => {
         if (!productsLoading) {
@@ -27,6 +31,24 @@ const Orders = () => {
             toast.error("Failed to update status");
         }
     }
+
+    const handleReverseClick = (order) => {
+        setOrderToReverse(order);
+        setShowReverseModal(true);
+    };
+
+    const confirmReverse = async () => {
+        if (orderToReverse) {
+            await reverseSellerPayouts(orderToReverse);
+        }
+        setShowReverseModal(false);
+        setOrderToReverse(null);
+    };
+
+    const cancelReverse = () => {
+        setShowReverseModal(false);
+        setOrderToReverse(null);
+    };
 
     const getItemStatusClass = (status) => {
         switch (status) {
@@ -52,6 +74,7 @@ const Orders = () => {
 
 
     return (
+        <>
         <div className="flex-1 p-4 sm:p-6 lg:p-8">
             {loading ? <Loading /> :
             <>
@@ -81,11 +104,11 @@ const Orders = () => {
                                     <p><span className="font-medium text-gray-700">Date:</span> {new Date(order.date).toLocaleDateString()}</p>
                                     <p><span className="font-medium text-gray-700">Total:</span> {currency}{order.amount.toFixed(2)}</p>
                                 </div>
-                                <div className="mt-3">
+                                <div className="mt-3 flex items-center gap-2">
                                      <select 
                                         onChange={(e) => handleStatusChange(order._id, e.target.value)} 
                                         value={order.status} 
-                                        className="w-full border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-sm"
+                                        className="flex-grow border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-sm"
                                         disabled={order.status === 'pending' || order.status === 'failed'}
                                     >
                                         <option value="Order Placed">Order Placed</option>
@@ -94,6 +117,11 @@ const Orders = () => {
                                         <option value="Shipped">Shipped</option>
                                         <option value="Delivered">Delivered</option>
                                     </select>
+                                    {order.status === 'Delivered' && (
+                                        <button onClick={() => handleReverseClick(order)} className="p-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200" title="Reverse Payout">
+                                            <RotateCcw className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -144,18 +172,25 @@ const Orders = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <select 
-                                                onChange={(e) => handleStatusChange(order._id, e.target.value)} 
-                                                value={order.status} 
-                                                className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300"
-                                                disabled={order.status === 'pending' || order.status === 'failed'}
-                                            >
-                                                <option value="Order Placed">Order Placed</option>
-                                                <option value="Processing">Processing</option>
-                                                <option value="Partially Shipped">Partially Shipped</option>
-                                                <option value="Shipped">Shipped</option>
-                                                <option value="Delivered">Delivered</option>
-                                            </select>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <select 
+                                                    onChange={(e) => handleStatusChange(order._id, e.target.value)} 
+                                                    value={order.status} 
+                                                    className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300"
+                                                    disabled={order.status === 'pending' || order.status === 'failed'}
+                                                >
+                                                    <option value="Order Placed">Order Placed</option>
+                                                    <option value="Processing">Processing</option>
+                                                    <option value="Partially Shipped">Partially Shipped</option>
+                                                    <option value="Shipped">Shipped</option>
+                                                    <option value="Delivered">Delivered</option>
+                                                </select>
+                                                {order.status === 'Delivered' && (
+                                                    <button onClick={() => handleReverseClick(order)} className="p-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200" title="Reverse Payout">
+                                                        <RotateCcw className="w-5 h-5" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -166,6 +201,16 @@ const Orders = () => {
             </>
             }
         </div>
+         {showReverseModal && (
+            <DeleteConfirmationModal
+                onConfirm={confirmReverse}
+                onCancel={cancelReverse}
+                title="Reverse Payout?"
+                message="This will reverse the seller payouts for this order and set the status to 'Shipped'. This action cannot be undone."
+                confirmText="Yes, Reverse"
+            />
+        )}
+        </>
     );
 };
 
