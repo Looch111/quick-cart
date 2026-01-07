@@ -44,9 +44,11 @@ const Navbar = () => {
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700 fixed w-full bg-white top-0 z-40">
       <Link href="/">
         <Image
-          className="cursor-pointer w-28 md:w-32"
+          className="cursor-pointer"
           src={assets.logo}
           alt="logo"
+          width={150}
+          height={40}
         />
       </Link>
       <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
