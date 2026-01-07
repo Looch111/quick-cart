@@ -54,7 +54,7 @@ const Navbar = () => {
   return (
     <div ref={menuRef} className='flex items-center px-4 md:px-8 py-3 justify-between border-b fixed top-0 left-0 w-full bg-white z-50'>
       <Link href="/">
-        <Image className='cursor-pointer' src={assets.logo} alt="" width={170} height={45}/>
+        <Image className='cursor-pointer w-36 md:w-44' src={assets.logo} alt="" width={170} height={45}/>
       </Link>
       
       {/* Desktop Menu */}
