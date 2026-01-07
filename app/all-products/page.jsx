@@ -27,7 +27,9 @@ const AllProducts = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const searchInputRef = useRef(null);
     
-    const filteredProducts = products.filter(product =>
+    const sortedProducts = [...products].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const filteredProducts = sortedProducts.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -57,7 +59,7 @@ const AllProducts = () => {
                     />
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 flex-col items-center gap-6 pb-14 w-full">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-start gap-6 pb-14 w-full">
                     {filteredProducts.map((product, index) => <ProductCard key={index} product={product} />)}
                 </div>
             </div>

@@ -25,7 +25,7 @@ const FlashSales = () => {
                     <p className="text-gray-500 mt-4 mb-2">Grab the best deals before they're gone!</p>
                 </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 flex-col items-center gap-6 pb-14 w-full">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-start gap-6 pb-14 w-full">
                 {flashSaleProducts.map((product, index) => <ProductCard key={index} product={product} />)}
             </div>
             <div className="flex items-center gap-4">
