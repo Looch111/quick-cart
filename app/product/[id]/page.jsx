@@ -188,7 +188,7 @@ const Product = () => {
     }
     
     const isOutOfStock = productData && productData.stock === 0;
-    const hasSizes = productData.sizes && typeof product.sizes === 'object' && Object.keys(productData.sizes).length > 0;
+    const hasSizes = productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0;
     
     // Determine if flash sale is active
     const isFlashSaleActive = productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > currentTime;
