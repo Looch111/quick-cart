@@ -47,8 +47,8 @@ const Navbar = () => {
           className="cursor-pointer"
           src={assets.logo}
           alt="logo"
-          width={150}
-          height={40}
+          width={170}
+          height={45}
         />
       </Link>
       <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
