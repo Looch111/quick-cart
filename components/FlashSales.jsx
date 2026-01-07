@@ -5,10 +5,11 @@ import ProductCard from "./ProductCard";
 import { useAppContext } from "@/context/AppContext";
 
 const FlashSales = () => {
-    const { products, router, userData } = useAppContext();
+    const { allRawProducts, router, userData } = useAppContext();
 
-    const flashSaleProducts = products
+    const flashSaleProducts = allRawProducts
         .filter(p => p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > new Date())
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, 5);
 
     if (flashSaleProducts.length === 0) {

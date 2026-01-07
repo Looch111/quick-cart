@@ -1,5 +1,6 @@
 
 
+
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -66,7 +67,7 @@ export const AppContextProvider = (props) => {
 
     useEffect(() => { 
         if (!productsLoading) {
-            const mappedProducts = productsData.map(p => ({ ...p, _id: p.id }));
+            const mappedProducts = productsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }));
             setAllRawProducts(mappedProducts);
             setProducts(mappedProducts.filter(p => p.status === 'approved'));
         }
@@ -1014,3 +1015,4 @@ export const AppContextProvider = (props) => {
     
 
     
+
