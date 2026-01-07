@@ -1,4 +1,5 @@
 
+
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -418,30 +419,44 @@ export const AppContextProvider = (props) => {
         
         try {
             const orderItems = [];
+            const updatedCartItems = { ...cartItems };
+
             for (const itemId in itemsToOrder) {
-                const product = allRawProducts.find(p => p._id === itemId);
-                if (!product) throw new Error(`Product with ID ${itemId} not found.`);
-                if (product.stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
+                const [productId, size] = itemId.split('_');
+                const product = allRawProducts.find(p => p._id === productId);
+
+                if (!product) throw new Error(`Product with ID ${productId} not found.`);
+                
+                const stock = size ? (product.sizes[size] || 0) : product.stock;
+
+                if (stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}${size ? ` (${size})` : ''}.`);
+                
                 orderItems.push({ 
-                    ...product, 
-                    productId: itemId, 
+                    ...product,
+                    itemId: itemId, 
+                    size: size || null,
                     quantity: itemsToOrder[itemId], 
-                    status: 'Processing', // Set initial item status
+                    status: 'Processing',
                     sellerId: product.userId
                 });
-            }
-
-            const updatedCartItems = { ...cartItems };
-            for (const item of orderItems) {
-                const productRef = doc(firestore, 'products', item.productId);
-                batch.update(productRef, { stock: increment(-item.quantity) });
-                delete updatedCartItems[item.productId];
+                
+                const productRef = doc(firestore, 'products', productId);
+                if (size) {
+                    batch.update(productRef, {
+                        [`sizes.${size}`]: increment(-itemsToOrder[itemId]),
+                        stock: increment(-itemsToOrder[itemId])
+                    });
+                } else {
+                    batch.update(productRef, { stock: increment(-itemsToOrder[itemId]) });
+                }
+                
+                delete updatedCartItems[itemId];
             }
 
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
@@ -476,30 +491,44 @@ export const AppContextProvider = (props) => {
         const batch = writeBatch(firestore);
         try {
             const orderItems = [];
+            const updatedCartItems = { ...cartItems };
+
             for (const itemId in itemsToOrder) {
-                const product = allRawProducts.find(p => p._id === itemId);
-                if (!product) throw new Error(`Product with ID ${itemId} not found.`);
-                if (product.stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}.`);
+                const [productId, size] = itemId.split('_');
+                const product = allRawProducts.find(p => p._id === productId);
+
+                if (!product) throw new Error(`Product with ID ${productId} not found.`);
+
+                const stock = size ? (product.sizes[size] || 0) : product.stock;
+
+                if (stock < itemsToOrder[itemId]) throw new Error(`Not enough stock for ${product.name}${size ? ` (${size})` : ''}.`);
+                
                 orderItems.push({ 
                     ...product, 
-                    productId: itemId, 
+                    itemId: itemId, 
+                    size: size || null,
                     quantity: itemsToOrder[itemId],
-                    status: 'Processing', // Set initial item status
+                    status: 'Processing',
                     sellerId: product.userId
                 });
-            }
-            
-            const updatedCartItems = { ...cartItems };
-            for (const item of orderItems) {
-                const productRef = doc(firestore, 'products', item.productId);
-                batch.update(productRef, { stock: increment(-item.quantity) });
-                delete updatedCartItems[item.productId];
+
+                const productRef = doc(firestore, 'products', productId);
+                if (size) {
+                    batch.update(productRef, {
+                        [`sizes.${size}`]: increment(-itemsToOrder[itemId]),
+                        stock: increment(-itemsToOrder[itemId])
+                    });
+                } else {
+                    batch.update(productRef, { stock: increment(-itemsToOrder[itemId]) });
+                }
+                
+                delete updatedCartItems[itemId];
             }
 
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
@@ -507,6 +536,7 @@ export const AppContextProvider = (props) => {
                 paymentMethod: 'wallet'
             };
             batch.set(newOrderRef, newOrderData);
+
             const userDocRef = doc(firestore, 'users', userData._id);
             const newTransaction = {
                 id: newOrderRef.id,
@@ -835,3 +865,5 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
+
+    
