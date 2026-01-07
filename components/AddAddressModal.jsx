@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { X } from "lucide-react";
 
-const halls = ["Hall A", "Hall B", "Hall C", "Hall D", "Hall E", "Hall F", "Hall G", "Hall H"];
+const halls = ["Hall 1", "Hall 2", "Hall 3", "Hall 4", "Hall 5", "Hall 6", "Hall 7", "Hall 8"];
 
 const AddAddressModal = () => {
     const { userData, addAddress, isAddressModalOpen, closeAddressModal, updateUserField } = useAppContext();

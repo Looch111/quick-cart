@@ -181,7 +181,7 @@
         "phoneNumber": { "type": "string" },
         "hall": { 
             "type": "string",
-            "enum": ["Hall A", "Hall B", "Hall C", "Hall D", "Hall E", "Hall F", "Hall G", "Hall H"]
+            "enum": ["Hall 1", "Hall 2", "Hall 3", "Hall 4", "Hall 5", "Hall 6", "Hall 7", "Hall 8"]
         },
         "roomNumber": { "type": "string" }
       },
