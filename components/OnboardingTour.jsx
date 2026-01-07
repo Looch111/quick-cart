@@ -6,32 +6,17 @@ import { X } from 'lucide-react';
 const desktopSteps = [
     {
         title: "Welcome to QuickCart!",
-        content: "We're glad to have you here. Let's take a quick tour of the app.",
+        content: "We're glad to have you here. Let's take a quick tour to get you started.",
         target: null
     },
     {
         title: "Access Your Profile",
-        content: "Click on your avatar at any time to open your account menu.",
+        content: "Click on your avatar at any time to open your account menu, where you can manage orders, your wallet, and more.",
         target: "nav-account-button"
     },
     {
-        title: "Shop for Products",
-        content: "Click here to browse all available products in our store.",
-        target: "nav-shop-link"
-    },
-    {
-        title: "Save Your Favorites",
-        content: "Add products to your wishlist to save them for later.",
-        target: "nav-wishlist-link"
-    },
-    {
-        title: "View Your Cart",
-        content: "See the items you've added and proceed to checkout from here.",
-        target: "nav-cart-link"
-    },
-    {
-        title: "Manage Your Account",
-        content: "Finally, let's go to your account page to set up your profile and addresses.",
+        title: "Complete Your Account Setup",
+        content: "Before you can start shopping, please complete your account details on the Manage Account page.",
         target: "nav-manage-account-link"
     }
 ];
@@ -39,34 +24,24 @@ const desktopSteps = [
 const mobileSteps = [
     {
         title: "Welcome to QuickCart!",
-        content: "We're glad to have you here. Let's take a quick tour of the app.",
+        content: "We're glad to have you here. Let's take a quick tour to get you started.",
         target: null
     },
-    {
+     {
         title: "Access Your Profile",
-        content: "Tap on your avatar at any time to open your account menu.",
+        content: "Tap on your avatar at any time to open your account menu, where you can manage orders, your wallet, and more.",
         target: "nav-account-button"
     },
     {
-        title: "Save Your Favorites",
-        content: "Add products to your wishlist to save them for later.",
-        target: "nav-wishlist-link"
-    },
-    {
-        title: "View Your Cart",
-        content: "See the items you've added and proceed to checkout from here.",
-        target: "nav-cart-link"
-    },
-    {
-        title: "Manage Your Account",
-        content: "Finally, let's go to your account page to set up your profile and addresses.",
+        title: "Complete Your Account Setup",
+        content: "Before you can start shopping, please complete your account details on the Manage Account page.",
         target: "nav-manage-account-link"
     }
 ];
 
 
 const OnboardingTour = () => {
-    const { userData, updateUserField } = useAppContext();
+    const { userData, updateUserField, router } = useAppContext();
     const [step, setStep] = useState(0);
     const [isClient, setIsClient] = useState(false);
     const [style, setStyle] = useState({});
@@ -170,20 +145,19 @@ const OnboardingTour = () => {
     }, [step, userData, isClient, steps]);
 
 
-    const finishTour = async () => {
+    const finishTour = async (andNavigate = false) => {
         if (!userData) return;
         setHighlightStyle({});
         await updateUserField('isNewUser', false);
         setStep(0);
+        if (andNavigate) {
+            router.push('/manage-account');
+        }
     };
     
     const handleNext = () => {
         if (step === steps.length - 1) {
-            finishTour();
-            const manageAccountLink = document.getElementById('nav-manage-account-link');
-            if (manageAccountLink) {
-                manageAccountLink.click();
-            }
+            finishTour(true);
         } else {
             setStep(s => s + 1);
         }
@@ -225,7 +199,7 @@ const OnboardingTour = () => {
                 className={`bg-white rounded-lg shadow-2xl p-6 w-[90%] max-w-sm ${step === 0 ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1002]' : ''}`}
                 style={step > 0 ? style : {}}
             >
-                <button onClick={finishTour} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                <button onClick={() => finishTour(true)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
                     <X className="w-5 h-5" />
                 </button>
                 

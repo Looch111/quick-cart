@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { User, Mail, Save, PlusCircle, Home, Phone, Edit, MapPin } from 'lucide-react';
+import { User, Mail, Save, PlusCircle, Home, Phone, Edit, MapPin, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AvatarSelectionModal from '@/components/AvatarSelectionModal';
@@ -23,15 +23,33 @@ const ManageAccount = () => {
         } else if (userData) {
             setName(userData.name || '');
             setEmail(userData.email);
+            // If the user is new, has no name and no addresses, open the modals automatically
+            if (userData.isNewUser && !userData.name) {
+                // This will be handled by the form now
+            }
+            if (userData.isNewUser && userAddresses.length === 0) {
+                openAddressModal();
+            }
         }
-    }, [userData, setShowLogin, router]);
+    }, [userData, userAddresses, setShowLogin, router, openAddressModal]);
 
     const handleSaveChanges = (e) => {
         e.preventDefault();
         
+        if (!name) {
+            toast.error("Please enter your full name.");
+            return;
+        }
+
         if (name !== userData.name) {
             updateUserField('name', name);
             toast.success("Account details updated successfully!");
+        }
+
+        // If the user was in the onboarding flow, mark it as complete
+        if (userData.isNewUser) {
+            updateUserField('isNewUser', false);
+            toast.success("Welcome! Your account is all set up.");
         }
     };
 
@@ -56,6 +74,8 @@ const ManageAccount = () => {
         return null;
     }
 
+    const needsSetup = !userData.name || userAddresses.length === 0;
+
     return (
         <>
             <Navbar />
@@ -65,6 +85,19 @@ const ManageAccount = () => {
                         <h1 className="text-3xl font-bold text-gray-800">Manage Account</h1>
                         <p className="text-gray-500 mt-1">Update your profile, account details, and addresses.</p>
                     </div>
+
+                    {userData.isNewUser && needsSetup && (
+                        <div className="bg-orange-50 border-l-4 border-orange-500 text-orange-700 p-4 mb-8 rounded-r-lg" role="alert">
+                            <div className='flex'>
+                                <AlertCircle className="h-5 w-5 mr-3"/>
+                                <div>
+                                    <p className="font-bold">Complete Your Setup</p>
+                                    <p className="text-sm">Please fill out your name and add a delivery address to complete your account setup.</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 bg-white p-8 rounded-lg shadow-md border border-gray-200">
@@ -87,7 +120,7 @@ const ManageAccount = () => {
                                         </button>
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-semibold text-gray-900">{name || ''}</h2>
+                                        <h2 className="text-2xl font-semibold text-gray-900">{name || 'New User'}</h2>
                                         <p className="text-sm text-gray-500">{email}</p>
                                     </div>
                                 </div>
