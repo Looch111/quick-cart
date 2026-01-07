@@ -141,7 +141,7 @@ const AllProducts = () => {
     
         return (
             <input
-                type="text"
+                type="tel"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value.replace(/[^0-9.]/g, ''))}
                 onBlur={handleBlur}
@@ -286,5 +286,3 @@ const AllProducts = () => {
 };
 
 export default AllProducts;
-
-    
