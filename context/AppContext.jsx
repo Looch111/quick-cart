@@ -46,6 +46,7 @@ export const AppContextProvider = (props) => {
 
     const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
     const [productForSizeSelection, setProductForSizeSelection] = useState(null);
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     
     const cartItems = userData?.cartItems || {};
     const wishlistItems = userData?.wishlistItems || {};
@@ -63,6 +64,9 @@ export const AppContextProvider = (props) => {
         setProductForSizeSelection(null);
         setIsSizeModalOpen(false);
     };
+    
+    const openAddressModal = () => setIsAddressModalOpen(true);
+    const closeAddressModal = () => setIsAddressModalOpen(false);
 
     useEffect(() => { 
         if (!productsLoading) {
@@ -262,7 +266,7 @@ export const AppContextProvider = (props) => {
         const addressCollectionRef = collection(firestore, 'users', userData._id, 'addresses');
         await addDoc(addressCollectionRef, newAddress);
         toast.success("Address added successfully!");
-        router.back(); 
+        closeAddressModal(); 
     }
 
     const addBanner = async (newBanner) => {
@@ -999,6 +1003,7 @@ export const AppContextProvider = (props) => {
         verifyFlutterwaveTransaction,
         placeOrderWithWallet,
         isSizeModalOpen, openSizeModal, closeSizeModal, productForSizeSelection,
+        isAddressModalOpen, openAddressModal, closeAddressModal,
         reverseSellerPayouts,
         requestWithdrawal,
         addProductReview
@@ -1014,5 +1019,6 @@ export const AppContextProvider = (props) => {
     
 
     
+
 
 

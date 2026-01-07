@@ -11,7 +11,7 @@ const OrderSummary = () => {
   const { 
     currency, router, cartItems, userAddresses, 
     userData, setShowLogin, getCartAmount, walletBalance, promotions, platformSettings,
-    placeOrder, placeOrderWithWallet
+    placeOrder, placeOrderWithWallet, openAddressModal
    } = useAppContext()
 
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -208,7 +208,10 @@ const OrderSummary = () => {
                   </li>
                 ))}
                 <li
-                  onClick={() => router.push("/add-address")}
+                  onClick={() => {
+                    openAddressModal();
+                    setIsDropdownOpen(false);
+                  }}
                   className="px-4 py-2 hover:bg-gray-500/10 cursor-pointer text-center font-medium text-orange-600"
                 >
                   + Add New Address

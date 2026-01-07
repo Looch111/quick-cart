@@ -11,7 +11,7 @@ import AvatarSelectionModal from '@/components/AvatarSelectionModal';
 import Loading from '@/components/Loading';
 
 const ManageAccount = () => {
-    const { userData, setShowLogin, userAddresses, router, updateUserField } = useAppContext();
+    const { userData, setShowLogin, userAddresses, router, updateUserField, openAddressModal } = useAppContext();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -155,10 +155,10 @@ const ManageAccount = () => {
                                         <p className="text-sm text-gray-500">No saved addresses.</p>
                                     )}
                                 </div>
-                                <Link href="/add-address" className="mt-6 w-full inline-flex items-center justify-center gap-2 py-2 px-4 border border-dashed border-gray-400 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                <button onClick={openAddressModal} className="mt-6 w-full inline-flex items-center justify-center gap-2 py-2 px-4 border border-dashed border-gray-400 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                     <PlusCircle className="w-4 h-4" />
                                     Add New Address
-                                </Link>
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,5 @@
 
+
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { AppContextProvider } from "@/context/AppContext";
@@ -8,6 +9,7 @@ import { FirebaseClientProvider } from "@/src/firebase/client-provider";
 import FirebaseErrorListener from "@/src/components/FirebaseErrorListener";
 import OnboardingTour from "@/components/OnboardingTour";
 import SizeSelectionModal from "@/components/SizeSelectionModal";
+import AddAddressModal from "@/components/AddAddressModal";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
@@ -25,6 +27,7 @@ export default function RootLayout({ children }) {
               <Toaster position="top-center" reverseOrder={false} />
               <LoginPopup />
               <SizeSelectionModal />
+              <AddAddressModal />
               <OnboardingTour />
               {children}
               <FirebaseErrorListener />
