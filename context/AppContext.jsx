@@ -564,10 +564,9 @@ export const AppContextProvider = (props) => {
         const sellerPayouts = {}; 
 
         order.items.forEach(item => {
-            const sellerId = item.userId;
+            const sellerId = item.sellerId;
             if (sellerId) {
-                const isFlashSale = item.flashSalePrice && item.flashSaleEndDate && new Date(item.flashSaleEndDate) > new Date();
-                const salePrice = isFlashSale ? item.flashSalePrice : item.offerPrice;
+                const salePrice = (item.flashSalePrice && item.flashSalePrice > 0) ? item.flashSalePrice : item.offerPrice;
                 const earnings = salePrice * item.quantity;
                 if (!sellerPayouts[sellerId]) sellerPayouts[sellerId] = 0;
                 sellerPayouts[sellerId] += earnings;
@@ -867,3 +866,4 @@ export const AppContextProvider = (props) => {
 }
 
     
+
