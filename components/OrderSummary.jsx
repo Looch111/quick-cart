@@ -143,7 +143,7 @@ const OrderSummary = () => {
 
   const handlePlaceOrder = async () => {
     if (!userData) {
-      toast.error("Please log in to place an order.");
+      toast.error("Please log in to continue.");
       setShowLogin(true);
       return;
     }

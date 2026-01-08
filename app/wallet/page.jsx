@@ -81,6 +81,11 @@ const WalletPage = () => {
     }
 
     const handleDeposit = () => {
+        if (!userData) {
+            toast.error("Please log in to continue.");
+            setShowLogin(true);
+            return;
+        }
         const depositAmount = Number(amount);
         if (!depositAmount || depositAmount <= 0) {
             toast.error('Please enter a valid amount.');

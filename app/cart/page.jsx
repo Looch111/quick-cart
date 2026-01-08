@@ -12,7 +12,7 @@ import { Plus, Minus, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const Cart = () => {
-    const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, allRawProducts } = useAppContext();
+    const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, allRawProducts, setShowLogin } = useAppContext();
 
     const handleQuantityChange = (itemId, currentQuantity, stock) => {
         if (currentQuantity > stock) {
@@ -52,6 +52,20 @@ const Cart = () => {
                 <Loading />
             </>
         )
+    }
+
+    if (!userData) {
+        if (!authLoading) {
+            toast.error("Please log in to continue.");
+            setShowLogin(true);
+            router.push('/');
+        }
+        return (
+            <>
+                <Navbar />
+                <Loading />
+            </>
+        );
     }
 
     const cartIsEmpty = cartProducts.length === 0;
