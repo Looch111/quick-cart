@@ -154,7 +154,7 @@ const Product = () => {
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState(null);
 
 
     const productId = params.id;
@@ -177,6 +177,9 @@ const Product = () => {
     }, [productId, products]);
     
     useEffect(() => {
+        // Set current time on client side to avoid hydration mismatch
+        setCurrentTime(new Date());
+
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
@@ -191,7 +194,7 @@ const Product = () => {
     const hasSizes = productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0;
     
     // Determine if flash sale is active
-    const isFlashSaleActive = productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > currentTime;
+    const isFlashSaleActive = currentTime && productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > currentTime;
 
     // Determine current price and original price for display
     const currentPrice = isFlashSaleActive ? productData.flashSalePrice : productData.offerPrice;
