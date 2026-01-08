@@ -770,7 +770,7 @@ export const AppContextProvider = (props) => {
 
     const updateUserField = async (field, value) => {
         if (!userData) {
-            toast.error("Please log in to update your profile.");
+            toast.error("Please log in to continue.");
             if (showLogin) return;
             setShowLogin(true);
             return;
@@ -794,46 +794,46 @@ export const AppContextProvider = (props) => {
         toast.success("Bank details updated successfully!");
     }
 
-    const addToCart = async (itemId) => {
+    const addToCart = (itemId) => {
         if (!userData) {
+            toast.error("Please log in to add items to your cart.");
             setShowLogin(true);
             return;
         }
     
         const userDocRef = doc(firestore, 'users', userData._id);
     
-        try {
-            await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                if (!userDoc.exists()) {
-                    throw "User document does not exist!";
-                }
+        runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw "User document does not exist!";
+            }
 
-                // Check for size variants
-                const [productId, size] = itemId.split('_');
-                const product = allRawProducts.find(p => p._id === productId);
+            const [productId, size] = itemId.split('_');
+            const product = allRawProducts.find(p => p._id === productId);
 
-                if (!product) {
-                    toast.error("Product not found.", { id: `not-found-${itemId}` });
-                    return; // Stop transaction
-                }
+            if (!product) {
+                toast.error("Product not found.", { id: `not-found-${itemId}` });
+                return;
+            }
+
+            const currentCart = userDoc.data().cartItems || {};
+            const currentQuantityInCart = currentCart[itemId] || 0;
+            
+            const stockForSize = product.sizes && Object.keys(product.sizes).length > 0 ? product.sizes[size] : product.stock;
+
+            if (currentQuantityInCart >= stockForSize) {
+                toast.error(`No more stock available for ${product.name}${size ? ` (Size: ${size})` : ''}`, { id: `stock-toast-${itemId}` });
+                return; 
+            }
     
-                const currentCart = userDoc.data().cartItems || {};
-                const currentQuantityInCart = currentCart[itemId] || 0;
-    
-                if (currentQuantityInCart >= product.stock) {
-                    toast.error(`No more stock available for ${product.name}${size ? ` (Size: ${size})` : ''}`, { id: `stock-toast-${itemId}` });
-                    return; 
-                }
-    
-                const newCart = { ...currentCart };
-                newCart[itemId] = currentQuantityInCart + 1;
-                transaction.update(userDocRef, { cartItems: newCart });
-                toast.success("Product added to cart", { id: `add-toast-${itemId}` });
-            });
-        } catch (error) {
+            const newCart = { ...currentCart };
+            newCart[itemId] = (newCart[itemId] || 0) + 1;
+            transaction.update(userDocRef, { cartItems: newCart });
+            toast.success("Product added to cart", { id: `add-toast-${itemId}` });
+        }).catch(error => {
             console.error("Add to cart transaction failed: ", error);
-        }
+        });
     };
     
     const addMultipleToCart = async (items) => {
@@ -1017,6 +1017,7 @@ export const AppContextProvider = (props) => {
     
 
     
+
 
 
 
