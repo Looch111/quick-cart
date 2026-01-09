@@ -682,7 +682,7 @@ export const AppContextProvider = (props) => {
             await runTransaction(firestore, async (transaction) => {
                 const orderDoc = await transaction.get(orderRef);
                 if (!orderDoc.exists() || orderDoc.data().status !== 'Delivered') {
-                    throw new Error("Order cannot be confirmed.");
+                    throw new Error("Order cannot be confirmed at this time.");
                 }
                 
                 // Update order status to Completed
@@ -750,17 +750,21 @@ export const AppContextProvider = (props) => {
         const orderDocRef = doc(firestore, 'orders', orderId);
         const updateData = { status: newStatus };
 
+        // If admin sets status to Delivered, start the auto-completion timer
         if (newStatus === "Delivered") {
             const confirmationWindowHours = platformSettings.confirmationWindowHours || 72;
             const autoCompletionDate = new Date();
             autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
             updateData.autoCompletionDate = autoCompletionDate.toISOString();
+             updateData.autoCompletionDate = autoCompletionDate.toISOString();
         } else {
+            // Clear the timer if status is changed to something else
             updateData.autoCompletionDate = null;
         }
        
         await setDoc(orderDocRef, updateData, { merge: true });
    
+        // Payouts should ONLY happen when order is COMPLETED
         if (newStatus === "Completed") {
             const orderSnap = await getDoc(orderDocRef);
             if (orderSnap.exists()) {
