@@ -731,23 +731,8 @@ export const AppContextProvider = (props) => {
 
                 const updatedItems = [...orderData.items];
                 updatedItems[itemIndex].status = newStatus;
-
-                // Check if all items are delivered to update the main order status
-                const allItemsDelivered = updatedItems.every(item => item.status === 'Delivered');
-
-                if (allItemsDelivered) {
-                    const confirmationWindowHours = platformSettings.confirmationWindowHours || 72;
-                    const autoCompletionDate = new Date();
-                    autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
-                    
-                    transaction.update(orderRef, { 
-                        items: updatedItems,
-                        status: 'Delivered', // Update main order status
-                        autoCompletionDate: autoCompletionDate.toISOString() 
-                    });
-                } else {
-                    transaction.update(orderRef, { items: updatedItems });
-                }
+                
+                transaction.update(orderRef, { items: updatedItems });
             });
             toast.success(`Item status updated to ${newStatus}`);
         } catch (error) {
@@ -758,23 +743,34 @@ export const AppContextProvider = (props) => {
 
 
     const updateOrderStatus = async (orderId, newStatus) => {
-         if (!isAdmin) {
-            toast.error("You are not authorized.");
-            return false;
+        if (!isAdmin) {
+           toast.error("You are not authorized.");
+           return false;
         }
         const orderDocRef = doc(firestore, 'orders', orderId);
-        await setDoc(orderDocRef, { status: newStatus }, { merge: true });
+        const updateData = { status: newStatus };
 
-        // This admin action now triggers payout directly
+        if (newStatus === "Delivered") {
+            const confirmationWindowHours = platformSettings.confirmationWindowHours || 72;
+            const autoCompletionDate = new Date();
+            autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
+            updateData.autoCompletionDate = autoCompletionDate.toISOString();
+        } else {
+            updateData.autoCompletionDate = null;
+        }
+       
+        await setDoc(orderDocRef, updateData, { merge: true });
+   
         if (newStatus === "Completed") {
             const orderSnap = await getDoc(orderDocRef);
             if (orderSnap.exists()) {
                 await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
             }
         }
+
         toast.success(`Order status updated to ${newStatus}`)
         return true;
-    }
+   }
 
     const reverseSellerPayouts = async (order) => {
         if (!isAdmin) {
@@ -1116,4 +1112,3 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
-

@@ -46,28 +46,13 @@ const Orders = () => {
     }, [allOrders, userData, productsLoading]);
 
     const handleStatusChange = (orderId, itemId, currentStatus, newStatus) => {
-        if (newStatus === 'Delivered' && currentStatus !== 'Shipped') {
-            toast.error("Item must be shipped before it can be marked as delivered.");
+        if (newStatus === 'Shipped' && currentStatus !== 'Processing') {
+            toast.error("Item must be 'Processing' before it can be marked as 'Shipped'.");
             return;
         }
-        if (newStatus === 'Delivered') {
-            setItemToUpdate({ orderId, itemId, newStatus });
-            setShowDeliveredModal(true);
-        } else {
-            updateItemStatus(orderId, itemId, newStatus);
-        }
+        updateItemStatus(orderId, itemId, newStatus);
     };
     
-    const confirmDelivery = async () => {
-        if (itemToUpdate) {
-            // Here you would add logic to upload proof of delivery.
-            // For now, we'll just update the status.
-            await updateItemStatus(itemToUpdate.orderId, itemToUpdate.itemId, itemToUpdate.newStatus);
-        }
-        setShowDeliveredModal(false);
-        setItemToUpdate(null);
-    }
-
     return (
         <>
         <div className="flex-1 min-h-screen flex flex-col justify-between text-sm">
@@ -113,11 +98,10 @@ const Orders = () => {
                                                 onChange={(e) => handleStatusChange(item.orderId, item._id, item.status, e.target.value)} 
                                                 value={item.status}
                                                 className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-xs"
-                                                disabled={item.status === 'Completed' || item.status === 'Disputed'}
+                                                disabled={item.status === 'Shipped' || item.status === 'Delivered' || item.status === 'Completed' || item.status === 'Disputed'}
                                             >
                                                 <option value="Processing">Processing</option>
                                                 <option value="Shipped">Shipped</option>
-                                                <option value="Delivered">Delivered</option>
                                             </select>
                                         </td>
                                     </tr>
@@ -132,15 +116,6 @@ const Orders = () => {
             </div>}
             <Footer />
         </div>
-         {showDeliveredModal && (
-            <DeleteConfirmationModal
-                onConfirm={confirmDelivery}
-                onCancel={() => setShowDeliveredModal(false)}
-                title="Confirm Delivery?"
-                message="Only mark as delivered if the order has been fully delivered to the customer. This will notify the buyer to confirm receipt. False claims may result in penalties."
-                confirmText="Yes, Mark as Delivered"
-            />
-        )}
         </>
     );
 };
