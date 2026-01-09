@@ -5,8 +5,10 @@ import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
-import { Truck, CheckCircle } from "lucide-react";
+import { Truck, CheckCircle, PackageCheck, FileWarning, MessageSquareWarning } from "lucide-react";
 import { useRouter } from "next/navigation";
+import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
+import DisputeModal from "@/components/DisputeModal";
 
 const OrderStatusTracker = ({ status }) => {
     const statuses = ["Order Placed", "Processing", "Shipped", "Delivered"];
@@ -33,29 +35,62 @@ const OrderStatusTracker = ({ status }) => {
 
 
 const MyOrders = () => {
-    const { currency, userData, userOrders, setShowLogin } = useAppContext();
+    const { currency, userData, userOrders, setShowLogin, confirmOrderDelivery, reportIssue } = useAppContext();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showDisputeModal, setShowDisputeModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     useEffect(() => {
         if (userData === undefined) {
             setLoading(true);
         } else if (userData === null) {
-            router.push('/');
-            setShowLogin(true);
+            if (router && setShowLogin) {
+                router.push('/');
+                setShowLogin(true);
+            }
         } else if (userOrders) {
             setOrders(userOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
             setLoading(false);
         }
     }, [userData, userOrders, router, setShowLogin]);
 
+    const handleConfirmClick = (order) => {
+        setSelectedOrder(order);
+        setShowConfirmModal(true);
+    };
+
+    const handleDisputeClick = (order) => {
+        setSelectedOrder(order);
+        setShowDisputeModal(true);
+    };
+
+    const executeConfirm = async () => {
+        if (selectedOrder) {
+            await confirmOrderDelivery(selectedOrder._id);
+        }
+        setShowConfirmModal(false);
+        setSelectedOrder(null);
+    };
+
+    const executeDispute = async (reason) => {
+        if (selectedOrder && reason) {
+            await reportIssue(selectedOrder._id, reason);
+        }
+        setShowDisputeModal(false);
+        setSelectedOrder(null);
+    }
+
     const getStatusClass = (status) => {
         switch (status) {
-            case 'Delivered': return 'bg-green-100 text-green-800';
-            case 'Shipped': return 'bg-blue-100 text-blue-800';
+            case 'Completed': return 'bg-green-100 text-green-800';
+            case 'Delivered': return 'bg-blue-100 text-blue-800';
+            case 'Shipped': return 'bg-purple-100 text-purple-800';
             case 'Processing': return 'bg-yellow-100 text-yellow-800';
-            case 'Order Placed': return 'bg-purple-100 text-purple-800';
+            case 'Order Placed': return 'bg-gray-100 text-gray-800';
+            case 'Disputed': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
@@ -100,7 +135,7 @@ const MyOrders = () => {
                             {orders.map((order) => (
                                 <div key={order._id} className="relative bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                                      
-                                    <div className={order.status === 'Delivered' ? 'animate-blur-content' : ''}>
+                                    <div className={order.status === 'Completed' ? 'animate-blur-content' : ''}>
                                         <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                                             <div className="flex flex-wrap gap-x-6 gap-y-2">
                                                 <div>
@@ -124,7 +159,7 @@ const MyOrders = () => {
                                         </div>
                                         <div className="p-4 sm:p-6 space-y-4">
                                             <div className='pb-4'>
-                                            <OrderStatusTracker status={order.status} />
+                                                <OrderStatusTracker status={order.status} />
                                             </div>
                                             {order.items.map((item, itemIndex) => (
                                                 <div key={itemIndex} className="flex items-start gap-4 pt-4 border-t">
@@ -139,12 +174,36 @@ const MyOrders = () => {
                                                         <p className="font-semibold text-gray-800">{item.name}</p>
                                                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                                                         <p className="text-sm font-medium text-gray-700">{currency}{Number(item.offerPrice).toFixed(2)}</p>
+                                                         <div className={`mt-2 px-2 py-1 text-xs font-medium rounded-full inline-flex items-center gap-1.5 ${getStatusClass(item.status)}`}>
+                                                            {item.status}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
+                                            {order.status === 'Delivered' && (
+                                                <div className="border-t pt-4 mt-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+                                                    <p className="text-sm text-gray-600 font-medium">Have you received your order?</p>
+                                                    <div className="flex gap-3">
+                                                        <button onClick={() => handleConfirmClick(order)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">
+                                                            <PackageCheck className="w-4 h-4"/>
+                                                            Yes, Confirm Delivery
+                                                        </button>
+                                                        <button onClick={() => handleDisputeClick(order)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200">
+                                                             <FileWarning className="w-4 h-4"/>
+                                                            Report an Issue
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {order.status === 'Disputed' && (
+                                                <div className="border-t pt-4 mt-4 flex items-center justify-center gap-2 text-center p-3 bg-yellow-50 rounded-md">
+                                                    <MessageSquareWarning className="w-5 h-5 text-yellow-600 flex-shrink-0"/>
+                                                    <p className="text-sm text-yellow-800">Your issue has been reported. Our admin team will review it and get back to you shortly.</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    {order.status === 'Delivered' && (
+                                    {order.status === 'Completed' && (
                                         <div className="absolute inset-0 flex justify-center items-center overflow-hidden pointer-events-none">
                                             <Truck className="w-24 h-24 text-orange-500 absolute animate-drive-by-blur" />
                                             <div className="absolute w-full h-full flex items-center justify-center animate-fade-in-check-blur">
@@ -159,6 +218,21 @@ const MyOrders = () => {
                 </div>
             </div>
             <Footer />
+            {showConfirmModal && (
+                <DeleteConfirmationModal
+                    onConfirm={executeConfirm}
+                    onCancel={() => setShowConfirmModal(false)}
+                    title="Confirm Delivery"
+                    message={<>By confirming, you agree that you have received your order. <br/>This action is irreversible and the seller will be paid immediately.</>}
+                    confirmText="Yes, I Have Received My Order"
+                />
+            )}
+            {showDisputeModal && (
+                <DisputeModal
+                    onConfirm={executeDispute}
+                    onCancel={() => setShowDisputeModal(false)}
+                />
+            )}
         </>
     );
 };

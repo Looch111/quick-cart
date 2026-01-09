@@ -10,6 +10,7 @@ import FirebaseErrorListener from "@/src/components/FirebaseErrorListener";
 import OnboardingTour from "@/components/OnboardingTour";
 import SizeSelectionModal from "@/components/SizeSelectionModal";
 import AddAddressModal from "@/components/AddAddressModal";
+import DisputeModal from "@/components/DisputeModal";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
               <LoginPopup />
               <SizeSelectionModal />
               <AddAddressModal />
+              <DisputeModal />
               <OnboardingTour />
               {children}
               <FirebaseErrorListener />

@@ -1,5 +1,3 @@
-
-
 "use client"
 import { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
@@ -13,7 +11,7 @@ import React from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCollection } from "@/src/firebase";
-import { User, Send } from "lucide-react";
+import { User, Send, MessageSquare } from "lucide-react";
 
 const StarRating = ({ rating, onRatingChange, isInteractive = true }) => {
     const [hoverRating, setHoverRating] = useState(0);
@@ -149,10 +147,11 @@ const ReviewsList = ({ productId }) => {
 
 const Product = () => {
     const params = useParams();
-    const { products, router, addToCart, currency, openSizeModal } = useAppContext()
+    const { products, users, router, addToCart, currency, openSizeModal } = useAppContext()
 
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
+    const [seller, setSeller] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
     const [currentTime, setCurrentTime] = useState(null);
 
@@ -165,16 +164,20 @@ const Product = () => {
             setProductData(product);
             if (product) {
                 setMainImage(product.image[0]);
+                 if (product.userId && users.length > 0) {
+                    const productSeller = users.find(u => u.id === product.userId);
+                    setSeller(productSeller);
+                }
                 if (product.sizes && typeof product.sizes === 'object' && Object.keys(product.sizes).length > 0) {
                     setSelectedSize(Object.keys(product.sizes)[0]);
                 }
             }
         }
 
-        if (productId && products.length > 0) {
+        if (productId && products.length > 0 && users.length > 0) {
             fetchProductData(productId);
         }
-    }, [productId, products]);
+    }, [productId, products, users]);
     
     useEffect(() => {
         // Set current time on client side to avoid hydration mismatch
@@ -294,6 +297,12 @@ const Product = () => {
                                 ))}
                             </div>
                         </div>
+                    )}
+                     {seller && (
+                        <a href={`mailto:${seller.email}`} className="mt-6 flex items-center gap-2 text-sm text-orange-600 hover:underline">
+                            <MessageSquare className="w-4 h-4"/>
+                            Ask a question
+                        </a>
                     )}
                     <hr className="bg-gray-600 my-6" />
                     <div className="overflow-x-auto">

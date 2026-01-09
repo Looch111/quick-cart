@@ -74,9 +74,11 @@ const SellerDashboard = () => {
             orderSales += itemTotal;
             sellerItemsInOrder += item.quantity;
 
-            const orderMonth = new Date(order.date).getMonth();
-            if (monthlySalesData[orderMonth]) {
-                monthlySalesData[orderMonth].sales += itemTotal;
+            if (order.status === 'Completed') {
+              const orderMonth = new Date(order.date).getMonth();
+              if (monthlySalesData[orderMonth]) {
+                  monthlySalesData[orderMonth].sales += itemTotal;
+              }
             }
           });
 
@@ -117,14 +119,14 @@ const SellerDashboard = () => {
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seller Dashboard</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Card title="Total Earnings" value={`${currency}${sellerWalletBalance.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
-            <Card title="Products Sold" value={sellerStats.productsSold} icon={<ShoppingCart className="w-6 h-6" />} />
+            <Card title="Available for Withdrawal" value={`${currency}${sellerWalletBalance.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
+            <Card title="Products Sold (All Time)" value={sellerStats.productsSold} icon={<ShoppingCart className="w-6 h-6" />} />
             <Card title="Active Listings" value={sellerStats.activeListings} icon={<Package className="w-6 h-6" />} />
         </div>
 
         <div className="grid grid-cols-1 gap-8 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Sales</h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Sales (Completed Orders)</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={sellerStats.monthlySales}>
                 <CartesianGrid strokeDasharray="3 3" />

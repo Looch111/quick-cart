@@ -57,7 +57,7 @@
                 "type": "object",
                 "properties": {
                     "id": { "type": "string" },
-                    "type": { "type": "string", "enum": ["Top Up", "Payment"] },
+                    "type": { "type": "string", "enum": ["Top Up", "Payment", "Refund"] },
                     "amount": { "type": "number" },
                     "date": { "type": "string", "format": "date-time" }
                 }
@@ -160,15 +160,23 @@
               "image": { "type": "array", "items": { "type": "string", "format": "uri" } },
               "quantity": { "type": "number" },
               "sellerId": { "type": "string", "description": "The UID of the seller for this item." },
-              "status": { "type": "string", "enum": ["Processing", "Shipped", "Delivered"], "description": "The status of this specific item." }
+              "status": { "type": "string", "enum": ["Processing", "Shipped", "Delivered", "Completed", "Disputed"], "description": "The status of this specific item." }
             }
           }
         },
         "amount": { "type": "number" },
         "address": { "$ref": "#/entities/address" },
-        "status": { "type": "string", "enum": ["pending", "failed", "Order Placed", "Partially Shipped", "Shipped", "Delivered"], "description": "The overall status of the entire order." },
+        "status": { "type": "string", "enum": ["pending", "failed", "Order Placed", "Processing", "Partially Shipped", "Shipped", "Delivered", "Completed", "Disputed"], "description": "The overall status of the entire order." },
         "date": { "type": "string", "format": "date-time" },
-        "paymentMethod": { "type": "string", "enum": ["wallet", "flutterwave"] }
+        "paymentMethod": { "type": "string", "enum": ["wallet", "flutterwave"] },
+        "dispute": {
+            "type": "object",
+            "properties": {
+                "reason": { "type": "string" },
+                "date": { "type": "string", "format": "date-time" }
+            }
+        },
+        "autoCompletionDate": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "items", "amount", "address", "status", "date"]
     },
@@ -224,7 +232,8 @@
       "properties": {
         "commission": { "type": "number" },
         "shippingFee": { "type": "number" },
-        "freeShippingThreshold": { "type": "number" }
+        "freeShippingThreshold": { "type": "number" },
+        "confirmationWindowHours": { "type": "number", "description": "Number of hours a buyer has to confirm delivery before auto-completion." }
       }
     },
     "notification": {
