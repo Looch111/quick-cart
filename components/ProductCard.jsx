@@ -60,7 +60,7 @@ const CountdownTimer = ({ endDate }) => {
 
 const ProductCard = ({ product }) => {
 
-    const { currency, router, wishlistItems, toggleWishlist, addToCart, openSizeModal } = useAppContext()
+    const { currency, router, userData, wishlistItems, toggleWishlist, addToCart, openSizeModal } = useAppContext()
     const [currentTime, setCurrentTime] = useState(null);
 
     useEffect(() => {
@@ -73,7 +73,7 @@ const ProductCard = ({ product }) => {
         return () => clearInterval(timer);
     }, []);
 
-    const isWishlisted = wishlistItems[product._id];
+    const isWishlisted = userData && wishlistItems && wishlistItems[product._id];
     const isOutOfStock = !product.stock || product.stock <= 0;
 
     const isFlashSaleActive = currentTime && product.flashSalePrice > 0 && product.flashSaleEndDate && new Date(product.flashSaleEndDate) > currentTime;
