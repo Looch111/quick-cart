@@ -30,34 +30,26 @@ const UserList = () => {
         (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-    
-    const UserAvatar = ({ user }) => (
-        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-            {user.photoURL ? (
-                <Image src={user.photoURL} alt={user.name || 'User Avatar'} width={40} height={40} className="object-cover" />
-            ) : user.name ? (
-                <span className="text-lg font-medium text-gray-600">{user.name[0].toUpperCase()}</span>
-            ) : user.email ? (
-                <span className="text-lg font-medium text-gray-600">{user.email[0].toUpperCase()}</span>
-            ) : (
-                <User className="w-6 h-6 text-gray-500" />
-            )}
-        </div>
-    );
 
-    const UserAvatarMobile = ({ user }) => (
-        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-            {user.photoURL ? (
-                <Image src={user.photoURL} alt={user.name || 'User Avatar'} width={48} height={48} className="object-cover" />
-            ) : user.name ? (
-                <span className="text-xl font-medium text-gray-600">{user.name[0].toUpperCase()}</span>
-            ) : user.email ? (
-                <span className="text-xl font-medium text-gray-600">{user.email[0].toUpperCase()}</span>
-            ) : (
-                <User className="w-7 h-7 text-gray-500" />
-            )}
-        </div>
-    );
+    const UserAvatar = ({ user, size = 'md' }) => {
+        const dimensions = size === 'md' ? 'w-10 h-10' : 'w-12 h-12';
+        const textSize = size === 'md' ? 'text-lg' : 'text-xl';
+        const iconSize = size === 'md' ? 'w-6 h-6' : 'w-7 h-7';
+
+        return (
+            <div className={`${dimensions} rounded-full bg-gray-200 flex items-center justify-center overflow-hidden`}>
+                {user.photoURL ? (
+                    <Image src={user.photoURL} alt={user.name || 'User Avatar'} width={size === 'md' ? 40 : 48} height={size === 'md' ? 40 : 48} className="object-cover" />
+                ) : user.name ? (
+                    <span className={`${textSize} font-medium text-gray-600`}>{user.name[0].toUpperCase()}</span>
+                ) : user.email ? (
+                    <span className={`${textSize} font-medium text-gray-600`}>{user.email[0].toUpperCase()}</span>
+                ) : (
+                    <User className={`${iconSize} text-gray-500`} />
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between">
@@ -85,7 +77,7 @@ const UserList = () => {
                     {filteredUsers.length > 0 ? filteredUsers.map(user => (
                         <div key={user.id} className="bg-white border rounded-lg p-4 shadow-sm">
                             <div className="flex items-center gap-4">
-                                <UserAvatarMobile user={user} />
+                                <UserAvatar user={user} size="lg" />
                                 <div className="flex-1">
                                     <h3 className="font-semibold text-gray-800 truncate">{user.name || 'No Name'}</h3>
                                     <p className="text-xs text-gray-500 truncate">{user.email}</p>

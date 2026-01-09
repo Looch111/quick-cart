@@ -39,7 +39,6 @@ const Navbar = () => {
     { name: 'Dashboard', path: '/admin' },
     { name: 'Orders', path: '/admin/orders', notification: hasNewOrders },
     { name: 'Products', path: '/admin/products' },
-    { name: 'Add Product', path: '/admin/add-product' },
     { name: 'Users', path: '/admin/users' },
     { name: 'Marketing', path: '/admin/marketing' },
     { name: 'Promotions', path: '/admin/promotions' },
