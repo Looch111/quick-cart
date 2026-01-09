@@ -272,7 +272,7 @@ export const AppContextProvider = (props) => {
     const addAddress = async (newAddress) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) setShowLogin(true);
             return;
         }
         const addressCollectionRef = collection(firestore, 'users', userData._id, 'addresses');
@@ -326,7 +326,7 @@ export const AppContextProvider = (props) => {
     const addProduct = async (productData) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) setShowLogin(true);
             return;
         }
         if (!isSeller && !isAdmin) {
@@ -346,7 +346,7 @@ export const AppContextProvider = (props) => {
     const updateProduct = async (updatedProduct) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) setShowLogin(true);
             return;
         }
 
@@ -378,7 +378,7 @@ export const AppContextProvider = (props) => {
     const deleteProduct = async (productId) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) setShowLogin(true);
             return;
         }
         
@@ -855,6 +855,8 @@ export const AppContextProvider = (props) => {
         const userDocRef = doc(firestore, 'users', userData._id);
         try {
             await setDoc(userDocRef, { [field]: value }, { merge: true });
+            // Also update local state for immediate UI feedback
+            setUserData(prev => ({...prev, [field]: value}));
         } catch (error) {
             console.error("Error updating user field:", error);
             toast.error("Failed to update profile.");
@@ -873,10 +875,8 @@ export const AppContextProvider = (props) => {
 
     const addToCart = (itemId) => {
         if (!userData) {
-            if (!showLogin) {
-                toast.error("Please log in to continue.", { id: 'login-toast' });
-                setShowLogin(true);
-            }
+            toast.error("Please log in to continue.", { id: 'login-toast' });
+            if (!showLogin) setShowLogin(true);
             return;
         }
     
@@ -917,10 +917,8 @@ export const AppContextProvider = (props) => {
     
     const addMultipleToCart = async (items) => {
         if (!userData) {
-            if (!showLogin) {
-                toast.error("Please log in to continue.", { id: 'login-toast' });
-                setShowLogin(true);
-            }
+            toast.error("Please log in to continue.", { id: 'login-toast' });
+            if (!showLogin) setShowLogin(true);
             return;
         }
         const userDocRef = doc(firestore, 'users', userData._id);
@@ -968,10 +966,8 @@ export const AppContextProvider = (props) => {
 
     const updateCartQuantity = async (itemId, quantity) => {
         if (!userData) {
-            if (!showLogin) {
-                toast.error("Please log in to continue.", { id: 'login-toast' });
-                setShowLogin(true);
-            }
+            toast.error("Please log in to continue.", { id: 'login-toast' });
+            if (!showLogin) setShowLogin(true);
             return;
         }
     
@@ -1036,10 +1032,8 @@ export const AppContextProvider = (props) => {
 
     const toggleWishlist = (productId) => {
         if (!userData) {
-            if (!showLogin) {
-                toast.error("Please log in to continue.", { id: 'login-toast' });
-                setShowLogin(true);
-            }
+            toast.error("Please log in to continue.", { id: 'login-toast' });
+            if (!showLogin) setShowLogin(true);
             return;
         }
         const newWishlist = { ...userData.wishlistItems };
