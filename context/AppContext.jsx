@@ -47,6 +47,8 @@ export const AppContextProvider = (props) => {
     const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
     const [productForSizeSelection, setProductForSizeSelection] = useState(null);
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+    const [orderForDispute, setOrderForDispute] = useState(null);
     
     const cartItems = userData?.cartItems || {};
     const wishlistItems = userData?.wishlistItems || {};
@@ -67,6 +69,16 @@ export const AppContextProvider = (props) => {
     
     const openAddressModal = () => setIsAddressModalOpen(true);
     const closeAddressModal = () => setIsAddressModalOpen(false);
+
+    const openDisputeModal = (order) => {
+        setOrderForDispute(order);
+        setIsDisputeModalOpen(true);
+    };
+
+    const closeDisputeModal = () => {
+        setOrderForDispute(null);
+        setIsDisputeModalOpen(false);
+    };
 
     useEffect(() => { 
         if (!productsLoading) {
@@ -662,6 +674,70 @@ export const AppContextProvider = (props) => {
         toast.success("Seller payouts processed!");
     };
 
+    const confirmOrderDelivery = async (orderId) => {
+        const orderRef = doc(firestore, 'orders', orderId);
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const orderDoc = await transaction.get(orderRef);
+                if (!orderDoc.exists() || orderDoc.data().status !== 'Delivered') {
+                    throw new Error("Order cannot be confirmed.");
+                }
+                
+                // Update order status to Completed
+                transaction.update(orderRef, { status: 'Completed' });
+                
+                // Process payouts
+                await processSellerPayouts({ ...orderDoc.data(), _id: orderId });
+            });
+            toast.success("Order confirmed and completed!");
+        } catch (error) {
+            console.error("Error confirming order delivery: ", error);
+            toast.error(error.message || "Failed to confirm order.");
+        }
+    };
+    
+    const reportIssue = async (orderId, reason) => {
+        const orderRef = doc(firestore, 'orders', orderId);
+        try {
+            await setDoc(orderRef, {
+                status: 'Disputed',
+                dispute: {
+                    reason: reason,
+                    date: new Date().toISOString()
+                }
+            }, { merge: true });
+            
+            closeDisputeModal();
+            toast.success("Your issue has been reported. Admin will review it shortly.");
+        } catch (error) {
+            console.error("Error reporting issue: ", error);
+            toast.error("Failed to report issue.");
+        }
+    };
+
+    const updateItemStatus = async (orderId, itemId, newStatus) => {
+        const orderRef = doc(firestore, 'orders', orderId);
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const orderDoc = await transaction.get(orderRef);
+                if (!orderDoc.exists()) throw new Error("Order not found.");
+
+                const orderData = orderDoc.data();
+                const itemIndex = orderData.items.findIndex(item => item._id === itemId);
+                if (itemIndex === -1) throw new Error("Item not found in order.");
+
+                const updatedItems = [...orderData.items];
+                updatedItems[itemIndex].status = newStatus;
+                
+                transaction.update(orderRef, { items: updatedItems });
+            });
+            toast.success(`Item status updated to ${newStatus}`);
+        } catch (error) {
+            console.error("Error updating item status: ", error);
+            toast.error(error.message || "Failed to update item status.");
+        }
+    }
+
 
     const updateOrderStatus = async (orderId, newStatus) => {
          if (!isAdmin) {
@@ -770,8 +846,10 @@ export const AppContextProvider = (props) => {
 
     const updateUserField = async (field, value) => {
         if (!userData) {
-            toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) {
+                toast.error("Please log in to continue.", { id: 'login-toast' });
+                setShowLogin(true);
+            }
             return;
         }
         const userDocRef = doc(firestore, 'users', userData._id);
@@ -795,8 +873,10 @@ export const AppContextProvider = (props) => {
 
     const addToCart = (itemId) => {
         if (!userData) {
-            toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) {
+                toast.error("Please log in to continue.", { id: 'login-toast' });
+                setShowLogin(true);
+            }
             return;
         }
     
@@ -837,8 +917,10 @@ export const AppContextProvider = (props) => {
     
     const addMultipleToCart = async (items) => {
         if (!userData) {
-            toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) {
+                toast.error("Please log in to continue.", { id: 'login-toast' });
+                setShowLogin(true);
+            }
             return;
         }
         const userDocRef = doc(firestore, 'users', userData._id);
@@ -886,8 +968,10 @@ export const AppContextProvider = (props) => {
 
     const updateCartQuantity = async (itemId, quantity) => {
         if (!userData) {
-            toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) {
+                toast.error("Please log in to continue.", { id: 'login-toast' });
+                setShowLogin(true);
+            }
             return;
         }
     
@@ -952,8 +1036,10 @@ export const AppContextProvider = (props) => {
 
     const toggleWishlist = (productId) => {
         if (!userData) {
-            toast.error("Please log in to continue.", { id: 'login-toast' });
-            setShowLogin(true);
+            if (!showLogin) {
+                toast.error("Please log in to continue.", { id: 'login-toast' });
+                setShowLogin(true);
+            }
             return;
         }
         const newWishlist = { ...userData.wishlistItems };
@@ -1006,7 +1092,9 @@ export const AppContextProvider = (props) => {
         isAddressModalOpen, openAddressModal, closeAddressModal,
         reverseSellerPayouts,
         requestWithdrawal,
-        addProductReview
+        addProductReview,
+        confirmOrderDelivery, reportIssue, updateItemStatus,
+        isDisputeModalOpen, openDisputeModal, closeDisputeModal, orderForDispute
     }
 
     return (
@@ -1015,16 +1103,3 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
-
-    
-
-    
-
-
-
-
-
-
-
-
-

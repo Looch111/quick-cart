@@ -1,13 +1,19 @@
 'use client';
 import { useState } from 'react';
 import { FileWarning } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
 
-const DisputeModal = ({ onConfirm, onCancel }) => {
+const DisputeModal = () => {
+    const { isDisputeModalOpen, closeDisputeModal, orderForDispute, reportIssue } = useAppContext();
     const [reason, setReason] = useState('');
+
+    if (!isDisputeModalOpen) {
+        return null;
+    }
 
     const handleSubmit = () => {
         if (reason.trim()) {
-            onConfirm(reason);
+            reportIssue(orderForDispute._id, reason);
         }
     };
 
@@ -34,7 +40,7 @@ const DisputeModal = ({ onConfirm, onCancel }) => {
                 </div>
                 <div className="mt-6 flex justify-end gap-4">
                     <button
-                        onClick={onCancel}
+                        onClick={closeDisputeModal}
                         type="button"
                         className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
                     >

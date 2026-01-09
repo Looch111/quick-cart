@@ -35,12 +35,11 @@ const OrderStatusTracker = ({ status }) => {
 
 
 const MyOrders = () => {
-    const { currency, userData, userOrders, setShowLogin, confirmOrderDelivery, reportIssue } = useAppContext();
+    const { currency, userData, userOrders, setShowLogin, confirmOrderDelivery, openDisputeModal } = useAppContext();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [showDisputeModal, setShowDisputeModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
 
     useEffect(() => {
@@ -48,7 +47,6 @@ const MyOrders = () => {
             setLoading(true);
         } else if (userData === null) {
             if (router && setShowLogin) {
-                router.push('/');
                 setShowLogin(true);
             }
         } else if (userOrders) {
@@ -63,8 +61,7 @@ const MyOrders = () => {
     };
 
     const handleDisputeClick = (order) => {
-        setSelectedOrder(order);
-        setShowDisputeModal(true);
+        openDisputeModal(order);
     };
 
     const executeConfirm = async () => {
@@ -74,14 +71,6 @@ const MyOrders = () => {
         setShowConfirmModal(false);
         setSelectedOrder(null);
     };
-
-    const executeDispute = async (reason) => {
-        if (selectedOrder && reason) {
-            await reportIssue(selectedOrder._id, reason);
-        }
-        setShowDisputeModal(false);
-        setSelectedOrder(null);
-    }
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -225,12 +214,6 @@ const MyOrders = () => {
                     title="Confirm Delivery"
                     message={<>By confirming, you agree that you have received your order. <br/>This action is irreversible and the seller will be paid immediately.</>}
                     confirmText="Yes, I Have Received My Order"
-                />
-            )}
-            {showDisputeModal && (
-                <DisputeModal
-                    onConfirm={executeDispute}
-                    onCancel={() => setShowDisputeModal(false)}
                 />
             )}
         </>
