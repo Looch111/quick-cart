@@ -174,7 +174,7 @@ const Product = () => {
             }
         }
 
-        if (productId && products && products.length > 0 && users && users.length > 0) {
+        if (productId && products && products.length > 0 && users) {
             fetchProductData(productId);
         }
     }, [productId, products, users]);

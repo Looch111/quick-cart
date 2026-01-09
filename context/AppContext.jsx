@@ -38,6 +38,7 @@ export const AppContextProvider = (props) => {
     const [promotions, setPromotions] = useState([]);
     const [platformSettings, setPlatformSettings] = useState({});
     const [userData, setUserData] = useState(undefined);
+    const [users, setUsers] = useState([]);
     const [userAddresses, setUserAddresses] = useState([]);
     const [userOrders, setUserOrders] = useState([]);
     const [isSeller, setIsSeller] = useState(false);
@@ -91,6 +92,7 @@ export const AppContextProvider = (props) => {
     useEffect(() => { if (!bannersLoading) setBanners(bannersData.map(b => ({ ...b, id: b.id }))); }, [bannersData, bannersLoading]);
     useEffect(() => { if (!promotionsLoading) setPromotions(promotionsData.map(p => ({ ...p, id: p.id }))); }, [promotionsData, promotionsLoading]);
     useEffect(() => { if (!settingsLoading && settingsData) setPlatformSettings(settingsData); }, [settingsData, settingsLoading]);
+    useEffect(() => { if (!usersLoading) setUsers(usersData); }, [usersData, usersLoading]);
 
     useEffect(() => {
         let unsubscribeUser;
@@ -1036,14 +1038,14 @@ export const AppContextProvider = (props) => {
             if (!showLogin) setShowLogin(true);
             return;
         }
-        const newWishlist = { ...userData.wishlistItems };
+        const newWishlist = { ...wishlistItems };
         if (newWishlist[productId]) {
             delete newWishlist[productId];
         } else {
             newWishlist[productId] = true;
         }
         updateUserField('wishlistItems', newWishlist);
-    }
+    };
 
     const getWishlistCount = () => {
         if (!wishlistItems) return 0;
@@ -1058,7 +1060,7 @@ export const AppContextProvider = (props) => {
 
     const value = {
         currency, router,
-        userData, setUserData, isSeller, isAdmin, authLoading,
+        userData, setUserData, users, isSeller, isAdmin, authLoading,
         products,
         allRawProducts, 
         productsLoading,
