@@ -686,7 +686,7 @@ export const AppContextProvider = (props) => {
                 }
                 
                 // Update order status to Completed
-                transaction.update(orderRef, { status: 'Completed' });
+                transaction.update(orderRef, { status: 'Completed', autoCompletionDate: null });
                 
                 // Process payouts
                 await processSellerPayouts({ ...orderDoc.data(), _id: orderId });
@@ -706,7 +706,8 @@ export const AppContextProvider = (props) => {
                 dispute: {
                     reason: reason,
                     date: new Date().toISOString()
-                }
+                },
+                autoCompletionDate: null // Pause auto-completion
             }, { merge: true });
             
             closeDisputeModal();
@@ -730,8 +731,23 @@ export const AppContextProvider = (props) => {
 
                 const updatedItems = [...orderData.items];
                 updatedItems[itemIndex].status = newStatus;
-                
-                transaction.update(orderRef, { items: updatedItems });
+
+                // Check if all items are delivered to update the main order status
+                const allItemsDelivered = updatedItems.every(item => item.status === 'Delivered');
+
+                if (allItemsDelivered) {
+                    const confirmationWindowHours = platformSettings.confirmationWindowHours || 72;
+                    const autoCompletionDate = new Date();
+                    autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
+                    
+                    transaction.update(orderRef, { 
+                        items: updatedItems,
+                        status: 'Delivered', // Update main order status
+                        autoCompletionDate: autoCompletionDate.toISOString() 
+                    });
+                } else {
+                    transaction.update(orderRef, { items: updatedItems });
+                }
             });
             toast.success(`Item status updated to ${newStatus}`);
         } catch (error) {
@@ -749,7 +765,8 @@ export const AppContextProvider = (props) => {
         const orderDocRef = doc(firestore, 'orders', orderId);
         await setDoc(orderDocRef, { status: newStatus }, { merge: true });
 
-        if (newStatus === "Delivered") {
+        // This admin action now triggers payout directly
+        if (newStatus === "Completed") {
             const orderSnap = await getDoc(orderDocRef);
             if (orderSnap.exists()) {
                 await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
@@ -764,8 +781,8 @@ export const AppContextProvider = (props) => {
             toast.error("You are not authorized to perform this action.");
             return;
         }
-        if (order.status !== 'Delivered') {
-            toast.error("Cannot reverse payout for an order that is not marked as delivered.");
+        if (order.status !== 'Completed') {
+            toast.error("Cannot reverse payout for an order that is not marked as completed.");
             return;
         }
     
@@ -1099,3 +1116,4 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
+

@@ -55,17 +55,21 @@ const Orders = () => {
             case 'Delivered': return 'bg-green-100 text-green-800';
             case 'Shipped': return 'bg-blue-100 text-blue-800';
             case 'Processing': return 'bg-yellow-100 text-yellow-800';
+            case 'Completed': return 'bg-green-100 text-green-800';
+            case 'Disputed': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
     
     const getOverallStatusClass = (status) => {
         switch (status) {
-            case 'Delivered': return 'bg-green-100 text-green-800';
-            case 'Shipped': return 'bg-blue-100 text-blue-800';
-             case 'Partially Shipped': return 'bg-cyan-100 text-cyan-800';
+            case 'Delivered': return 'bg-blue-100 text-blue-800';
+            case 'Shipped': return 'bg-purple-100 text-purple-800';
+            case 'Partially Shipped': return 'bg-cyan-100 text-cyan-800';
             case 'Processing': return 'bg-yellow-100 text-yellow-800';
-            case 'Order Placed': return 'bg-purple-100 text-purple-800';
+            case 'Order Placed': return 'bg-indigo-100 text-indigo-800';
+            case 'Completed': return 'bg-green-100 text-green-800';
+            case 'Disputed': return 'bg-red-100 text-red-800';
             case 'pending': return 'bg-gray-100 text-gray-800';
             case 'failed': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
@@ -116,8 +120,10 @@ const Orders = () => {
                                         <option value="Partially Shipped">Partially Shipped</option>
                                         <option value="Shipped">Shipped</option>
                                         <option value="Delivered">Delivered</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Disputed">Disputed</option>
                                     </select>
-                                    {order.status === 'Delivered' && (
+                                    {order.status === 'Completed' && (
                                         <button onClick={() => handleReverseClick(order)} className="p-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200" title="Reverse Payout">
                                             <RotateCcw className="w-4 h-4" />
                                         </button>
@@ -184,8 +190,10 @@ const Orders = () => {
                                                     <option value="Partially Shipped">Partially Shipped</option>
                                                     <option value="Shipped">Shipped</option>
                                                     <option value="Delivered">Delivered</option>
+                                                    <option value="Completed">Completed</option>
+                                                    <option value="Disputed">Disputed</option>
                                                 </select>
-                                                {order.status === 'Delivered' && (
+                                                {order.status === 'Completed' && (
                                                     <button onClick={() => handleReverseClick(order)} className="p-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200" title="Reverse Payout">
                                                         <RotateCcw className="w-5 h-5" />
                                                     </button>
