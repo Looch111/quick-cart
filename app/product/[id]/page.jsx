@@ -159,7 +159,7 @@ const Product = () => {
     const productId = params.id;
 
     useEffect(() => {
-        const fetchProductData = async (id) => {
+        const fetchProductData = (id) => {
             const product = products.find(product => product._id === id);
             setProductData(product);
             if (product) {
@@ -174,7 +174,7 @@ const Product = () => {
             }
         }
 
-        if (productId && products.length > 0 && users.length > 0) {
+        if (productId && products && products.length > 0 && users && users.length > 0) {
             fetchProductData(productId);
         }
     }, [productId, products, users]);
