@@ -128,11 +128,9 @@ const WalletPage = () => {
                                             <tr key={tx.id} className="bg-white border-b">
                                                 <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4 capitalize">{tx.type}</td>
-                                                {tx.type === 'Sale' ? (
-                                                    <td className="px-6 py-4 font-medium text-green-600 text-right">+{currency}{(tx.netEarnings || 0).toFixed(2)}</td>
-                                                ) : (
-                                                    <td className="px-6 py-4 font-medium text-red-600 text-right">-{currency}{Math.abs(tx.amount || 0).toFixed(2)}</td>
-                                                )}
+                                                <td className={`px-6 py-4 font-medium text-right ${tx.type === 'Sale' ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {tx.type === 'Sale' ? '+' : '-'}{currency}{Math.abs(tx.amount || 0).toFixed(2)}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>

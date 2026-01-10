@@ -660,6 +660,7 @@ export const AppContextProvider = (props) => {
                 const newTransaction = {
                     id: `txn_sale_${order._id.slice(-6)}_${Date.now()}`,
                     type: 'Sale',
+                    amount: netEarnings, // For display consistency
                     grossSale: grossSale,
                     commission: commission,
                     netEarnings: netEarnings,
@@ -679,26 +680,8 @@ export const AppContextProvider = (props) => {
 
     const confirmOrderDelivery = async (orderId) => {
         const orderRef = doc(firestore, 'orders', orderId);
-        try {
-            await runTransaction(firestore, async (transaction) => {
-                const orderDoc = await transaction.get(orderRef);
-                if (!orderDoc.exists()) {
-                    throw new Error("Order not found.");
-                }
-                
-                const orderData = orderDoc.data();
-                if (orderData.status !== 'Shipped') {
-                     throw new Error("Order cannot be confirmed at this time.");
-                }
-
-                // Update order status to Delivered
-                transaction.update(orderRef, { status: 'Delivered', autoCompletionDate: null });
-            });
-            toast.success("Delivery Confirmed! Admin will now process the payment.");
-        } catch (error) {
-            console.error("Error confirming order delivery: ", error);
-            toast.error(error.message || "Failed to confirm order.");
-        }
+        await setDoc(orderRef, { status: 'Delivered' }, { merge: true });
+        toast.success("Delivery Confirmed! Admin will now process the payment.");
     };
     
     const reportIssue = async (orderId, reason) => {
@@ -771,20 +754,14 @@ export const AppContextProvider = (props) => {
 
         const orderData = orderSnap.data();
 
-        // Payouts should ONLY happen when admin marks an order as "Completed"
-        if (newStatus === "Completed") {
-            // Check if the order is ready for completion and payout hasn't been processed
-            if (orderData.status === 'Delivered' && !orderData.payoutProcessed) {
-                await processSellerPayouts({ ...orderData, _id: orderId });
-                await setDoc(orderDocRef, { status: newStatus, payoutProcessed: true }, { merge: true });
-                toast.success(`Order completed and payout processed!`);
-            } else if (orderData.payoutProcessed) {
-                toast.warn("Payout has already been processed for this order.");
-                return false;
-            } else {
-                toast.error("Order must be in 'Delivered' state before completion.");
-                return false;
-            }
+        // Payouts should ONLY happen when admin marks a "Delivered" order as "Completed"
+        if (orderData.status === 'Delivered' && newStatus === "Completed" && !orderData.payoutProcessed) {
+            await processSellerPayouts({ ...orderData, _id: orderId });
+            await setDoc(orderDocRef, { status: newStatus, payoutProcessed: true }, { merge: true });
+            toast.success(`Order completed and payout processed!`);
+        } else if (newStatus === "Completed" && orderData.payoutProcessed) {
+            toast.warn("Payout has already been processed for this order.");
+            return false;
         } else {
             // For all other status updates, just update the status
             await setDoc(orderDocRef, { status: newStatus }, { merge: true });
