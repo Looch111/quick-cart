@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "@/context/AppContext";
@@ -28,7 +29,7 @@ const Orders = () => {
     const handleStatusChange = async (orderId, newStatus) => {
         const success = await updateOrderStatus(orderId, newStatus);
         if (!success) {
-            toast.error("Failed to update status");
+            // Error toasts are handled within the context function
         }
     }
 
@@ -119,7 +120,7 @@ const Orders = () => {
                                         <option value="Processing">Processing</option>
                                         <option value="Partially Shipped">Partially Shipped</option>
                                         <option value="Shipped">Shipped</option>
-                                        <option value="Delivered">Delivered (Buyer Confirmed)</option>
+                                        <option value="Delivered" disabled>Delivered (Buyer Confirmed)</option>
                                         <option value="Completed">Complete & Pay Seller</option>
                                         <option value="Disputed">Disputed</option>
                                     </select>
@@ -189,7 +190,7 @@ const Orders = () => {
                                                     <option value="Processing">Processing</option>
                                                     <option value="Partially Shipped">Partially Shipped</option>
                                                     <option value="Shipped">Shipped</option>
-                                                    <option value="Delivered" disabled={order.status !== 'Delivered'}>Delivered (Buyer Confirmed)</option>
+                                                    <option value="Delivered" disabled>Delivered (Buyer Confirmed)</option>
                                                     <option value="Completed">Complete & Pay Seller</option>
                                                     <option value="Disputed">Disputed</option>
                                                 </select>

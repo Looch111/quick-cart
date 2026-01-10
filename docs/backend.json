@@ -176,7 +176,8 @@
                 "date": { "type": "string", "format": "date-time" }
             }
         },
-        "autoCompletionDate": { "type": "string", "format": "date-time" }
+        "autoCompletionDate": { "type": "string", "format": "date-time" },
+        "payoutProcessed": { "type": "boolean", "description": "Flag to prevent double payouts." }
       },
       "required": ["userId", "items", "amount", "address", "status", "date"]
     },

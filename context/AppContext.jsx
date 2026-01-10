@@ -1,3 +1,4 @@
+
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -527,6 +528,7 @@ export const AppContextProvider = (props) => {
                 date: serverTimestamp(),
                 paymentMethod: 'flutterwave',
                 paymentTransactionId: paymentResponse.transaction_id,
+                payoutProcessed: false,
             };
             batch.set(newOrderRef, newOrderData);
 
@@ -602,7 +604,8 @@ export const AppContextProvider = (props) => {
                 address: address,
                 status: "Order Placed", // Overall order status
                 date: serverTimestamp(),
-                paymentMethod: 'wallet'
+                paymentMethod: 'wallet',
+                payoutProcessed: false,
             };
             batch.set(newOrderRef, newOrderData);
 
@@ -679,9 +682,15 @@ export const AppContextProvider = (props) => {
         try {
             await runTransaction(firestore, async (transaction) => {
                 const orderDoc = await transaction.get(orderRef);
-                if (!orderDoc.exists() || orderDoc.data().status !== 'Shipped') {
-                    throw new Error("Order cannot be confirmed at this time.");
+                if (!orderDoc.exists()) {
+                    throw new Error("Order not found.");
                 }
+                
+                const orderData = orderDoc.data();
+                if (orderData.status !== 'Shipped') {
+                     throw new Error("Order cannot be confirmed at this time.");
+                }
+
                 // Update order status to Delivered
                 transaction.update(orderRef, { status: 'Delivered', autoCompletionDate: null });
             });
@@ -753,24 +762,35 @@ export const AppContextProvider = (props) => {
            return false;
         }
         const orderDocRef = doc(firestore, 'orders', orderId);
-        const updateData = { status: newStatus };
-       
-        await setDoc(orderDocRef, updateData, { merge: true });
-   
-        // Payouts should ONLY happen when admin marks order as COMPLETED
-        if (newStatus === "Completed") {
-            const orderSnap = await getDoc(orderDocRef);
-            if (orderSnap.exists()) {
-                if (orderSnap.data().status !== 'Completed') { // Prevent double payout
-                    await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
-                } else {
-                     toast.warn("Payout has already been processed for this order.");
-                     return false;
-                }
-            }
+        const orderSnap = await getDoc(orderDocRef);
+
+        if (!orderSnap.exists()) {
+            toast.error("Order not found.");
+            return false;
         }
 
-        toast.success(`Order status updated to ${newStatus}`)
+        const orderData = orderSnap.data();
+
+        // Payouts should ONLY happen when admin marks an order as "Completed"
+        if (newStatus === "Completed") {
+            // Check if the order is ready for completion and payout hasn't been processed
+            if (orderData.status === 'Delivered' && !orderData.payoutProcessed) {
+                await processSellerPayouts({ ...orderData, _id: orderId });
+                await setDoc(orderDocRef, { status: newStatus, payoutProcessed: true }, { merge: true });
+                toast.success(`Order completed and payout processed!`);
+            } else if (orderData.payoutProcessed) {
+                toast.warn("Payout has already been processed for this order.");
+                return false;
+            } else {
+                toast.error("Order must be in 'Delivered' state before completion.");
+                return false;
+            }
+        } else {
+            // For all other status updates, just update the status
+            await setDoc(orderDocRef, { status: newStatus }, { merge: true });
+            toast.success(`Order status updated to ${newStatus}`);
+        }
+       
         return true;
    }
 
@@ -813,9 +833,9 @@ export const AppContextProvider = (props) => {
             }
         }
     
-        // Finally, update the order status back to 'Shipped'
+        // Finally, update the order status back to 'Shipped' and reset payout flag
         const orderRef = doc(firestore, 'orders', order._id);
-        batch.update(orderRef, { status: 'Shipped' });
+        batch.update(orderRef, { status: 'Shipped', payoutProcessed: false });
     
         try {
             await batch.commit();
