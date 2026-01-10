@@ -113,14 +113,14 @@ const Orders = () => {
                                         onChange={(e) => handleStatusChange(order._id, e.target.value)} 
                                         value={order.status} 
                                         className="flex-grow border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-sm"
-                                        disabled={order.status === 'pending' || order.status === 'failed'}
+                                        disabled={order.status === 'pending' || order.status === 'failed' || order.status === 'Completed'}
                                     >
                                         <option value="Order Placed">Order Placed</option>
                                         <option value="Processing">Processing</option>
                                         <option value="Partially Shipped">Partially Shipped</option>
                                         <option value="Shipped">Shipped</option>
-                                        <option value="Delivered">Delivered</option>
-                                        <option value="Completed">Completed</option>
+                                        <option value="Delivered">Delivered (Buyer Confirmed)</option>
+                                        <option value="Completed">Complete & Pay Seller</option>
                                         <option value="Disputed">Disputed</option>
                                     </select>
                                     {order.status === 'Completed' && (
@@ -182,15 +182,15 @@ const Orders = () => {
                                                 <select 
                                                     onChange={(e) => handleStatusChange(order._id, e.target.value)} 
                                                     value={order.status} 
-                                                    className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300"
-                                                    disabled={order.status === 'pending' || order.status === 'failed'}
+                                                    className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    disabled={order.status === 'pending' || order.status === 'failed' || order.status === 'Completed'}
                                                 >
                                                     <option value="Order Placed">Order Placed</option>
                                                     <option value="Processing">Processing</option>
                                                     <option value="Partially Shipped">Partially Shipped</option>
                                                     <option value="Shipped">Shipped</option>
-                                                    <option value="Delivered">Delivered</option>
-                                                    <option value="Completed">Completed</option>
+                                                    <option value="Delivered" disabled={order.status !== 'Delivered'}>Delivered (Buyer Confirmed)</option>
+                                                    <option value="Completed">Complete & Pay Seller</option>
                                                     <option value="Disputed">Disputed</option>
                                                 </select>
                                                 {order.status === 'Completed' && (

@@ -47,6 +47,7 @@ const MyOrders = () => {
             setLoading(true);
         } else if (userData === null) {
             if (router && setShowLogin) {
+                router.push('/');
                 setShowLogin(true);
             }
         } else if (userOrders) {
@@ -169,13 +170,13 @@ const MyOrders = () => {
                                                     </div>
                                                 </div>
                                             ))}
-                                            {order.status === 'Delivered' && (
+                                            {order.status === 'Shipped' && (
                                                 <div className="border-t pt-4 mt-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
                                                     <p className="text-sm text-gray-600 font-medium">Have you received your order?</p>
                                                     <div className="flex gap-3">
                                                         <button onClick={() => handleConfirmClick(order)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">
                                                             <PackageCheck className="w-4 h-4"/>
-                                                            Yes, Confirm Delivery
+                                                            Yes, I've Received It
                                                         </button>
                                                         <button onClick={() => handleDisputeClick(order)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200">
                                                              <FileWarning className="w-4 h-4"/>
@@ -188,6 +189,12 @@ const MyOrders = () => {
                                                 <div className="border-t pt-4 mt-4 flex items-center justify-center gap-2 text-center p-3 bg-yellow-50 rounded-md">
                                                     <MessageSquareWarning className="w-5 h-5 text-yellow-600 flex-shrink-0"/>
                                                     <p className="text-sm text-yellow-800">Your issue has been reported. Our admin team will review it and get back to you shortly.</p>
+                                                </div>
+                                            )}
+                                            {order.status === 'Delivered' && (
+                                                 <div className="border-t pt-4 mt-4 flex items-center justify-center gap-2 text-center p-3 bg-blue-50 rounded-md">
+                                                    <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0"/>
+                                                    <p className="text-sm text-blue-800">You've confirmed delivery. The admin team will now process the final payment to the seller.</p>
                                                 </div>
                                             )}
                                         </div>
@@ -212,8 +219,8 @@ const MyOrders = () => {
                     onConfirm={executeConfirm}
                     onCancel={() => setShowConfirmModal(false)}
                     title="Confirm Delivery"
-                    message={<>By confirming, you agree that you have received your order. <br/>This action is irreversible and the seller will be paid immediately.</>}
-                    confirmText="Yes, I Have Received My Order"
+                    message={<>By confirming, you agree that you have received your order. The admin will be notified to release payment to the seller.</>}
+                    confirmText="Yes, I Have Received It"
                 />
             )}
         </>

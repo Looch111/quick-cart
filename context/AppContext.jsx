@@ -1,5 +1,3 @@
-
-
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -681,17 +679,13 @@ export const AppContextProvider = (props) => {
         try {
             await runTransaction(firestore, async (transaction) => {
                 const orderDoc = await transaction.get(orderRef);
-                if (!orderDoc.exists() || orderDoc.data().status !== 'Delivered') {
+                if (!orderDoc.exists() || orderDoc.data().status !== 'Shipped') {
                     throw new Error("Order cannot be confirmed at this time.");
                 }
-                
-                // Update order status to Completed
-                transaction.update(orderRef, { status: 'Completed', autoCompletionDate: null });
-                
-                // Process payouts
-                await processSellerPayouts({ ...orderDoc.data(), _id: orderId });
+                // Update order status to Delivered
+                transaction.update(orderRef, { status: 'Delivered', autoCompletionDate: null });
             });
-            toast.success("Order confirmed and completed!");
+            toast.success("Delivery Confirmed! Admin will now process the payment.");
         } catch (error) {
             console.error("Error confirming order delivery: ", error);
             toast.error(error.message || "Failed to confirm order.");
@@ -732,7 +726,18 @@ export const AppContextProvider = (props) => {
                 const updatedItems = [...orderData.items];
                 updatedItems[itemIndex].status = newStatus;
                 
-                transaction.update(orderRef, { items: updatedItems });
+                // Update overall order status based on item statuses
+                const allItemsShipped = updatedItems.every(item => item.status === 'Shipped');
+                const anyItemShipped = updatedItems.some(item => item.status === 'Shipped');
+                
+                let newOverallStatus = orderData.status;
+                if (allItemsShipped) {
+                    newOverallStatus = 'Shipped';
+                } else if (anyItemShipped) {
+                    newOverallStatus = 'Partially Shipped';
+                }
+                
+                transaction.update(orderRef, { items: updatedItems, status: newOverallStatus });
             });
             toast.success(`Item status updated to ${newStatus}`);
         } catch (error) {
@@ -749,26 +754,19 @@ export const AppContextProvider = (props) => {
         }
         const orderDocRef = doc(firestore, 'orders', orderId);
         const updateData = { status: newStatus };
-
-        // If admin sets status to Delivered, start the auto-completion timer
-        if (newStatus === "Delivered") {
-            const confirmationWindowHours = platformSettings.confirmationWindowHours || 72;
-            const autoCompletionDate = new Date();
-            autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
-            updateData.autoCompletionDate = autoCompletionDate.toISOString();
-             updateData.autoCompletionDate = autoCompletionDate.toISOString();
-        } else {
-            // Clear the timer if status is changed to something else
-            updateData.autoCompletionDate = null;
-        }
        
         await setDoc(orderDocRef, updateData, { merge: true });
    
-        // Payouts should ONLY happen when order is COMPLETED
+        // Payouts should ONLY happen when admin marks order as COMPLETED
         if (newStatus === "Completed") {
             const orderSnap = await getDoc(orderDocRef);
             if (orderSnap.exists()) {
-                await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
+                if (orderSnap.data().status !== 'Completed') { // Prevent double payout
+                    await processSellerPayouts({ ...orderSnap.data(), _id: orderSnap.id });
+                } else {
+                     toast.warn("Payout has already been processed for this order.");
+                     return false;
+                }
             }
         }
 
