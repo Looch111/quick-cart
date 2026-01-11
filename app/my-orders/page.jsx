@@ -170,7 +170,7 @@ const MyOrders = () => {
                                                     </div>
                                                 </div>
                                             ))}
-                                            {order.status === 'Shipped' && (
+                                            {(order.status === 'Shipped' || order.status === 'Partially Shipped') && (
                                                 <div className="border-t pt-4 mt-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
                                                     <p className="text-sm text-gray-600 font-medium">Have you received your order?</p>
                                                     <div className="flex gap-3">

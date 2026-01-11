@@ -633,55 +633,67 @@ export const AppContextProvider = (props) => {
 
 
     const processSellerPayouts = async (order) => {
-        const commissionRate = (platformSettings.commission || 0) / 100;
-        const sellerPayouts = {}; 
-
-        order.items.forEach(item => {
-            const sellerId = item.sellerId;
-            if (sellerId) {
-                const salePrice = (item.flashSalePrice && item.flashSalePrice > 0) ? item.flashSalePrice : item.offerPrice;
-                const earnings = salePrice * item.quantity;
-                if (!sellerPayouts[sellerId]) sellerPayouts[sellerId] = 0;
-                sellerPayouts[sellerId] += earnings;
-            }
-        });
-
+        if (!platformSettings || typeof platformSettings.commission === 'undefined') {
+            toast.error("Platform commission rate is not set. Cannot process payouts.");
+            return;
+        }
+    
+        const commissionRate = platformSettings.commission / 100;
         const batch = writeBatch(firestore);
-
+    
+        // Group earnings by seller
+        const sellerPayouts = order.items.reduce((acc, item) => {
+            if (item.sellerId) {
+                if (!acc[item.sellerId]) {
+                    acc[item.sellerId] = 0;
+                }
+                const salePrice = (item.flashSalePrice && item.flashSalePrice > 0) ? item.flashSalePrice : item.offerPrice;
+                acc[item.sellerId] += salePrice * item.quantity;
+            }
+            return acc;
+        }, {});
+    
         for (const sellerId in sellerPayouts) {
             const sellerRef = doc(firestore, 'users', sellerId);
-            const sellerSnap = await getDoc(sellerRef);
-
-            if (sellerSnap.exists()) {
-                const grossSale = sellerPayouts[sellerId];
-                const commission = grossSale * commissionRate;
-                const netEarnings = grossSale - commission;
-                
+            const grossSale = sellerPayouts[sellerId];
+            const commission = grossSale * commissionRate;
+            const netEarnings = grossSale - commission;
+    
+            if (netEarnings > 0) {
                 const newTransaction = {
-                    id: `txn_sale_${order._id.slice(-6)}_${Date.now()}`,
+                    id: `sale_${order._id}_${Date.now()}`,
                     type: 'Sale',
-                    amount: netEarnings, // For display consistency
-                    grossSale: grossSale,
-                    commission: commission,
-                    netEarnings: netEarnings,
+                    amount: netEarnings, // Storing net for consistency in transaction list
+                    grossSale,
+                    commission,
+                    netEarnings,
                     date: new Date().toISOString(),
                     orderId: order._id,
                 };
-                
+    
                 batch.update(sellerRef, {
                     'sellerWallet.balance': increment(netEarnings),
                     'sellerWallet.transactions': arrayUnion(newTransaction)
                 });
             }
         }
-        await batch.commit();
-        toast.success("Seller payouts processed!");
-    };
+        
+        // Mark the order as payout processed
+        const orderRef = doc(firestore, 'orders', order._id);
+        batch.update(orderRef, { payoutProcessed: true });
 
+        await batch.commit();
+        toast.success("Seller payouts processed successfully!");
+    };
+    
     const confirmOrderDelivery = async (orderId) => {
         const orderRef = doc(firestore, 'orders', orderId);
-        await setDoc(orderRef, { status: 'Delivered' }, { merge: true });
-        toast.success("Delivery Confirmed! Admin will now process the payment.");
+        const confirmationWindowHours = platformSettings?.confirmationWindowHours || 72;
+        const autoCompletionDate = new Date();
+        autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
+
+        await setDoc(orderRef, { status: 'Delivered', autoCompletionDate: autoCompletionDate.toISOString() }, { merge: true });
+        toast.success("Delivery Confirmed! The seller will be paid shortly.");
     };
     
     const reportIssue = async (orderId, reason) => {
@@ -746,23 +758,40 @@ export const AppContextProvider = (props) => {
         }
         const orderDocRef = doc(firestore, 'orders', orderId);
         const orderSnap = await getDoc(orderDocRef);
-
+    
         if (!orderSnap.exists()) {
             toast.error("Order not found.");
             return false;
         }
-
-        const orderData = orderSnap.data();
-
-        // Payouts should ONLY happen when admin marks a "Delivered" order as "Completed"
-        if (orderData.status === 'Delivered' && newStatus === "Completed" && !orderData.payoutProcessed) {
-            await processSellerPayouts({ ...orderData, _id: orderId });
-            await setDoc(orderDocRef, { status: newStatus, payoutProcessed: true }, { merge: true });
-            toast.success(`Order completed and payout processed!`);
-        } else if (newStatus === "Completed" && orderData.payoutProcessed) {
-            toast.warn("Payout has already been processed for this order.");
-            return false;
-        } else {
+    
+        const orderData = { ...orderSnap.data(), _id: orderSnap.id };
+    
+        // If admin is marking the order as "Completed"
+        if (newStatus === "Completed") {
+            if (orderData.payoutProcessed) {
+                toast.warn("Payout has already been processed for this order.");
+                await setDoc(orderDocRef, { status: newStatus }, { merge: true });
+                return false;
+            }
+            // Payout should only happen if moving from a non-paid status to Completed
+            if (orderData.status === "Delivered" || orderData.status === "Shipped") {
+                await processSellerPayouts(orderData);
+                await setDoc(orderDocRef, { status: newStatus, payoutProcessed: true }, { merge: true });
+                toast.success(`Order completed and payout processed!`);
+            } else {
+                toast.error(`Cannot complete order from '${orderData.status}' status.`);
+                return false;
+            }
+        } 
+        // If admin marks as "Delivered" (e.g., buyer is unresponsive)
+        else if (newStatus === "Delivered") {
+            const confirmationWindowHours = platformSettings?.confirmationWindowHours || 72;
+            const autoCompletionDate = new Date();
+            autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
+            await setDoc(orderDocRef, { status: newStatus, autoCompletionDate: autoCompletionDate.toISOString() }, { merge: true });
+            toast.success(`Order marked as Delivered. Buyer confirmation window has started.`);
+        }
+        else {
             // For all other status updates, just update the status
             await setDoc(orderDocRef, { status: newStatus }, { merge: true });
             toast.success(`Order status updated to ${newStatus}`);
@@ -795,7 +824,7 @@ export const AppContextProvider = (props) => {
     
                 if (originalTx) {
                     const reversalTx = {
-                        id: `txn_reversal_${order._id.slice(-6)}_${Date.now()}`,
+                        id: `reversal_${order._id}_${Date.now()}`,
                         type: 'Reversal',
                         amount: -originalTx.netEarnings,
                         date: new Date().toISOString(),
@@ -812,7 +841,7 @@ export const AppContextProvider = (props) => {
     
         // Finally, update the order status back to 'Shipped' and reset payout flag
         const orderRef = doc(firestore, 'orders', order._id);
-        batch.update(orderRef, { status: 'Shipped', payoutProcessed: false });
+        batch.update(orderRef, { status: 'Shipped', payoutProcessed: false, autoCompletionDate: null });
     
         try {
             await batch.commit();

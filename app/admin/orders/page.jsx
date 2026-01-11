@@ -120,7 +120,7 @@ const Orders = () => {
                                         <option value="Processing">Processing</option>
                                         <option value="Partially Shipped">Partially Shipped</option>
                                         <option value="Shipped">Shipped</option>
-                                        <option value="Delivered" disabled>Delivered (Buyer Confirmed)</option>
+                                        <option value="Delivered">Delivered</option>
                                         <option value="Completed">Complete & Pay Seller</option>
                                         <option value="Disputed">Disputed</option>
                                     </select>
@@ -190,7 +190,7 @@ const Orders = () => {
                                                     <option value="Processing">Processing</option>
                                                     <option value="Partially Shipped">Partially Shipped</option>
                                                     <option value="Shipped">Shipped</option>
-                                                    <option value="Delivered" disabled>Delivered (Buyer Confirmed)</option>
+                                                    <option value="Delivered">Delivered</option>
                                                     <option value="Completed">Complete & Pay Seller</option>
                                                     <option value="Disputed">Disputed</option>
                                                 </select>
