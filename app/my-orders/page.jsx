@@ -122,7 +122,9 @@ const MyOrders = () => {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {orders.map((order) => (
+                            {orders.map((order) => {
+                                const allItemsShipped = order.items.every(item => item.status === 'Shipped');
+                                return (
                                 <div key={order._id} className="relative bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                                      
                                     <div className={order.status === 'Completed' ? 'animate-blur-content' : ''}>
@@ -170,7 +172,7 @@ const MyOrders = () => {
                                                     </div>
                                                 </div>
                                             ))}
-                                            {(order.status === 'Shipped' || order.status === 'Partially Shipped') && (
+                                            {allItemsShipped && order.status === 'Shipped' && (
                                                 <div className="border-t pt-4 mt-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
                                                     <p className="text-sm text-gray-600 font-medium">Have you received your order?</p>
                                                     <div className="flex gap-3">
@@ -208,7 +210,7 @@ const MyOrders = () => {
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     )}
                 </div>
