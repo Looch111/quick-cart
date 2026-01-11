@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import Footer from '@/components/seller/Footer';
@@ -120,7 +121,9 @@ const WalletPage = () => {
                                         <tr>
                                             <th scope="col" className="px-6 py-3">Date</th>
                                             <th scope="col" className="px-6 py-3">Type</th>
-                                            <th scope="col" className="px-6 py-3 text-right">Amount</th>
+                                            <th scope="col" className="px-6 py-3 text-right">Gross Sale</th>
+                                            <th scope="col" className="px-6 py-3 text-right">Commission</th>
+                                            <th scope="col" className="px-6 py-3 text-right">Net Earnings</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -128,9 +131,18 @@ const WalletPage = () => {
                                             <tr key={tx.id} className="bg-white border-b">
                                                 <td className="px-6 py-4">{new Date(tx.date).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4 capitalize">{tx.type}</td>
-                                                <td className={`px-6 py-4 font-medium text-right ${tx.type === 'Sale' ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {tx.type === 'Sale' ? '+' : '-'}{currency}{Math.abs(tx.amount || 0).toFixed(2)}
-                                                </td>
+                                                 {tx.type === 'Sale' ? (
+                                                    <>
+                                                        <td className="px-6 py-4 text-right">{currency}{(tx.grossSale || 0).toFixed(2)}</td>
+                                                        <td className="px-6 py-4 text-right text-red-500">-{currency}{(tx.commission || 0).toFixed(2)}</td>
+                                                        <td className="px-6 py-4 font-medium text-right text-green-600">+{currency}{(tx.netEarnings || 0).toFixed(2)}</td>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <td colSpan="2" className='px-6 py-4 text-right'></td>
+                                                        <td className="px-6 py-4 font-medium text-right text-red-600">-{currency}{Math.abs(tx.amount || 0).toFixed(2)}</td>
+                                                    </>
+                                                )}
                                             </tr>
                                         ))}
                                     </tbody>
@@ -186,5 +198,7 @@ const WalletPage = () => {
 };
 
 export default WalletPage;
+
+    
 
     
