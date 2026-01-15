@@ -75,11 +75,13 @@ const AdminDashboard = () => {
         });
         
         _users.forEach(user => {
-          const creationDate = user.createdAt?.toDate();
-          if (creationDate && creationDate.getFullYear() === currentYear) {
-            const month = creationDate.getMonth();
-            initialUserCounts[month] += 1;
-          }
+            if (user.createdAt) {
+                const creationDate = user.createdAt?.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
+                if (creationDate && creationDate.getFullYear() === currentYear) {
+                    const month = creationDate.getMonth();
+                    initialUserCounts[month] += 1;
+                }
+            }
         });
 
         const cumulativeUserCounts = initialUserCounts.reduce((acc, count) => {
@@ -154,7 +156,7 @@ const AdminDashboard = () => {
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p><span className="font-medium text-gray-700">Customer:</span> {order.address.fullName}</p>
-                    <p><span className="font-medium text-gray-700">Date:</span> {new Date(order.date).toLocaleDateString()}</p>
+                    <p><span className="font-medium text-gray-700">Date:</span> {order.date ? new Date(order.date).toLocaleDateString() : 'N/A'}</p>
                     <p><span className="font-medium text-gray-700">Amount:</span> {currency}{order.amount.toFixed(2)}</p>
                   </div>
                 </div>
@@ -179,7 +181,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">...{order._id.slice(-6)}</td>
                       <td className="px-6 py-4">{order.address.fullName}</td>
                       <td className="px-6 py-4">{currency}{order.amount.toFixed(2)}</td>
-                      <td className="px-6 py-4">{new Date(order.date).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">{order.date ? new Date(order.date).toLocaleDateString() : 'N/A'}</td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">{order.status}</span>
                       </td>

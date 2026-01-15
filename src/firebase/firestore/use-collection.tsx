@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import {
@@ -39,7 +38,7 @@ export function useCollection(
 
     // If a `where` clause is provided, ensure all its values are defined.
     // This prevents queries like `where('userId', '==', undefined)`.
-    if (whereClause && whereClause.some(val => val === undefined)) {
+    if (Array.isArray(whereClause) && whereClause.some(val => val === undefined)) {
       return null;
     }
 
@@ -53,6 +52,7 @@ export function useCollection(
     if (limitClause) q = query(q, limit(limitClause));
     return q;
   }, [firestore, pathOrQuery, JSON.stringify(whereClause), JSON.stringify(orderByClause), limitClause]);
+
 
   useEffect(() => {
     if (!memoizedQuery) {

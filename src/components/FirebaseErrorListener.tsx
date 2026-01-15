@@ -20,9 +20,9 @@ export default function FirebaseErrorListener() {
           `Permission denied. Check security rules for ${error.context.operation} on ${error.context.path}`
         );
       } else {
-        // Fallback for generic errors
+        // Fallback for generic errors that might not be instances of our custom error
         console.error('An unknown permission error occurred:', error);
-        toast.error('An unexpected permission error occurred.');
+        toast.error(error.message || 'An unexpected permission error occurred.');
       }
     };
 
