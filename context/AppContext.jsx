@@ -149,7 +149,7 @@ export const AppContextProvider = (props) => {
             
             const ordersQuery = query(collection(firestore, 'orders'), where('userId', '==', userData._id), where('status', 'not-in', ['pending', 'failed']));
             const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-                const orders = snapshot.docs.map(doc => ({ ...doc.data(), _id: doc.id, date: doc.data().date.toDate() }));
+                const orders = snapshot.docs.map(doc => ({ ...doc.data(), _id: doc.id, date: doc.data().date?.toDate ? doc.data().date.toDate() : new Date() }));
                 setUserOrders(orders);
             });
 
