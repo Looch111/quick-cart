@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useEffect, useState, useMemo } from "react";
 import { useAppContext } from "@/context/AppContext";
@@ -106,7 +107,12 @@ const Orders = () => {
                                 <div className="text-sm text-gray-600 space-y-1">
                                     <p><span className="font-medium text-gray-700">Customer:</span> {order.address.fullName}</p>
                                     <p><span className="font-medium text-gray-700">Date:</span> {new Date(order.date).toLocaleDateString()}</p>
-                                    <p><span className="font-medium text-gray-700">Total:</span> {currency}{order.amount.toFixed(2)} ({order.totalItems} item{order.totalItems > 1 ? 's' : ''})</p>
+                                    <div className='flex items-center gap-2'>
+                                        <p><span className="font-medium text-gray-700">Total:</span> {currency}{order.amount.toFixed(2)}</p>
+                                        <div className={`px-2.5 py-1 text-xs font-medium rounded-full ${getOverallStatusClass(order.status)}`}>
+                                            ({order.totalItems} item{order.totalItems > 1 ? 's' : ''})
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="mt-3 flex items-center gap-2">
                                      <select 
@@ -172,9 +178,11 @@ const Orders = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div>
+                                            <div className='flex flex-col gap-1'>
                                                 <p>{currency}{order.amount.toFixed(2)}</p>
-                                                <p className="text-xs text-gray-500">{order.totalItems} item{order.totalItems > 1 ? 's' : ''}</p>
+                                                <div className={`px-2.5 py-1 text-xs font-medium rounded-full ${getOverallStatusClass(order.status)} max-w-fit`}>
+                                                   ({order.totalItems} item{order.totalItems > 1 ? 's' : ''})
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
