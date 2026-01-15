@@ -418,15 +418,14 @@ export const AppContextProvider = (props) => {
         try {
             const usersQuery = query(collection(firestore, 'users'), where('role', '==', 'admin'));
             const adminSnapshot = await getDocs(usersQuery);
-            const adminUsers = adminSnapshot.docs.map(doc => doc.data());
-    
+            
             const sellerIds = [...new Set(order.items.map(item => item.sellerId))];
         
             const notifications = [];
         
-            adminUsers.forEach(adminUser => {
+            adminSnapshot.forEach(adminDoc => {
                 notifications.push({
-                    userId: adminUser.uid,
+                    userId: adminDoc.id,
                     message: `New order #${orderId.slice(-6)} has been placed.`,
                     link: '/admin/orders',
                     read: false,
@@ -448,11 +447,15 @@ export const AppContextProvider = (props) => {
         
             const batch = writeBatch(firestore);
             notifications.forEach(notif => {
-                const notifRef = doc(collection(firestore, `users/${notif.userId}/notifications`));
-                batch.set(notifRef, notif);
+                if (notif.userId) {
+                    const notifRef = doc(collection(firestore, `users/${notif.userId}/notifications`));
+                    batch.set(notifRef, notif);
+                }
             });
         
-            await batch.commit();
+            if (notifications.length > 0) {
+                await batch.commit();
+            }
         } catch (error) {
             console.error("Error generating notifications:", error);
         }
