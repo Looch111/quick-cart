@@ -10,12 +10,16 @@ const SettingsPage = () => {
     const [commission, setCommission] = useState(0);
     const [shippingFee, setShippingFee] = useState(0);
     const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
+    const [contactEmail, setContactEmail] = useState('');
+    const [contactPhone, setContactPhone] = useState('');
 
     useEffect(() => {
         if (platformSettings) {
             setCommission(platformSettings.commission || 0);
             setShippingFee(platformSettings.shippingFee || 0);
             setFreeShippingThreshold(platformSettings.freeShippingThreshold || 0);
+            setContactEmail(platformSettings.contactEmail || '');
+            setContactPhone(platformSettings.contactPhone || '');
         }
     }, [platformSettings]);
 
@@ -24,7 +28,9 @@ const SettingsPage = () => {
         const newSettings = {
             commission: Number(commission),
             shippingFee: Number(shippingFee),
-            freeShippingThreshold: Number(freeShippingThreshold)
+            freeShippingThreshold: Number(freeShippingThreshold),
+            contactEmail: contactEmail,
+            contactPhone: contactPhone,
         };
         updateSettings(newSettings);
     };
@@ -40,8 +46,8 @@ const SettingsPage = () => {
 
                 <div className="bg-white p-6 rounded-lg shadow-md max-w-2xl">
                     <form onSubmit={handleSaveSettings}>
-                        <h3 className="text-lg font-semibold text-gray-700 mb-4">Financial</h3>
                         <div className="space-y-6">
+                            <h3 className="text-lg font-semibold text-gray-700">Financial</h3>
                             <div>
                                 <label htmlFor="commission" className="block text-sm font-medium text-gray-700">
                                     Seller Commission Percentage
@@ -115,7 +121,44 @@ const SettingsPage = () => {
                                     The minimum order amount to qualify for free shipping.
                                 </p>
                             </div>
+
+                             <div className="border-t border-gray-200 pt-6">
+                                <h3 className="text-lg font-semibold text-gray-700">Contact Information</h3>
+                                <div>
+                                    <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-700 mt-4">
+                                        Contact Phone
+                                    </label>
+                                    <div className="mt-1">
+                                        <input
+                                            type="text"
+                                            name="contact-phone"
+                                            id="contact-phone"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                            placeholder="+1-234-567-890"
+                                            value={contactPhone}
+                                            onChange={(e) => setContactPhone(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                 <div>
+                                    <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700 mt-4">
+                                        Contact Email
+                                    </label>
+                                    <div className="mt-1">
+                                        <input
+                                            type="email"
+                                            name="contact-email"
+                                            id="contact-email"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                            placeholder="contact@example.com"
+                                            value={contactEmail}
+                                            onChange={(e) => setContactEmail(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
 
                         <div className="mt-8 border-t border-gray-200 pt-5">
                             <div className="flex justify-end">

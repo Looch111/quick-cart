@@ -1,8 +1,10 @@
 import React from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useAppContext } from "@/context/AppContext";
 
 const Footer = () => {
+  const { platformSettings } = useAppContext();
   return (
     <footer>
       <div className="flex flex-col md:flex-row items-start justify-center px-6 md:px-16 lg:px-32 gap-10 py-14 border-b border-gray-500/30 text-gray-500">
@@ -37,8 +39,8 @@ const Footer = () => {
           <div>
             <h2 className="font-medium text-gray-900 mb-5">Get in touch</h2>
             <div className="text-sm space-y-2">
-              <p>+1-234-567-890</p>
-              <p>contact@greatstack.dev</p>
+              <p>{platformSettings?.contactPhone || '+1-234-567-890'}</p>
+              <p>{platformSettings?.contactEmail || 'contact@greatstack.dev'}</p>
             </div>
           </div>
         </div>
