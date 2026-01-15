@@ -5,6 +5,7 @@ import { useAppContext } from '@/context/AppContext';
 import Image from 'next/image';
 import { assets } from '@/assets/assets';
 import { Plus, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const EditProductModal = ({ product, onSave, onCancel }) => {
     const { updateProduct } = useAppContext();
@@ -81,6 +82,11 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
     const handleSave = () => {
         const dataToSave = { ...productData };
         
+        if (dataToSave.flashSaleEndDate && (!dataToSave.flashSalePrice || Number(dataToSave.flashSalePrice) <= 0)) {
+            toast.error("Please set a Flash Sale Price if you set a Flash Sale End Date.");
+            return;
+        }
+
         dataToSave.price = Number(dataToSave.price) || 0;
         dataToSave.offerPrice = Number(dataToSave.offerPrice) || 0;
         dataToSave.flashSalePrice = Number(dataToSave.flashSalePrice) || null;
@@ -317,5 +323,3 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 };
 
 export default EditProductModal;
-
-    

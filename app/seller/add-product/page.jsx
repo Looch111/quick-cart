@@ -71,6 +71,11 @@ const AddProduct = () => {
         }
     }
 
+    if (flashSaleEndDate && (!flashSalePrice || Number(flashSalePrice) <= 0)) {
+        toast.error("Please set a Flash Sale Price if you set a Flash Sale End Date.");
+        return;
+    }
+
     const productData = {
         name,
         description,
