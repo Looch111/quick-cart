@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useEffect, useState, useMemo } from "react";
 import { useAppContext } from "@/context/AppContext";
@@ -19,7 +18,12 @@ const Orders = () => {
     const orders = useMemo(() => {
         if (!ordersData) return [];
         return ordersData
-            .map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) }))
+            .map(o => ({
+                ...o,
+                _id: o.id,
+                date: o.date?.toDate ? o.date.toDate() : new Date(o.date),
+                totalItems: o.items.reduce((sum, item) => sum + item.quantity, 0)
+             }))
             .sort((a, b) => new Date(b.date) - new Date(a.date));
     }, [ordersData]);
 
@@ -102,7 +106,7 @@ const Orders = () => {
                                 <div className="text-sm text-gray-600 space-y-1">
                                     <p><span className="font-medium text-gray-700">Customer:</span> {order.address.fullName}</p>
                                     <p><span className="font-medium text-gray-700">Date:</span> {new Date(order.date).toLocaleDateString()}</p>
-                                    <p><span className="font-medium text-gray-700">Total:</span> {currency}{order.amount.toFixed(2)}</p>
+                                    <p><span className="font-medium text-gray-700">Total:</span> {currency}{order.amount.toFixed(2)} ({order.totalItems} item{order.totalItems > 1 ? 's' : ''})</p>
                                 </div>
                                 <div className="mt-3 flex items-center gap-2">
                                      <select 
@@ -167,7 +171,12 @@ const Orders = () => {
                                                 <p className="text-gray-500">{order.address.hall}, Room {order.address.roomNumber}</p>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">{currency}{order.amount.toFixed(2)}</td>
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <p>{currency}{order.amount.toFixed(2)}</p>
+                                                <p className="text-xs text-gray-500">{order.totalItems} item{order.totalItems > 1 ? 's' : ''}</p>
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-4">
                                              <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getOverallStatusClass(order.status)}`}>
                                                 {order.status}
