@@ -39,7 +39,7 @@ export function useCollection(
 
     // If a `where` clause is provided, ensure all its values are defined.
     // This prevents queries like `where('userId', '==', undefined)`.
-    if (whereClause && whereClause.some(val => val === undefined || val === null)) {
+    if (whereClause && whereClause.some(val => val === undefined)) {
       return null;
     }
 
