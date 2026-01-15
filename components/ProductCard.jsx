@@ -60,7 +60,7 @@ const CountdownTimer = ({ endDate }) => {
 
 const ProductCard = ({ product }) => {
 
-    const { currency, router, userData, wishlistItems, toggleWishlist, addToCart, openSizeModal } = useAppContext()
+    const { currency, router, userData, wishlistItems, toggleWishlist, addToCart, openSizeModal, buyNow } = useAppContext()
     const [currentTime, setCurrentTime] = useState(null);
 
     useEffect(() => {
@@ -99,14 +99,7 @@ const ProductCard = ({ product }) => {
     
     const handleBuyNowClick = (e) => {
         e.stopPropagation();
-        if (isOutOfStock) return;
-        
-        if (hasSizes) {
-            openSizeModal(product);
-        } else {
-            addToCart(product._id);
-            router.push('/cart');
-        }
+        buyNow(product);
     }
 
     return (

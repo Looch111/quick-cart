@@ -149,7 +149,7 @@ const ReviewsList = ({ productId }) => {
 const Product = () => {
     const params = useParams();
     const productId = params.id;
-    const { router, addToCart, currency, openSizeModal, allRawProducts } = useAppContext();
+    const { router, addToCart, currency, openSizeModal, allRawProducts, buyNow } = useAppContext();
 
     const { data: product, loading: productLoading } = useDoc('products', productId);
     const { data: seller, loading: sellerLoading } = useDoc('users', product?.userId);
@@ -199,13 +199,7 @@ const Product = () => {
     };
 
     const handleBuyNow = () => {
-        if (isOutOfStock) return;
-        if (hasSizes) {
-            openSizeModal(productData);
-        } else {
-            addToCart(productData._id);
-            router.push('/cart');
-        }
+        buyNow(productData);
     };
 
     const relatedProducts = relatedProductsData

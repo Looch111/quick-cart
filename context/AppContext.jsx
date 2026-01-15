@@ -315,6 +315,12 @@ export const AppContextProvider = (props) => {
             toast.error("You must be a seller or admin to add a product.");
             return;
         }
+
+        if (productData.flashSaleEndDate && (!productData.flashSalePrice || Number(productData.flashSalePrice) <= 0)) {
+            toast.error("Please set a Flash Sale Price if you set a Flash Sale End Date.");
+            return;
+        }
+
         const productsCollectionRef = collection(firestore, 'products');
         await addDoc(productsCollectionRef, {
             ...productData,
@@ -335,6 +341,11 @@ export const AppContextProvider = (props) => {
         const canUpdate = isAdmin || (isSeller && updatedProduct.userId === userData._id);
         if (!canUpdate) {
             toast.error("You are not authorized to update this product.");
+            return;
+        }
+
+        if (updatedProduct.flashSaleEndDate && (!updatedProduct.flashSalePrice || Number(updatedProduct.flashSalePrice) <= 0)) {
+            toast.error("Please set a Flash Sale Price if you set a Flash Sale End Date.");
             return;
         }
 
@@ -897,15 +908,15 @@ export const AppContextProvider = (props) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
-            return;
+            return Promise.reject(new Error("User not logged in"));
         }
     
         const userDocRef = doc(firestore, 'users', userData._id);
     
-        runTransaction(firestore, async (transaction) => {
+        return runTransaction(firestore, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
             if (!userDoc.exists()) {
-                throw "User document does not exist!";
+                throw new Error("User document does not exist!");
             }
 
             const [productId, size] = itemId.split('_');
@@ -913,7 +924,7 @@ export const AppContextProvider = (props) => {
 
             if (!product) {
                 toast.error("Product not found.", { id: `not-found-${itemId}` });
-                return;
+                throw new Error("Product not found.");
             }
 
             const currentCart = userDoc.data().cartItems || {};
@@ -923,7 +934,7 @@ export const AppContextProvider = (props) => {
 
             if (currentQuantityInCart >= stockForSize) {
                 toast.error(`No more stock available for ${product.name}${size ? ` (Size: ${size})` : ''}`, { id: `stock-toast-${itemId}` });
-                return; 
+                throw new Error("Out of stock");
             }
     
             const newCart = { ...currentCart };
@@ -931,7 +942,11 @@ export const AppContextProvider = (props) => {
             transaction.update(userDocRef, { cartItems: newCart });
             toast.success("Product added to cart", { id: `add-toast-${itemId}` });
         }).catch(error => {
-            console.error("Add to cart transaction failed: ", error);
+            if (error.message !== 'User not logged in' && error.message !== 'Product not found.' && error.message !== 'Out of stock' && error.message !== "User document does not exist!") {
+                console.error("Add to cart transaction failed: ", error);
+            }
+            // rethrow so it can be caught by the caller if needed.
+            throw error;
         });
     };
     
@@ -1076,11 +1091,42 @@ export const AppContextProvider = (props) => {
         router.push('/');
     }
 
+    const buyNow = async (product) => {
+        if (!userData) {
+            toast.error("Please log in to continue.", { id: 'login-toast' });
+            if (!showLogin) setShowLogin(true);
+            return;
+        }
+    
+        const isOutOfStock = !product.stock || product.stock <= 0;
+        if (isOutOfStock) return;
+    
+        const hasSizes = product.sizes && typeof product.sizes === 'object' && Object.keys(product.sizes).length > 0;
+        if (hasSizes) {
+            openSizeModal(product);
+            return;
+        }
+    
+        const itemId = product._id;
+        const isInCart = cartItems[itemId] && cartItems[itemId] > 0;
+    
+        if (!isInCart) {
+            try {
+                await addToCart(itemId);
+            } catch (e) {
+                // Error is handled inside addToCart, just abort navigation.
+                return;
+            }
+        }
+    
+        router.push('/cart');
+    }
+
     const value = {
         currency, router,
         userData, setUserData, isSeller, isAdmin, authLoading,
         cartItems,
-        addToCart, updateCartQuantity, addMultipleToCart,
+        addToCart, updateCartQuantity, addMultipleToCart, buyNow,
         getCartCount, getCartAmount,
         wishlistItems, toggleWishlist,
         getWishlistCount,
