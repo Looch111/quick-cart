@@ -1,4 +1,3 @@
-
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -29,6 +28,7 @@ export const AppContextProvider = (props) => {
     const { data: banners, loading: bannersLoading } = useCollection('banners');
     const { data: promotions, loading: promotionsLoading } = useCollection('promotions');
     const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
+    const { data: allConversations } = useCollection('conversations'); // Fetch all conversations
     
     const [platformSettings, setPlatformSettings] = useState({});
     const [userData, setUserData] = useState(undefined);
@@ -166,7 +166,18 @@ export const AppContextProvider = (props) => {
     }, [userData, firestore]);
 
     useEffect(() => {
-        if (userData && !isAdmin) {
+        if (!userData) {
+            setHasUnreadMessages(false);
+            return;
+        }
+    
+        if (isAdmin) {
+            // For admins, check across all conversations
+            if (allConversations) {
+                setHasUnreadMessages(allConversations.some(c => c.adminUnread));
+            }
+        } else {
+            // For regular users, check their own conversation
             const convRef = doc(firestore, 'conversations', userData._id);
             const unsubscribe = onSnapshot(convRef, (doc) => {
                 if (doc.exists() && doc.data().userUnread) {
@@ -176,10 +187,8 @@ export const AppContextProvider = (props) => {
                 }
             });
             return () => unsubscribe();
-        } else {
-            setHasUnreadMessages(false);
         }
-    }, [userData, isAdmin, firestore]);
+    }, [userData, isAdmin, firestore, allConversations]);
 
     const openChatModal = async () => {
         setIsChatModalOpen(true);
