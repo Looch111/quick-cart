@@ -79,8 +79,8 @@ const LoginPopup = () => {
                     </svg>
                 </button>
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-800">{isLogin ? "Sign in to EUI Tap&Shop" : "Create an account"}</h1>
-                    <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with EUI Tap&Shop"}</p>
+                    <h1 className="text-2xl font-bold text-gray-800">{isLogin ? <>Sign in to <span className="text-orange-600">EUI</span> Tap&Shop</> : "Create an account"}</h1>
+                    <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : <>Get started with <span className="text-orange-600">EUI</span> Tap&Shop</>}</p>
                 </div>
                 <div className="mt-6">
                     <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
