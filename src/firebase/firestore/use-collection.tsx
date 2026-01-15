@@ -10,6 +10,7 @@ import {
   orderBy,
   endBefore,
   limitToLast,
+  Query,
 } from 'firebase/firestore';
 import { useFirestore } from '../provider';
 import { errorEmitter } from '../error-emitter';
@@ -18,7 +19,7 @@ import { FirestorePermissionError } from '../errors';
 // This is a custom hook that we can use to listen to a collection in
 // Firestore. It returns the data, loading state, and error state.
 export function useCollection(
-  path,
+  pathOrQuery,
   {
     where: whereClause,
     limit: limitClause,
@@ -31,19 +32,30 @@ export function useCollection(
   const [error, setError] = useState(null);
 
   const memoizedQuery = useMemo(() => {
-    if (!firestore || !path) return null;
-    let q = collection(firestore, path);
+    if (!firestore) return null;
+    // If the path is null or undefined, it's a signal to not fetch yet.
+    if (!pathOrQuery) return null;
+
+    // Check if the user passed a pre-constructed query
+    if (typeof pathOrQuery !== 'string') {
+      return pathOrQuery as Query;
+    }
+
+    let q = collection(firestore, pathOrQuery);
     if (whereClause) q = query(q, where(...whereClause));
     if (orderByClause) q = query(q, orderBy(...orderByClause));
     if (limitClause) q = query(q, limit(limitClause));
     return q;
-  }, [firestore, path, whereClause, orderByClause, limitClause]);
+  }, [firestore, pathOrQuery, whereClause, orderByClause, limitClause]);
 
   useEffect(() => {
+    // If the query isn't ready (e.g., waiting for user ID), do nothing.
     if (!memoizedQuery) {
       setLoading(false);
+      setData([]); // Ensure data is cleared
       return;
     }
+    setLoading(true);
     const unsubscribe = onSnapshot(
       memoizedQuery,
       (snapshot) => {
@@ -52,19 +64,21 @@ export function useCollection(
         );
         setData(data);
         setLoading(false);
+        setError(null);
       },
       (err) => {
+        console.error("Firestore Error in useCollection:", err);
         const permissionError = new FirestorePermissionError({
-          path: path,
+          path: 'path' in memoizedQuery ? memoizedQuery.path : 'unknown',
           operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
-        setError(err);
+        setError(permissionError);
         setLoading(false);
       }
     );
     return () => unsubscribe();
-  }, [memoizedQuery, path]);
+  }, [memoizedQuery]);
 
   return { data, loading, error };
 }
