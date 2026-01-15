@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "user": {
@@ -234,7 +233,9 @@
         "commission": { "type": "number" },
         "shippingFee": { "type": "number" },
         "freeShippingThreshold": { "type": "number" },
-        "confirmationWindowHours": { "type": "number", "description": "Number of hours a buyer has to confirm delivery before auto-completion." }
+        "confirmationWindowHours": { "type": "number", "description": "Number of hours a buyer has to confirm delivery before auto-completion." },
+        "contactEmail": { "type": "string" },
+        "contactPhone": { "type": "string" }
       }
     },
     "notification": {
