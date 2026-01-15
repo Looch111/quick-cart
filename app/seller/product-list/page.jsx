@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useEffect, useState, useMemo } from "react";
 import { assets } from "@/assets/assets";
@@ -9,7 +10,6 @@ import { Edit, Trash2, CheckCircle, XCircle, Clock } from "lucide-react";
 import EditProductModal from "@/components/admin/EditProductModal";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
-import { useCollection } from "@/src/firebase";
 
 const StatusBadge = ({ status }) => {
     const statusMap = {
@@ -30,8 +30,7 @@ const StatusBadge = ({ status }) => {
 
 const ProductList = () => {
 
-  const { router, userData, deleteProduct, currency } = useAppContext()
-  const {data: allRawProducts, loading: productsLoading} = useCollection('products');
+  const { router, userData, deleteProduct, currency, allRawProducts, productsLoading } = useAppContext()
 
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");

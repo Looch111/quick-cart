@@ -13,15 +13,14 @@ import Link from "next/link";
 import { useCollection } from "@/src/firebase";
 
 const Cart = () => {
-    const { router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, setShowLogin } = useAppContext();
-    const {data: allRawProducts, loading: productsLoading} = useCollection('products');
+    const { router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, setShowLogin, allRawProducts, productsLoading } = useAppContext();
 
     const handleQuantityChange = (itemId, currentQuantity, stock) => {
         if (currentQuantity > stock) {
             toast.error(`Only ${stock} items available`);
-            updateCartQuantity(itemId, stock, allRawProducts);
+            updateCartQuantity(itemId, stock);
         } else {
-            updateCartQuantity(itemId, currentQuantity, allRawProducts);
+            updateCartQuantity(itemId, currentQuantity);
         }
     };
     
@@ -115,18 +114,18 @@ const Cart = () => {
                                             {product.size && <p className="text-xs text-gray-500">Size: {product.size}</p>}
                                             <p className="text-sm text-gray-600 mt-1">{currency}{product.offerPrice}</p>
                                              <div className="flex items-center gap-2 mt-2">
-                                                <button onClick={() => updateCartQuantity(product.itemId, product.quantity - 1, allRawProducts)} className="p-1 border rounded-full">
+                                                <button onClick={() => updateCartQuantity(product.itemId, product.quantity - 1)} className="p-1 border rounded-full">
                                                     <Minus className="w-4 h-4 text-gray-600"/>
                                                 </button>
                                                 <span className="w-10 text-center">{product.quantity}</span>
-                                                <button onClick={() => addToCart(product.itemId, allRawProducts)} className="p-1 border rounded-full">
+                                                <button onClick={() => addToCart(product.itemId)} className="p-1 border rounded-full">
                                                     <Plus className="w-4 h-4 text-gray-600" />
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center mt-3 pt-3 border-t">
-                                        <button onClick={() => updateCartQuantity(product.itemId, 0, allRawProducts)} className="flex items-center gap-1 text-xs text-red-600">
+                                        <button onClick={() => updateCartQuantity(product.itemId, 0)} className="flex items-center gap-1 text-xs text-red-600">
                                             <Trash2 className="w-3 h-3"/> Remove
                                         </button>
                                         <p className="font-semibold text-gray-800">{currency}{(product.offerPrice * product.quantity).toFixed(2)}</p>
@@ -173,7 +172,7 @@ const Cart = () => {
                                                         {product.size && <p className="text-xs text-gray-500">Size: {product.size}</p>}
                                                         <button
                                                             className="text-xs text-orange-600 mt-1 hover:underline"
-                                                            onClick={() => updateCartQuantity(product.itemId, 0, allRawProducts)}
+                                                            onClick={() => updateCartQuantity(product.itemId, 0)}
                                                         >
                                                             Remove
                                                         </button>
@@ -183,11 +182,11 @@ const Cart = () => {
                                             <td className="py-4 md:px-4 px-1 text-gray-600">{currency}{product.offerPrice}</td>
                                             <td className="py-4 md:px-4 px-1">
                                                 <div className="flex items-center md:gap-2 gap-1 border rounded-full p-1 max-w-fit">
-                                                    <button onClick={() => updateCartQuantity(product.itemId, product.quantity - 1, allRawProducts)} className="p-1 hover:bg-gray-100 rounded-full">
+                                                    <button onClick={() => updateCartQuantity(product.itemId, product.quantity - 1)} className="p-1 hover:bg-gray-100 rounded-full">
                                                         <Minus className="w-4 h-4 text-gray-600"/>
                                                     </button>
                                                     <span className="w-10 text-center">{product.quantity}</span>
-                                                    <button onClick={() => addToCart(product.itemId, allRawProducts)} className="p-1 hover:bg-gray-100 rounded-full">
+                                                    <button onClick={() => addToCart(product.itemId)} className="p-1 hover:bg-gray-100 rounded-full">
                                                         <Plus className="w-4 h-4 text-gray-600" />
                                                     </button>
                                                 </div>

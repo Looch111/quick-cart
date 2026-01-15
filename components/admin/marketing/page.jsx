@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { useAppContext } from "@/context/AppContext";
@@ -7,7 +8,6 @@ import Footer from "@/components/admin/Footer";
 import EditBannerModal from '@/components/admin/EditBannerModal';
 import Image from 'next/image';
 import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal';
-import { useCollection } from '@/src/firebase';
 
 const Switch = ({ checked, onChange }) => {
     return (
@@ -19,8 +19,7 @@ const Switch = ({ checked, onChange }) => {
 };
 
 const MarketingPage = () => {
-    const { addBanner, deleteBanner, updateBanner, updateBannerStatus } = useAppContext();
-    const {data: banners, loading} = useCollection('banners');
+    const { addBanner, deleteBanner, updateBanner, updateBannerStatus, banners } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
     const [newBanner, setNewBanner] = useState({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: 'Shop Now', image: '', status: 'active', secondaryButtonText: 'Find More', secondaryLink: '/all-products' });
     const [editingBanner, setEditingBanner] = useState(null);

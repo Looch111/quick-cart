@@ -1,3 +1,4 @@
+
 "use client"
 import { useEffect, useState, useMemo } from "react";
 import { assets } from "@/assets/assets";
@@ -148,7 +149,7 @@ const ReviewsList = ({ productId }) => {
 const Product = () => {
     const params = useParams();
     const productId = params.id;
-    const { router, addToCart, currency, openSizeModal } = useAppContext();
+    const { router, addToCart, currency, openSizeModal, allRawProducts } = useAppContext();
 
     const { data: product, loading: productLoading } = useDoc('products', productId);
     const { data: seller, loading: sellerLoading } = useDoc('users', product?.userId);
@@ -193,7 +194,7 @@ const Product = () => {
         if (hasSizes) {
             openSizeModal(productData);
         } else {
-            addToCart(productData._id, allRawProducts);
+            addToCart(productData._id);
         }
     };
 
@@ -202,7 +203,7 @@ const Product = () => {
         if (hasSizes) {
             openSizeModal(productData);
         } else {
-            addToCart(productData._id, allRawProducts);
+            addToCart(productData._id);
             router.push('/cart');
         }
     };

@@ -1,3 +1,4 @@
+
 'use client';
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
@@ -5,14 +6,14 @@ import toast from "react-hot-toast";
 import { Wallet, X } from "lucide-react";
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import PaymentCancellationModal from "./PaymentCancellationModal";
-import { useCollection } from "@/src/firebase";
 
 const OrderSummary = () => {
 
   const { 
     currency, router, cartItems, userAddresses, 
     userData, setShowLogin, getCartAmount, walletBalance, platformSettings,
-    placeOrder, placeOrderWithWallet, openAddressModal
+    placeOrder, placeOrderWithWallet, openAddressModal, allRawProducts, productsLoading,
+    promotions, promotionsLoading
    } = useAppContext()
 
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -24,9 +25,6 @@ const OrderSummary = () => {
   const [orderStatus, setOrderStatus] = useState('idle'); // idle, loading, done
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  const {data: allRawProducts, loading: productsLoading} = useCollection('products');
-  const {data: promotions, loading: promotionsLoading} = useCollection('promotions');
-
   useEffect(() => {
     if (userAddresses.length > 0) {
       setSelectedAddress(userAddresses[0]);
@@ -35,7 +33,7 @@ const OrderSummary = () => {
     }
   }, [userAddresses]);
 
-  const cartAmount = getCartAmount(allRawProducts);
+  const cartAmount = getCartAmount();
   const deliveryFee = cartAmount > (platformSettings?.freeShippingThreshold || 50) ? 0 : (platformSettings?.shippingFee || 5);
   const totalAmount = cartAmount + deliveryFee - discount;
 
@@ -114,12 +112,12 @@ const OrderSummary = () => {
     
     let result;
     if (paymentMethod === 'wallet') {
-        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems, allRawProducts);
+        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems);
     } else {
         result = await new Promise((resolve) => {
              handleFlutterwavePayment({
                 callback: async (response) => {
-                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems, allRawProducts);
+                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems);
                     resolve(orderResult);
                     closePaymentModal();
                 },

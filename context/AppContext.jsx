@@ -23,7 +23,11 @@ export const AppContextProvider = (props) => {
     const { signOut } = useAuth();
     const firestore = useFirestore();
     
-    // REMOVED global data fetching. Data will be fetched in components.
+    // Data is now fetched directly in the components that need it.
+    // This avoids fetching all data for all users on every page load.
+    const { data: allRawProducts, loading: productsLoading } = useCollection('products');
+    const { data: banners, loading: bannersLoading } = useCollection('banners');
+    const { data: promotions, loading: promotionsLoading } = useCollection('promotions');
     const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
     
     const [platformSettings, setPlatformSettings] = useState({});
@@ -321,7 +325,7 @@ export const AppContextProvider = (props) => {
         toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
     }
 
-    const updateProduct = async (updatedProduct, allRawProducts) => {
+    const updateProduct = async (updatedProduct) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -469,7 +473,7 @@ export const AppContextProvider = (props) => {
 
             for (const itemId in itemsToOrder) {
                 const [productId, size] = itemId.split('_');
-                const product = allRawProducts.find(p => p._id === productId);
+                const product = allRawProducts.find(p => p.id === productId);
 
                 if (!product) throw new Error(`Product with ID ${productId} not found.`);
                 
@@ -547,7 +551,7 @@ export const AppContextProvider = (props) => {
 
             for (const itemId in itemsToOrder) {
                 const [productId, size] = itemId.split('_');
-                const product = allRawProducts.find(p => p._id === productId);
+                const product = allRawProducts.find(p => p.id === productId);
 
                 if (!product) throw new Error(`Product with ID ${productId} not found.`);
 
@@ -889,7 +893,7 @@ export const AppContextProvider = (props) => {
         toast.success("Bank details updated successfully!");
     }
 
-    const addToCart = (itemId, allRawProducts) => {
+    const addToCart = (itemId) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -905,7 +909,7 @@ export const AppContextProvider = (props) => {
             }
 
             const [productId, size] = itemId.split('_');
-            const product = allRawProducts.find(p => p._id === productId);
+            const product = allRawProducts.find(p => p.id === productId);
 
             if (!product) {
                 toast.error("Product not found.", { id: `not-found-${itemId}` });
@@ -931,7 +935,7 @@ export const AppContextProvider = (props) => {
         });
     };
     
-    const addMultipleToCart = async (items, allRawProducts) => {
+    const addMultipleToCart = async (items) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -949,7 +953,7 @@ export const AppContextProvider = (props) => {
 
                 for (const item of items) {
                     const [productId, size] = item.id.split('_');
-                    const product = allRawProducts.find(p => p._id === productId);
+                    const product = allRawProducts.find(p => p.id === productId);
                     if (!product) {
                         toast.error(`Product with ID ${productId} not found.`);
                         allItemsAdded = false;
@@ -980,7 +984,7 @@ export const AppContextProvider = (props) => {
     }
 
 
-    const updateCartQuantity = async (itemId, quantity, allRawProducts) => {
+    const updateCartQuantity = async (itemId, quantity) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -1000,7 +1004,7 @@ export const AppContextProvider = (props) => {
                 const newCart = { ...currentCart };
 
                 const [productId, size] = itemId.split('_');
-                const product = allRawProducts.find(p => p._id === productId);
+                const product = allRawProducts.find(p => p.id === productId);
     
                 if (quantity <= 0) {
                     delete newCart[itemId];
@@ -1029,13 +1033,13 @@ export const AppContextProvider = (props) => {
         return Object.values(cartItems).reduce((sum, quantity) => sum + quantity, 0);
     }
 
-    const getCartAmount = (allRawProducts) => {
+    const getCartAmount = () => {
         let totalAmount = 0;
         if (!allRawProducts || !allRawProducts.length || !cartItems) return 0;
         
         for (const itemId in cartItems) {
             const [productId] = itemId.split('_');
-            let itemInfo = allRawProducts.find((product) => product._id === productId);
+            let itemInfo = allRawProducts.find((product) => product.id === productId);
 
             if (itemInfo && cartItems[itemId] > 0) {
                 const isFlashSale = itemInfo.flashSalePrice && itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
@@ -1100,6 +1104,9 @@ export const AppContextProvider = (props) => {
         addProductReview,
         confirmOrderDelivery, reportIssue, updateItemStatus,
         isDisputeModalOpen, openDisputeModal, closeDisputeModal, orderForDispute,
+        allRawProducts, productsLoading,
+        banners, bannersLoading,
+        promotions, promotionsLoading,
         addBanner, deleteBanner, updateBanner, updateBannerStatus,
         addPromotion, deletePromotion, updatePromotionStatus
     }

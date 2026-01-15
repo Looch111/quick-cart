@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
@@ -58,7 +59,7 @@ const UserAvatar = ({ user, size = 'sm' }) => {
 
 
 const ProductList = () => {
-    const { router, allRawProducts, deleteProduct, productsLoading, updateProductStatus, currency } = useAppContext();
+    const { router, deleteProduct, productsLoading, updateProductStatus, currency, allRawProducts } = useAppContext();
     const { data: users, loading: usersLoading } = useCollection('users');
 
     const [loading, setLoading] = useState(true);
@@ -108,6 +109,7 @@ const ProductList = () => {
     const filteredProducts = (allRawProducts || [])
         .map(product => ({
             ...product,
+            _id: product.id,
             poster: usersMap.get(product.userId)
         }))
         .filter(product =>
@@ -119,7 +121,7 @@ const ProductList = () => {
             if (statusOrder[a.status] !== statusOrder[b.status]) {
                 return statusOrder[a.status] - statusOrder[b.status];
             }
-            return new Date(b.date) - new Date(a.date);
+            return (b.date?.seconds || 0) - (a.date?.seconds || 0);
         });
 
     return (
@@ -169,7 +171,7 @@ const ProductList = () => {
                             </div>
                             <div className="border-t mt-3 pt-3 text-xs text-gray-500">
                                 <p>Posted by: <span className="font-medium text-gray-700">{product.poster?.name || 'N/A'} ({product.poster?.role})</span></p>
-                                <p>Date: <span className="font-medium text-gray-700">{new Date(product.date).toLocaleDateString()}</span></p>
+                                <p>Date: <span className="font-medium text-gray-700">{new Date(product.date?.toDate()).toLocaleDateString()}</span></p>
                             </div>
                             <div className="flex justify-end items-center gap-2 mt-3 pt-3 border-t">
                                 <select onChange={(e) => updateProductStatus(product._id, e.target.value)} value={product.status} className="text-xs border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
@@ -227,7 +229,7 @@ const ProductList = () => {
                                             <div>
                                                 <p className="font-medium text-gray-800">{product.poster?.name || 'Unknown'}</p>
                                                 <p className="text-xs capitalize">{product.poster?.role || 'N/A'}</p>
-                                                <p className="text-xs">{new Date(product.date).toLocaleDateString()}</p>
+                                                <p className="text-xs">{new Date(product.date?.toDate()).toLocaleDateString()}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -276,5 +278,3 @@ const ProductList = () => {
 };
 
 export default ProductList;
-
-    

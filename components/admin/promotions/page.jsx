@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import Footer from '@/components/admin/Footer';
@@ -5,7 +6,6 @@ import toast from 'react-hot-toast';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal';
 import { useAppContext } from '@/context/AppContext';
-import { useCollection } from '@/src/firebase';
 
 const Switch = ({ checked, onChange }) => {
     return (
@@ -17,8 +17,7 @@ const Switch = ({ checked, onChange }) => {
 };
 
 const PromotionsPage = () => {
-    const { addPromotion, deletePromotion, updatePromotionStatus, currency } = useAppContext();
-    const {data: promotions, loading} = useCollection('promotions');
+    const { promotions, addPromotion, deletePromotion, updatePromotionStatus, currency } = useAppContext();
     const [newPromo, setNewPromo] = useState({ code: '', type: 'percentage', value: '', expiryDate: '' });
     const [isAdding, setIsAdding] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
