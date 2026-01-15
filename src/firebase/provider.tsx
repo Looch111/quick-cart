@@ -1,11 +1,7 @@
 'use client';
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useEffect, useState } from 'react';
 import { initializeFirebase } from './index';
-
-// The Firebase context is used to provide the Firebase app, auth, and firestore
-// instances to the rest of the application. The context is created in this
-// file, and then the FirebaseProvider component is used to wrap the
-// application in `app/layout.tsx`.
+import { getMessaging, isSupported } from 'firebase/messaging';
 
 const FirebaseContext = createContext(
   undefined
@@ -34,9 +30,21 @@ export function useFirestore() {
 
 export function FirebaseProvider({ children }) {
   const { firebaseApp, auth, firestore } = useMemo(initializeFirebase, []);
+  const [messaging, setMessaging] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      isSupported().then(supported => {
+          if (supported && firebaseApp) {
+              setMessaging(getMessaging(firebaseApp));
+          }
+      })
+    }
+  }, [firebaseApp]);
+  
   const contextValue = useMemo(
-    () => ({ firebaseApp, auth, firestore }),
-    [firebaseApp, auth, firestore]
+    () => ({ firebaseApp, auth, firestore, messaging }),
+    [firebaseApp, auth, firestore, messaging]
   );
   return (
     <FirebaseContext.Provider value={contextValue}>

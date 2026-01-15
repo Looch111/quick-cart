@@ -10,6 +10,7 @@ import OnboardingTour from "@/components/OnboardingTour";
 import SizeSelectionModal from "@/components/SizeSelectionModal";
 import AddAddressModal from "@/components/AddAddressModal";
 import DisputeModal from "@/components/DisputeModal";
+import NotificationSetup from "@/src/components/NotificationSetup";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
               <AddAddressModal />
               <DisputeModal />
               <OnboardingTour />
+              <NotificationSetup />
               {children}
               <FirebaseErrorListener />
             </AppContextProvider>
