@@ -106,7 +106,7 @@ const Cart = () => {
                                     <div className="flex gap-4">
                                         <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-24 h-24 flex items-center justify-center">
                                             <Image
-                                                src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
+                                                src={(product.image && product.image.length > 0) ? product.image[0] : assets.upload_area}
                                                 alt={product.name}
                                                 className="w-full h-full object-contain mix-blend-multiply"
                                                 width={100}
@@ -164,7 +164,7 @@ const Cart = () => {
                                                 <div className="flex items-center gap-4">
                                                     <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-20 h-20 flex items-center justify-center">
                                                         <Image
-                                                        src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
+                                                        src={(product.image && product.image.length > 0) ? product.image[0] : assets.upload_area}
                                                         alt={product.name}
                                                         className="w-full h-full object-contain mix-blend-multiply"
                                                         width={80}

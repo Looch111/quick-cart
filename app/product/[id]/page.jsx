@@ -172,7 +172,7 @@ const Product = () => {
     }, [productsData, productData]);
 
     useEffect(() => {
-        if (productData) {
+        if (productData && productData.image && productData.image.length > 0) {
             setMainImage(productData.image[0]);
             if (productData.userId && usersData && usersData.length > 0) {
                 const productSeller = usersData.find(u => u.id === productData.userId);
@@ -181,6 +181,8 @@ const Product = () => {
             if (productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0) {
                 setSelectedSize(Object.keys(productData.sizes)[0]);
             }
+        } else if (productData) {
+            setMainImage(assets.upload_area);
         }
     }, [productData, usersData]);
     
@@ -235,7 +237,7 @@ const Product = () => {
                 <div className="px-5 lg:px-16 xl:px-20">
                     <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4 relative aspect-square">
                         <Image
-                            src={mainImage}
+                            src={mainImage || assets.upload_area}
                             alt={productData.name}
                             className="w-full h-full object-contain mix-blend-multiply"
                             fill
