@@ -1,3 +1,4 @@
+
 'use client'
 import { useState, useEffect, useMemo, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
@@ -146,7 +147,7 @@ const AllProducts = () => {
                 onChange={(e) => setInputValue(e.target.value.replace(/[^0-9.]/g, ''))}
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-7 pr-2 py-2 border rounded-md text-sm"
+                className="w-full pl-7 pr-2 py-2 border border-gray-300 rounded-md text-sm"
             />
         );
     };
@@ -155,7 +156,7 @@ const AllProducts = () => {
         <div className="lg:w-64 xl:w-72 space-y-6">
             <div>
                 <h3 className="font-semibold mb-2">Sort by</h3>
-                <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="w-full p-2 border rounded-md text-sm">
+                <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="w-full p-2 border border-gray-300 rounded-md text-sm">
                     <option value="newest">Newest</option>
                     <option value="price-asc">Price: Low to High</option>
                     <option value="price-desc">Price: High to Low</option>

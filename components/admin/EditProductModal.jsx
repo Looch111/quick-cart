@@ -149,7 +149,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                 <input
                                     type="text"
                                     placeholder={`Image URL ${index + 1}`}
-                                    className="outline-none w-full md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                                    className="outline-none w-full md:py-2.5 py-2 px-3 rounded border border-gray-300"
                                     onChange={(e) => handleImageUrlChange(index, e.target.value)}
                                     value={imageUrls[index]}
                                 />
@@ -274,14 +274,14 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                             placeholder="Size (e.g., M)"
                                             value={s.size}
                                             onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
-                                            className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                                            className="outline-none w-full py-2 px-3 rounded border border-gray-300"
                                         />
                                         <input
                                             type="number"
                                             placeholder="Stock"
                                             value={s.stock}
                                             onChange={(e) => handleSizeChange(index, 'stock', e.target.value)}
-                                            className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                                            className="outline-none w-full py-2 px-3 rounded border border-gray-300"
                                         />
                                         <button type="button" onClick={() => removeSizeField(index)} className="p-2 text-red-500">
                                             <Trash2 className="w-5 h-5" />
@@ -301,7 +301,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                     id="stock-quantity-edit"
                                     type="number"
                                     placeholder="0"
-                                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                                     onChange={(e) => setTotalStock(e.target.value)}
                                     value={totalStock}
                                 />

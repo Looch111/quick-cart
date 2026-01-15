@@ -143,7 +143,7 @@ const AddProduct = () => {
                 <input
                   type="text"
                   placeholder={`Image URL ${index + 1}`}
-                  className="outline-none w-full md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                  className="outline-none w-full md:py-2.5 py-2 px-3 rounded border border-gray-300"
                   onChange={(e) => handleImageUrlChange(index, e.target.value)}
                   value={imageUrls[index]}
                 />
@@ -159,7 +159,7 @@ const AddProduct = () => {
             id="product-name"
             type="text"
             placeholder="Type here"
-            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
             onChange={(e) => setName(e.target.value)}
             value={name}
             required
@@ -175,7 +175,7 @@ const AddProduct = () => {
           <textarea
             id="product-description"
             rows={4}
-            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none"
+            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300 resize-none"
             placeholder="Type here"
             onChange={(e) => setDescription(e.target.value)}
             value={description}
@@ -195,7 +195,7 @@ const AddProduct = () => {
                     id="product-price"
                     type="number"
                     placeholder="0"
-                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                     onChange={(e) => setPrice(e.target.value)}
                     value={price}
                     required
@@ -209,7 +209,7 @@ const AddProduct = () => {
                     id="offer-price"
                     type="number"
                     placeholder="0"
-                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                     onChange={(e) => setOfferPrice(e.target.value)}
                     value={offerPrice}
                     required
@@ -228,7 +228,7 @@ const AddProduct = () => {
                     id="flash-sale-price"
                     type="number"
                     placeholder="0"
-                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                     onChange={(e) => setFlashSalePrice(e.target.value)}
                     value={flashSalePrice}
                     />
@@ -240,7 +240,7 @@ const AddProduct = () => {
                     <input
                     id="flash-sale-date"
                     type="datetime-local"
-                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                    className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                     onChange={(e) => setFlashSaleEndDate(e.target.value)}
                     value={flashSaleEndDate}
                     />
@@ -255,7 +255,7 @@ const AddProduct = () => {
               </label>
               <select
                 id="category"
-                className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                 onChange={(e) => setCategory(e.target.value)}
                 value={category}
               >
@@ -285,14 +285,14 @@ const AddProduct = () => {
                                 placeholder="Size (e.g., M)"
                                 value={s.size}
                                 onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
-                                className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                                className="outline-none w-full py-2 px-3 rounded border border-gray-300"
                             />
                             <input
                                 type="number"
                                 placeholder="Stock"
                                 value={s.stock}
                                 onChange={(e) => handleSizeChange(index, 'stock', e.target.value)}
-                                className="outline-none w-full py-2 px-3 rounded border border-gray-500/40"
+                                className="outline-none w-full py-2 px-3 rounded border border-gray-300"
                             />
                             <button type="button" onClick={() => removeSizeField(index)} className="p-2 text-red-500">
                                 <Trash2 className="w-5 h-5" />
@@ -312,7 +312,7 @@ const AddProduct = () => {
                         id="stock-quantity"
                         type="number"
                         placeholder="0"
-                        className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+                        className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                         onChange={(e) => setTotalStock(e.target.value)}
                         value={totalStock}
                         required={!hasSizes}

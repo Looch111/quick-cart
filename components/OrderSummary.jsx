@@ -252,7 +252,7 @@ const OrderSummary = () => {
               placeholder="Enter promo code"
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
-              className="flex-grow w-full outline-none p-2.5 text-gray-600 border rounded-md"
+              className="flex-grow w-full outline-none p-2.5 text-gray-600 border border-gray-300 rounded-md"
               disabled={!!appliedPromo || promotionsLoading}
             />
             <button onClick={handleApplyPromo} className="bg-orange-600 text-white px-9 py-2.5 hover:bg-orange-700 rounded-full text-sm disabled:bg-orange-300" disabled={!!appliedPromo || promotionsLoading}>
