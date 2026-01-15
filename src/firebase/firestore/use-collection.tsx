@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import {
@@ -32,9 +33,8 @@ export function useCollection(
   const [error, setError] = useState(null);
 
   const memoizedQuery = useMemo(() => {
-    if (!firestore) return null;
     // If the path is null or undefined, it's a signal to not fetch yet.
-    if (!pathOrQuery) return null;
+    if (!firestore || !pathOrQuery) return null;
 
     // Check if the user passed a pre-constructed query
     if (typeof pathOrQuery !== 'string') {
@@ -46,7 +46,9 @@ export function useCollection(
     if (orderByClause) q = query(q, orderBy(...orderByClause));
     if (limitClause) q = query(q, limit(limitClause));
     return q;
-  }, [firestore, pathOrQuery, whereClause, orderByClause, limitClause]);
+    // By stringifying the non-primitive dependencies, we ensure useMemo only
+    // re-runs when their actual values change, not just their reference.
+  }, [firestore, pathOrQuery, JSON.stringify(whereClause), JSON.stringify(orderByClause), limitClause]);
 
   useEffect(() => {
     // If the query isn't ready (e.g., waiting for user ID), do nothing.
@@ -82,3 +84,4 @@ export function useCollection(
 
   return { data, loading, error };
 }
+
