@@ -16,7 +16,11 @@ export function useDoc(pathOrDocRef, id) {
 
   const memoizedDocRef = useMemo(() => {
     if (!firestore || !pathOrDocRef) return null;
-    if (typeof pathOrDocRef === 'string' && !id) return null;
+    
+    // If the path requires an ID, but the ID is missing, don't create the ref.
+    if (typeof pathOrDocRef === 'string' && !id) {
+        return null;
+    }
     
     if (typeof pathOrDocRef !== 'string') {
         return pathOrDocRef as DocumentReference;

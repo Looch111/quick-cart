@@ -21,12 +21,14 @@ import { FirestorePermissionError } from '../errors';
 // Firestore. It returns the data, loading state, and error state.
 export function useCollection(
   pathOrQuery,
-  {
+  options = {}
+) {
+  const {
     where: whereClause,
     limit: limitClause,
     orderBy: orderByClause,
-  } = {}
-) {
+  } = options;
+
   const firestore = useFirestore();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +36,12 @@ export function useCollection(
 
   const memoizedQuery = useMemo(() => {
     if (!firestore || !pathOrQuery) return null;
+
+    // If a `where` clause is provided, ensure all its values are defined.
+    // This prevents queries like `where('userId', '==', undefined)`.
+    if (whereClause && whereClause.some(val => val === undefined || val === null)) {
+      return null;
+    }
 
     if (typeof pathOrQuery !== 'string') {
       return pathOrQuery as Query;
