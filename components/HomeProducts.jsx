@@ -1,32 +1,14 @@
-
 'use client'
-import React, { useMemo } from "react";
+import React from "react";
 import ProductCard from "./ProductCard";
 import { useAppContext } from "@/context/AppContext";
-import { useCollection } from "@/src/firebase";
-import Loading from "./Loading";
 
 const HomeProducts = () => {
 
-  const { router } = useAppContext()
-  const { data: productsData, loading } = useCollection('products', { where: ['status', '==', 'approved'] });
+  const { products, router } = useAppContext()
 
-  const sortedProducts = useMemo(() => {
-      if (!productsData) return [];
-      // Sort products by date to show the newest ones first
-      return [...productsData]
-        .map(p => ({...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }))
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [productsData]);
-
-
-  if (loading) {
-    return <div className="h-96"><Loading/></div>;
-  }
-  
-  if (sortedProducts.length === 0) {
-    return null;
-  }
+  // Sort products by date to show the newest ones first
+  const sortedProducts = [...products].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return (
     <div className="flex flex-col items-center pt-14">

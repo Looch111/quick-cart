@@ -1,25 +1,18 @@
 
 'use client'
-import React, { useMemo } from "react";
+import React from "react";
 import ProductCard from "./ProductCard";
 import { useAppContext } from "@/context/AppContext";
-import { useCollection } from "@/src/firebase";
 
 const FlashSales = () => {
-    const { router, userData } = useAppContext();
-    const { data: allRawProductsData, loading } = useCollection('products');
+    const { allRawProducts, router, userData } = useAppContext();
 
-    const flashSaleProducts = useMemo(() => {
-        if (!allRawProductsData) return [];
-        return allRawProductsData
-            .filter(p => p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > new Date() && p.status === 'approved')
-            .map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }))
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 5);
-    }, [allRawProductsData]);
+    const flashSaleProducts = allRawProducts
+        .filter(p => p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > new Date())
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5);
 
-
-    if (loading || flashSaleProducts.length === 0) {
+    if (flashSaleProducts.length === 0) {
         return null;
     }
 
@@ -50,3 +43,5 @@ const FlashSales = () => {
 };
 
 export default FlashSales;
+
+    

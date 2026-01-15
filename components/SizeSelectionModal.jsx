@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Plus, Minus, Info } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { assets } from '@/assets/assets';
 
 const SizeSelectionModal = () => {
     const { isSizeModalOpen, closeSizeModal, productForSizeSelection, addMultipleToCart, currency } = useAppContext();
@@ -54,8 +53,6 @@ const SizeSelectionModal = () => {
         ? Object.entries(productForSizeSelection.sizes)
         : [];
 
-    const imageUrl = (productForSizeSelection.image && productForSizeSelection.image.length > 0) ? productForSizeSelection.image[0] : assets.upload_area;
-
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
             <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg relative">
@@ -66,7 +63,7 @@ const SizeSelectionModal = () => {
                 <div className="flex gap-4 items-start">
                     <div className="w-24 h-24 bg-gray-100 rounded-md flex-shrink-0">
                          <Image
-                            src={imageUrl}
+                            src={productForSizeSelection.image[0]}
                             alt={productForSizeSelection.name}
                             width={96}
                             height={96}

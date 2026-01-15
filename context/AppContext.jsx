@@ -23,7 +23,21 @@ export const AppContextProvider = (props) => {
     const { signOut } = useAuth();
     const firestore = useFirestore();
 
+    const { data: productsData, loading: productsLoading } = useCollection('products');
+    const { data: ordersData, loading: ordersLoading } = useCollection('orders');
+    const { data: bannersData, loading: bannersLoading } = useCollection('banners');
+    const { data: promotionsData, loading: promotionsLoading } = useCollection('promotions');
+    const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
+    const { data: usersData, loading: usersLoading } = useCollection('users');
+
+    const [products, setProducts] = useState([]);
+    const [allRawProducts, setAllRawProducts] = useState([]);
+    const [allOrders, setAllOrders] = useState([]);
+    const [banners, setBanners] = useState([]);
+    const [promotions, setPromotions] = useState([]);
+    const [platformSettings, setPlatformSettings] = useState({});
     const [userData, setUserData] = useState(undefined);
+    const [users, setUsers] = useState([]);
     const [userAddresses, setUserAddresses] = useState([]);
     const [userOrders, setUserOrders] = useState([]);
     const [isSeller, setIsSeller] = useState(false);
@@ -65,6 +79,19 @@ export const AppContextProvider = (props) => {
         setOrderForDispute(null);
         setIsDisputeModalOpen(false);
     };
+
+    useEffect(() => { 
+        if (!productsLoading) {
+            const mappedProducts = productsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }));
+            setAllRawProducts(mappedProducts);
+            setProducts(mappedProducts.filter(p => p.status === 'approved'));
+        }
+    }, [productsData, productsLoading]);
+    useEffect(() => { if (!ordersLoading) setAllOrders(ordersData.map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) }))); }, [ordersData, ordersLoading]);
+    useEffect(() => { if (!bannersLoading) setBanners(bannersData.map(b => ({ ...b, id: b.id }))); }, [bannersData, bannersLoading]);
+    useEffect(() => { if (!promotionsLoading) setPromotions(promotionsData.map(p => ({ ...p, id: p.id }))); }, [promotionsData, promotionsLoading]);
+    useEffect(() => { if (!settingsLoading && settingsData) setPlatformSettings(settingsData); }, [settingsData, settingsLoading]);
+    useEffect(() => { if (!usersLoading) setUsers(usersData); }, [usersData, usersLoading]);
 
     useEffect(() => {
         let unsubscribeUser;
@@ -396,18 +423,15 @@ export const AppContextProvider = (props) => {
     };
     
     const generateNotifications = async (order, orderId) => {
-        const adminUsersQuery = query(collection(firestore, 'users'), where('role', '==', 'admin'));
-        const adminUsersSnap = await getDocs(adminUsersQuery);
-        const adminUsers = adminUsersSnap.docs.map(doc => doc.id);
-
+        const adminUsers = usersData.filter(u => u.role === 'admin');
         const sellerIds = [...new Set(order.items.map(item => item.sellerId))];
     
         const notifications = [];
     
         // Admin notifications
-        adminUsers.forEach(adminId => {
+        adminUsers.forEach(admin => {
             notifications.push({
-                userId: adminId,
+                userId: admin.id,
                 message: `New order #${orderId.slice(-6)} has been placed.`,
                 link: '/admin/orders',
                 read: false,
@@ -437,7 +461,7 @@ export const AppContextProvider = (props) => {
         await batch.commit();
     };
     
-    const placeOrder = async (address, paymentResponse, totalAmount, itemsToOrder, allRawProducts) => {
+    const placeOrder = async (address, paymentResponse, totalAmount, itemsToOrder) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             return { success: false };
@@ -523,7 +547,7 @@ export const AppContextProvider = (props) => {
         }
     }
     
-    const placeOrderWithWallet = async (address, totalAmount, itemsToOrder, allRawProducts) => {
+    const placeOrderWithWallet = async (address, totalAmount, itemsToOrder) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             return { success: false };
@@ -609,10 +633,6 @@ export const AppContextProvider = (props) => {
 
 
     const processSellerPayouts = async (order) => {
-        const settingsRef = doc(firestore, 'settings', 'platform');
-        const settingsSnap = await getDoc(settingsRef);
-        const platformSettings = settingsSnap.data();
-
         if (!platformSettings || typeof platformSettings.commission === 'undefined') {
             toast.error("Platform commission rate is not set. Cannot process payouts.");
             return;
@@ -668,10 +688,6 @@ export const AppContextProvider = (props) => {
     
     const confirmOrderDelivery = async (orderId) => {
         const orderRef = doc(firestore, 'orders', orderId);
-        const settingsRef = doc(firestore, 'settings', 'platform');
-        const settingsSnap = await getDoc(settingsRef);
-        const platformSettings = settingsSnap.data();
-
         const confirmationWindowHours = platformSettings?.confirmationWindowHours || 72;
         const autoCompletionDate = new Date();
         autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
@@ -769,9 +785,6 @@ export const AppContextProvider = (props) => {
         } 
         // If admin marks as "Delivered" (e.g., buyer is unresponsive)
         else if (newStatus === "Delivered") {
-            const settingsRef = doc(firestore, 'settings', 'platform');
-            const settingsSnap = await getDoc(settingsRef);
-            const platformSettings = settingsSnap.data();
             const confirmationWindowHours = platformSettings?.confirmationWindowHours || 72;
             const autoCompletionDate = new Date();
             autoCompletionDate.setHours(autoCompletionDate.getHours() + confirmationWindowHours);
@@ -919,9 +932,7 @@ export const AppContextProvider = (props) => {
             }
 
             const [productId, size] = itemId.split('_');
-            const productRef = doc(firestore, 'products', productId);
-            const productSnap = await transaction.get(productRef);
-            const product = productSnap.data();
+            const product = allRawProducts.find(p => p._id === productId);
 
             if (!product) {
                 toast.error("Product not found.", { id: `not-found-${itemId}` });
@@ -965,10 +976,7 @@ export const AppContextProvider = (props) => {
 
                 for (const item of items) {
                     const [productId, size] = item.id.split('_');
-                    const productRef = doc(firestore, 'products', productId);
-                    const productSnap = await transaction.get(productRef);
-                    const product = productSnap.data();
-
+                    const product = allRawProducts.find(p => p._id === productId);
                     if (!product) {
                         toast.error(`Product with ID ${productId} not found.`);
                         allItemsAdded = false;
@@ -1019,9 +1027,7 @@ export const AppContextProvider = (props) => {
                 const newCart = { ...currentCart };
 
                 const [productId, size] = itemId.split('_');
-                const productRef = doc(firestore, 'products', productId);
-                const productSnap = await transaction.get(productRef);
-                const product = productSnap.data();
+                const product = allRawProducts.find(p => p._id === productId);
     
                 if (quantity <= 0) {
                     delete newCart[itemId];
@@ -1048,6 +1054,23 @@ export const AppContextProvider = (props) => {
     const getCartCount = () => {
         if (!cartItems) return 0;
         return Object.values(cartItems).reduce((sum, quantity) => sum + quantity, 0);
+    }
+
+    const getCartAmount = () => {
+        let totalAmount = 0;
+        if (!allRawProducts.length || !cartItems) return 0;
+        
+        for (const itemId in cartItems) {
+            const [productId] = itemId.split('_');
+            let itemInfo = allRawProducts.find((product) => product._id === productId);
+
+            if (itemInfo && cartItems[itemId] > 0) {
+                const isFlashSale = itemInfo.flashSalePrice && itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
+                const currentPrice = isFlashSale ? itemInfo.flashSalePrice : itemInfo.offerPrice;
+                totalAmount += Number(currentPrice) * cartItems[itemId];
+            }
+        }
+        return Math.floor(totalAmount * 100) / 100;
     }
 
     const toggleWishlist = (productId) => {
@@ -1078,24 +1101,28 @@ export const AppContextProvider = (props) => {
 
     const value = {
         currency, router,
-        userData, setUserData, isSeller, isAdmin, authLoading,
+        userData, setUserData, users, isSeller, isAdmin, authLoading,
+        products,
+        allRawProducts, 
+        productsLoading,
         cartItems,
         addToCart, updateCartQuantity, addMultipleToCart,
-        getCartCount,
+        getCartCount, getCartAmount,
         wishlistItems, toggleWishlist,
         getWishlistCount,
         handleLogout,
         showLogin, setShowLogin,
-        addBanner, deleteBanner, updateBanner, updateBannerStatus,
-        addPromotion, deletePromotion, updatePromotionStatus,
+        banners, addBanner, deleteBanner, updateBanner, updateBannerStatus,
+        promotions, addPromotion, deletePromotion, updatePromotionStatus,
         userAddresses, addAddress,
+        allOrders,
         placeOrder, userOrders,
         walletBalance, walletTransactions,
         sellerWalletBalance, sellerWalletTransactions,
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct, updateProductStatus,
         updateUserField, updateSellerBankDetails,
-        updateSettings,
+        platformSettings, updateSettings, settingsLoading,
         verifyFlutterwaveTransaction,
         placeOrderWithWallet,
         isSizeModalOpen, openSizeModal, closeSizeModal, productForSizeSelection,

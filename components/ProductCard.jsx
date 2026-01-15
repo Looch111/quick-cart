@@ -109,8 +109,6 @@ const ProductCard = ({ product }) => {
         }
     }
 
-    const imageUrl = product.image && product.image.length > 0 ? product.image[0] : assets.upload_area;
-
     return (
         <div
             onClick={() => { router.push('/product/' + product._id); scrollTo(0, 0) }}
@@ -118,7 +116,7 @@ const ProductCard = ({ product }) => {
         >
             <div className="relative bg-gray-500/10 rounded-lg w-full h-44 md:h-52 flex items-center justify-center p-2 overflow-hidden">
                 <Image
-                    src={imageUrl}
+                    src={product.image[0]}
                     alt={product.name}
                     className="group-hover:scale-105 transition-transform duration-300 object-contain w-full h-full"
                     width={200}

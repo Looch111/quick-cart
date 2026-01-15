@@ -1,22 +1,17 @@
-
 'use client'
 import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
-import { useCollection } from "@/src/firebase";
 
 const HeaderSlider = () => {
-    const { router, isAdmin } = useAppContext();
-    const { data: bannersData, loading } = useCollection('banners');
+    const { banners, router, isAdmin } = useAppContext();
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const activeBanners = (bannersData || [])
-        .map(b => ({ ...b, id: b.id }))
-        .filter(b => b.status === 'active');
+    const activeBanners = banners.filter(b => b.status === 'active');
 
     useEffect(() => {
-        if (activeBanners.length <= 1) return;
+        if (activeBanners.length === 0) return;
         const interval = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % activeBanners.length);
         }, 3000);
@@ -27,9 +22,8 @@ const HeaderSlider = () => {
         setCurrentSlide(index);
     };
 
-    if (loading || activeBanners.length === 0) {
-        // You might want a placeholder or loading state here
-        return null; 
+    if (activeBanners.length === 0) {
+        return null;
     }
 
     const currentBanner = activeBanners[currentSlide];
@@ -80,18 +74,16 @@ const HeaderSlider = () => {
                 ))}
             </div>
 
-            {activeBanners.length > 1 && (
-                <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2">
-                    {activeBanners.map((_, index) => (
-                        <div
-                            key={index}
-                            onClick={() => handleSlideChange(index)}
-                            className={`h-2 rounded-full cursor-pointer transition-all duration-500 ${currentSlide === index ? "w-6 bg-orange-600" : "w-2 bg-gray-500/30"
-                                }`}
-                        ></div>
-                    ))}
-                </div>
-            )}
+            <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2">
+                {activeBanners.map((_, index) => (
+                    <div
+                        key={index}
+                        onClick={() => handleSlideChange(index)}
+                        className={`h-2 rounded-full cursor-pointer transition-all duration-500 ${currentSlide === index ? "w-6 bg-orange-600" : "w-2 bg-gray-500/30"
+                            }`}
+                    ></div>
+                ))}
+            </div>
         </div>
     );
 };

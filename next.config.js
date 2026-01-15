@@ -33,14 +33,6 @@ const nextConfig = {
             }
         ],
     },
-    async rewrites() {
-        return [
-          {
-            source: '/__/:path*',
-            destination: `https://login-and-sign-up-e39e4.firebaseapp.com/__/:path*`,
-          },
-        ];
-    },
 };
 
 module.exports = nextConfig;

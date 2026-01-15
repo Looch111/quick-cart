@@ -10,16 +10,9 @@ import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCollection } from "@/src/firebase";
 
 const Cart = () => {
-    const { router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, setShowLogin } = useAppContext();
-    const { data: allRawProductsData, loading: productsLoading } = useCollection('products');
-
-    const allRawProducts = useMemo(() => {
-        if (!allRawProductsData) return [];
-        return allRawProductsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }));
-    }, [allRawProductsData]);
+    const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, allRawProducts, setShowLogin } = useAppContext();
 
     const handleQuantityChange = (itemId, currentQuantity, stock) => {
         if (currentQuantity > stock) {
@@ -52,7 +45,7 @@ const Cart = () => {
     }, [cartItems, allRawProducts]);
 
 
-    if (authLoading || userData === undefined || productsLoading) {
+    if (authLoading || userData === undefined) {
         return (
             <>
                 <Navbar />
@@ -106,7 +99,7 @@ const Cart = () => {
                                     <div className="flex gap-4">
                                         <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-24 h-24 flex items-center justify-center">
                                             <Image
-                                                src={(product.image && product.image.length > 0) ? product.image[0] : assets.upload_area}
+                                                src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
                                                 alt={product.name}
                                                 className="w-full h-full object-contain mix-blend-multiply"
                                                 width={100}
@@ -164,7 +157,7 @@ const Cart = () => {
                                                 <div className="flex items-center gap-4">
                                                     <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-20 h-20 flex items-center justify-center">
                                                         <Image
-                                                        src={(product.image && product.image.length > 0) ? product.image[0] : assets.upload_area}
+                                                        src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
                                                         alt={product.name}
                                                         className="w-full h-full object-contain mix-blend-multiply"
                                                         width={80}

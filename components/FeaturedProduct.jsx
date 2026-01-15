@@ -1,30 +1,28 @@
 
 'use client';
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
-import { useCollection } from "@/src/firebase";
 
 const FeaturedProduct = () => {
-  const { router, currency } = useAppContext();
-  const { data: productsData, loading } = useCollection('products', { where: ['status', '==', 'approved'] });
+  const { router, products, currency } = useAppContext();
+  const [featuredProduct, setFeaturedProduct] = useState(null);
 
-  const featuredProduct = useMemo(() => {
-    if (!productsData || productsData.length === 0) return null;
-    
+  useEffect(() => {
     // Find a specific product to feature.
     // In a real app, this could be fetched from a 'featured' flag in the CMS
-    let productToFeature = productsData.find(p => p.name.includes("Venu 2S Smartwatch"));
-    if (!productToFeature) {
+    const productToFeature = products.find(p => p.name.includes("Venu 2S Smartwatch"));
+    if (productToFeature) {
+        setFeaturedProduct(productToFeature);
+    } else if (products.length > 0) {
         // Fallback to the first product if the specific one isn't found
-        productToFeature = productsData[0];
+        setFeaturedProduct(products[0]);
     }
-    return { ...productToFeature, _id: productToFeature.id };
-  }, [productsData]);
+  }, [products]);
 
-  if (loading || !featuredProduct) {
-    return null; // Don't render anything if there's no product to feature or still loading
+  if (!featuredProduct) {
+    return null; // Don't render anything if there's no product to feature
   }
 
   const { _id, name, description, image, offerPrice } = featuredProduct;

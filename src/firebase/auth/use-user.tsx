@@ -9,8 +9,6 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
   getAdditionalUserInfo,
-  sendPasswordResetEmail,
-  sendEmailVerification,
 } from 'firebase/auth';
 import { useAuth as useFirebaseAuth } from '../provider';
 import toast from 'react-hot-toast';
@@ -33,12 +31,6 @@ export function useUser() {
 
   return { user, loading };
 }
-
-// ActionCodeSettings for directing users back to the app
-const actionCodeSettings = {
-    url: typeof window !== 'undefined' ? `${window.location.origin}/` : 'http://localhost:3000/',
-    handleCodeInApp: true,
-};
 
 // This is a custom hook that provides authentication-related functions.
 export function useAuth() {
@@ -63,12 +55,12 @@ export function useAuth() {
         }
     };
 
-    const signUpWithEmail = async (email, password, name) => {
+    const signUpWithEmail = async (email, password) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(userCredential.user, { displayName: name });
-            await sendEmailVerification(userCredential.user, actionCodeSettings);
-            return {isNewUser: true, user: userCredential.user};
+            toast.success('Account created successfully! Welcome!');
+            // The onboarding tour will be triggered by the isNewUser flag in the user's document
+            return {isNewUser: true};
         } catch (error) {
             console.error("Error signing up: ", error);
             if (error.code === 'auth/email-already-in-use') {
@@ -85,13 +77,9 @@ export function useAuth() {
 
     const signInWithEmail = async (email, password) => {
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            if (!userCredential.user.emailVerified) {
-                toast.error('Please verify your email before logging in.');
-                return { isUnverified: true, user: userCredential.user };
-            }
+            await signInWithEmailAndPassword(auth, email, password);
             toast.success('Signed in successfully!');
-            return {isNewUser: false};
+             return {isNewUser: false};
         } catch (error) {
             console.error("Error signing in: ", error);
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
@@ -102,30 +90,6 @@ export function useAuth() {
             throw error;
         }
     };
-
-    const sendPasswordReset = async (email) => {
-        try {
-            await sendPasswordResetEmail(auth, email, actionCodeSettings);
-            toast.success('Password reset link sent! Check your email.');
-        } catch (error) {
-            console.error("Error sending password reset email: ", error);
-            if (error.code === 'auth/user-not-found') {
-                toast.error('No account found with that email address.');
-            } else {
-                toast.error('Failed to send reset link. Please try again.');
-            }
-        }
-    }
-
-    const resendVerificationEmail = async (user) => {
-        try {
-            await sendEmailVerification(user, actionCodeSettings);
-            toast.success('Verification email sent! Check your inbox.');
-        } catch (error) {
-            console.error("Error resending verification email:", error);
-            toast.error("Failed to resend verification email. Please try again.");
-        }
-    }
 
     const signOut = async () => {
         try {
@@ -140,7 +104,7 @@ export function useAuth() {
         signUpWithEmail,
         signInWithEmail,
         signOut,
-        sendPasswordReset,
-        resendVerificationEmail,
     };
 }
+
+    

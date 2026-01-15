@@ -1,29 +1,18 @@
-
 'use client';
 import { useAppContext } from "@/context/AppContext";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Wallet, X } from "lucide-react";
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import PaymentCancellationModal from "./PaymentCancellationModal";
-import { useCollection } from "@/src/firebase";
 
 const OrderSummary = () => {
 
   const { 
     currency, router, cartItems, userAddresses, 
-    userData, setShowLogin, walletBalance, 
+    userData, setShowLogin, getCartAmount, walletBalance, promotions, platformSettings,
     placeOrder, placeOrderWithWallet, openAddressModal
    } = useAppContext()
-  
-  const { data: promotionsData, loading: promotionsLoading } = useCollection('promotions');
-  const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
-  const { data: allRawProductsData, loading: productsLoading } = useCollection('products');
-  
-  const allRawProducts = useMemo(() => {
-    if (!allRawProductsData) return [];
-    return allRawProductsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }));
-  }, [allRawProductsData]);
 
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -42,25 +31,8 @@ const OrderSummary = () => {
     }
   }, [userAddresses]);
 
-  const getCartAmount = () => {
-    let totalAmount = 0;
-    if (!allRawProducts.length || !cartItems) return 0;
-    
-    for (const itemId in cartItems) {
-        const [productId] = itemId.split('_');
-        let itemInfo = allRawProducts.find((product) => product._id === productId);
-
-        if (itemInfo && cartItems[itemId] > 0) {
-            const isFlashSale = itemInfo.flashSalePrice && itemInfo.flashSaleEndDate && new Date(itemInfo.flashSaleEndDate) > new Date();
-            const currentPrice = isFlashSale ? itemInfo.flashSalePrice : itemInfo.offerPrice;
-            totalAmount += Number(currentPrice) * cartItems[itemId];
-        }
-    }
-    return Math.floor(totalAmount * 100) / 100;
-  }
-
   const cartAmount = getCartAmount();
-  const deliveryFee = cartAmount > (settingsData?.freeShippingThreshold || 50) ? 0 : (settingsData?.shippingFee || 5);
+  const deliveryFee = cartAmount > (platformSettings?.freeShippingThreshold || 50) ? 0 : (platformSettings?.shippingFee || 5);
   const totalAmount = cartAmount + deliveryFee - discount;
 
   const getCartCount = () => {
@@ -97,7 +69,7 @@ const OrderSummary = () => {
         toast.error("Please enter a promo code.");
         return;
     }
-    const promo = (promotionsData || []).find(p => p.code.toLowerCase() === promoCode.toLowerCase() && p.status === 'active');
+    const promo = promotions.find(p => p.code.toLowerCase() === promoCode.toLowerCase() && p.status === 'active');
     if (!promo) {
         toast.error("Invalid or inactive promo code.");
         setDiscount(0);
@@ -138,12 +110,12 @@ const OrderSummary = () => {
     
     let result;
     if (paymentMethod === 'wallet') {
-        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems, allRawProducts);
+        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems);
     } else {
         result = await new Promise((resolve) => {
              handleFlutterwavePayment({
                 callback: async (response) => {
-                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems, allRawProducts);
+                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems);
                     resolve(orderResult);
                     closePaymentModal();
                 },
@@ -194,10 +166,6 @@ const OrderSummary = () => {
 
   const isWalletDisabled = userData ? walletBalance < totalAmount : true;
   
-  if (productsLoading || settingsLoading || promotionsLoading) {
-    return <div className="w-full md:w-96 bg-gray-500/5 p-5 rounded-lg">Loading...</div>
-  }
-
   return (
     <>
     <div className="w-full md:w-96 bg-gray-500/5 p-5 rounded-lg">

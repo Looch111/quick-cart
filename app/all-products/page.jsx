@@ -1,4 +1,3 @@
-
 'use client'
 import { useState, useEffect, useMemo, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
@@ -9,8 +8,6 @@ import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
-import { useCollection } from "@/src/firebase";
-import Loading from "@/components/Loading";
 
 // Custom hook for debouncing
 const useDebounce = (value, delay) => {
@@ -44,9 +41,7 @@ const SearchFocus = ({ searchInputRef }) => {
 }
 
 const AllProducts = () => {
-    const { currency } = useAppContext();
-    const { data: productsData, loading: productsLoading } = useCollection('products', { where: ['status', '==', 'approved'] });
-
+    const { products, currency } = useAppContext();
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState([]);
     const [priceRange, setPriceRange] = useState({ min: '', max: '' });
@@ -56,11 +51,6 @@ const AllProducts = () => {
 
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const debouncedPriceRange = useDebounce(priceRange, 500);
-
-    const products = useMemo(() => {
-        if (!productsData) return [];
-        return productsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }));
-    }, [productsData]);
 
     const categories = useMemo(() => {
         const allCategories = products.map(p => p.category);
@@ -276,17 +266,15 @@ const AllProducts = () => {
 
                     {/* Products Grid */}
                     <main className="flex-1">
-                        {productsLoading ? <Loading /> : (
-                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-6 w-full">
-                                {filteredAndSortedProducts.length > 0 ? (
-                                    filteredAndSortedProducts.map((product) => (
-                                        <ProductCard key={product._id} product={product} />
-                                    ))
-                                ) : (
-                                    <p className="col-span-full text-center text-gray-500">No products found.</p>
-                                )}
-                            </div>
-                        )}
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-6 w-full">
+                            {filteredAndSortedProducts.length > 0 ? (
+                                filteredAndSortedProducts.map((product) => (
+                                    <ProductCard key={product._id} product={product} />
+                                ))
+                            ) : (
+                                <p className="col-span-full text-center text-gray-500">No products found.</p>
+                            )}
+                        </div>
                     </main>
                 </div>
             </div>
