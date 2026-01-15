@@ -1,3 +1,4 @@
+
 'use client';
 import {
   BarChart,
@@ -39,14 +40,14 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const SellerDashboard = () => {
-  const { userData, currency, sellerWalletBalance } = useAppContext();
+  const { userData, currency, sellerWalletBalance, allRawProducts } = useAppContext();
   const { data: allOrders, loading: ordersLoading } = useCollection('orders');
-  const { data: products, loading: productsLoading } = useCollection('products');
-
+  
+  const productsLoading = !allRawProducts;
   const loading = ordersLoading || productsLoading;
 
   const sellerStats = useMemo(() => {
-    if (!userData || !allOrders || !products) {
+    if (!userData || !allOrders || !allRawProducts) {
         return {
             productsSold: 0,
             activeListings: 0,
@@ -55,7 +56,7 @@ const SellerDashboard = () => {
         };
     }
 
-    const sellerProducts = products.filter(p => p.userId === userData._id);
+    const sellerProducts = allRawProducts.filter(p => p.userId === userData._id);
     const sellerProductIds = sellerProducts.map(p => p.id);
       
     let productsSold = 0;
@@ -74,7 +75,7 @@ const SellerDashboard = () => {
             orderSales += itemTotal;
             sellerItemsInOrder += item.quantity;
 
-            const orderDate = order.date?.toDate();
+            const orderDate = order.date?.toDate ? order.date.toDate() : new Date(order.date);
             if (order.status === 'Completed' && orderDate) {
               const orderMonth = orderDate.getMonth();
               if (monthlySalesData[orderMonth]) {
@@ -88,7 +89,7 @@ const SellerDashboard = () => {
           recentOrders.push({
             ...order,
             id: order.id,
-            date: order.date?.toDate(),
+            date: order.date?.toDate ? order.date.toDate() : new Date(order.date),
             amount: orderSales, 
           });
         }
@@ -100,7 +101,7 @@ const SellerDashboard = () => {
         recentOrders: recentOrders.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5),
         monthlySales: monthlySalesData,
     };
-  }, [userData, allOrders, products]);
+  }, [userData, allOrders, allRawProducts]);
   
   if (loading) {
     return <Loading />;
@@ -170,3 +171,5 @@ const SellerDashboard = () => {
 };
 
 export default SellerDashboard;
+
+    

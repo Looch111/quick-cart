@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCollection } from "@/src/firebase";
 
 const Cart = () => {
     const { router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, setShowLogin, allRawProducts, productsLoading } = useAppContext();
@@ -215,3 +214,5 @@ const Cart = () => {
 };
 
 export default Cart;
+
+    

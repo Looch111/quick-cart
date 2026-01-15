@@ -60,7 +60,7 @@ const UserAvatar = ({ user, size = 'sm' }) => {
 
 const ProductList = () => {
     const { router, deleteProduct, productsLoading, updateProductStatus, currency, allRawProducts } = useAppContext();
-    const { data: users, loading: usersLoading } = useCollection('users');
+    const { data: usersData, loading: usersLoading } = useCollection('users');
 
     const [loading, setLoading] = useState(true);
     const [editingProduct, setEditingProduct] = useState(null);
@@ -104,7 +104,7 @@ const ProductList = () => {
         setProductToDelete(null);
     };
 
-    const usersMap = new Map(users.map(user => [user.id, user]));
+    const usersMap = new Map((usersData || []).map(user => [user.id, user]));
 
     const filteredProducts = (allRawProducts || [])
         .map(product => ({
@@ -278,3 +278,5 @@ const ProductList = () => {
 };
 
 export default ProductList;
+
+    

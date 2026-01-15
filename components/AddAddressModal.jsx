@@ -1,3 +1,4 @@
+
 'use client'
 import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
@@ -21,6 +22,7 @@ const AddAddressModal = () => {
             setAddress(prev => ({ 
                 ...prev, 
                 fullName: userData.name || '',
+                phoneNumber: '',
                 hall: halls[0],
                 roomNumber: '',
             }));
@@ -125,3 +127,5 @@ const AddAddressModal = () => {
 };
 
 export default AddAddressModal;
+
+    

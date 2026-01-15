@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { useAppContext } from "@/context/AppContext";
@@ -268,3 +269,5 @@ const MarketingPage = () => {
 };
 
 export default MarketingPage;
+
+    

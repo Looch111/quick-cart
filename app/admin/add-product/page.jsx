@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
@@ -78,7 +79,7 @@ const AddProduct = () => {
         flashSalePrice: Number(flashSalePrice) || null,
         image: imageUrls.filter(url => url).map(url => getImageUrl(url)),
         stock: stock,
-        sizes: productSizes,
+        sizes: hasSizes ? productSizes : {},
         flashSaleEndDate: flashSaleEndDate || null,
     }
 
@@ -309,7 +310,7 @@ const AddProduct = () => {
                         className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
                         onChange={(e) => setTotalStock(e.target.value)}
                         value={totalStock}
-                        required
+                        required={!hasSizes}
                     />
                 </div>
             )}
@@ -324,3 +325,5 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+
+    

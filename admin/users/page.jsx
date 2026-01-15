@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
@@ -7,6 +8,26 @@ import Loading from "@/components/Loading";
 import EditUserModal from "@/components/admin/EditUserModal";
 import { useCollection } from "@/src/firebase";
 import { User } from "lucide-react";
+
+const UserAvatar = ({ user, size = 'md' }) => {
+    const dimensions = size === 'md' ? 'w-10 h-10' : 'w-12 h-12';
+    const textSize = size === 'md' ? 'text-lg' : 'text-xl';
+    const iconSize = size === 'md' ? 'w-6 h-6' : 'w-7 h-7';
+
+    return (
+        <div className={`${dimensions} rounded-full bg-gray-200 flex items-center justify-center overflow-hidden`}>
+            {user?.photoURL ? (
+                <Image src={user.photoURL} alt={user.name || 'User Avatar'} width={size === 'md' ? 40 : 48} height={size === 'md' ? 40 : 48} className="object-cover" />
+            ) : user?.name ? (
+                <span className={`${textSize} font-medium text-gray-600`}>{user.name[0].toUpperCase()}</span>
+            ) : user?.email ? (
+                <span className={`${textSize} font-medium text-gray-600`}>{user.email[0].toUpperCase()}</span>
+            ) : (
+                <User className={`${iconSize} text-gray-500`} />
+            )}
+        </div>
+    );
+};
 
 const UserList = () => {
 
@@ -26,30 +47,10 @@ const UserList = () => {
         setEditingUser(null);
     };
 
-    const filteredUsers = (users || []).filter(user =>
+    const filteredUsers = (users || [])).filter(user =>
         (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-
-    const UserAvatar = ({ user, size = 'md' }) => {
-        const dimensions = size === 'md' ? 'w-10 h-10' : 'w-12 h-12';
-        const textSize = size === 'md' ? 'text-lg' : 'text-xl';
-        const iconSize = size === 'md' ? 'w-6 h-6' : 'w-7 h-7';
-
-        return (
-            <div className={`${dimensions} rounded-full bg-gray-200 flex items-center justify-center overflow-hidden`}>
-                {user.photoURL ? (
-                    <Image src={user.photoURL} alt={user.name || 'User Avatar'} width={size === 'md' ? 40 : 48} height={size === 'md' ? 40 : 48} className="object-cover" />
-                ) : user.name ? (
-                    <span className={`${textSize} font-medium text-gray-600`}>{user.name[0].toUpperCase()}</span>
-                ) : user.email ? (
-                    <span className={`${textSize} font-medium text-gray-600`}>{user.email[0].toUpperCase()}</span>
-                ) : (
-                    <User className={`${iconSize} text-gray-500`} />
-                )}
-            </div>
-        );
-    };
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between">
@@ -143,3 +144,5 @@ const UserList = () => {
 };
 
 export default UserList;
+
+    

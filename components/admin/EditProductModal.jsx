@@ -99,7 +99,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
             stock = Number(totalStock);
         }
         dataToSave.stock = stock;
-        dataToSave.sizes = productSizes;
+        dataToSave.sizes = hasSizes ? productSizes : {};
 
         if (!dataToSave.flashSaleEndDate) {
             dataToSave.flashSaleEndDate = null;
@@ -317,3 +317,5 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 };
 
 export default EditProductModal;
+
+    
