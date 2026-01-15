@@ -112,12 +112,12 @@ const OrderSummary = () => {
     
     let result;
     if (paymentMethod === 'wallet') {
-        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems);
+        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems, allRawProducts);
     } else {
         result = await new Promise((resolve) => {
              handleFlutterwavePayment({
                 callback: async (response) => {
-                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems);
+                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems, allRawProducts);
                     resolve(orderResult);
                     closePaymentModal();
                 },
