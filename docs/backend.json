@@ -255,6 +255,32 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["userId", "message", "read", "createdAt"]
+    },
+    "conversation": {
+        "title": "Conversation",
+        "description": "A chat conversation between a user and admins.",
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string" },
+          "userName": { "type": "string" },
+          "lastMessage": { "type": "string" },
+          "lastMessageAt": { "type": "string", "format": "date-time" },
+          "userUnread": { "type": "boolean" },
+          "adminUnread": { "type": "boolean" }
+        }
+    },
+    "message": {
+        "title": "Message",
+        "description": "A single chat message.",
+        "type": "object",
+        "properties": {
+            "text": { "type": "string" },
+            "senderId": { "type": "string" },
+            "senderName": { "type": "string" },
+            "senderRole": { "type": "string", "enum": ["user", "admin"] },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["text", "senderId", "createdAt"]
     }
   },
   "auth": {
@@ -296,6 +322,14 @@
     "/users/{userId}/notifications/{notificationId}": {
         "schema": { "$ref": "#/entities/notification" },
         "description": "Stores notifications for a specific user."
+    },
+    "/conversations/{userId}": {
+        "schema": { "$ref": "#/entities/conversation" },
+        "description": "Stores a chat conversation between a user and admins."
+    },
+    "/conversations/{userId}/messages/{messageId}": {
+        "schema": { "$ref": "#/entities/message" },
+        "description": "Stores individual messages within a conversation."
     }
   }
 }

@@ -12,6 +12,7 @@ import AddAddressModal from "@/components/AddAddressModal";
 import DisputeModal from "@/components/DisputeModal";
 import NotificationSetup from "@/src/components/NotificationSetup";
 import FloatingSupportButton from "@/components/FloatingSupportButton";
+import ChatModal from "@/components/ChatModal";
 
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }) {
               <SizeSelectionModal />
               <AddAddressModal />
               <DisputeModal />
+              <ChatModal />
               <OnboardingTour />
               <NotificationSetup />
               {children}

@@ -5,23 +5,25 @@ import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LogOut, Menu, X } from 'lucide-react'
+import { LogOut, Menu, X, MessageSquare } from 'lucide-react'
 import NotificationPanel from '../NotificationPanel'
 import { useCollection } from '@/src/firebase'
 
 const Navbar = () => {
 
-  const { router, handleLogout } = useAppContext()
+  const { router, handleLogout, openChatModal } = useAppContext()
   const { data: allOrders } = useCollection('orders');
   const { data: allProducts } = useCollection('products');
+  const { data: allConversations } = useCollection('conversations');
   const pathname = usePathname()
   const [hasNewOrders, setHasNewOrders] = useState(false);
   const [hasNewProducts, setHasNewProducts] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasUnreadChats, setHasUnreadChats] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
-    if (allOrders && allOrders.length > 0) {
+    if (allOrders) {
       const newOrders = allOrders.filter(order => order.status === "Processing" || order.status === "Order Placed");
       setHasNewOrders(newOrders.length > 0);
     } else {
@@ -30,13 +32,19 @@ const Navbar = () => {
   }, [allOrders]);
   
   useEffect(() => {
-    if (allProducts && allProducts.length > 0) {
+    if (allProducts) {
         const newProducts = allProducts.filter(product => product.status === "pending");
         setHasNewProducts(newProducts.length > 0);
     } else {
         setHasNewProducts(false);
     }
   }, [allProducts]);
+
+  useEffect(() => {
+    if (allConversations) {
+        setHasUnreadChats(allConversations.some(c => c.adminUnread));
+    }
+  }, [allConversations]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -85,6 +93,12 @@ const Navbar = () => {
       </div>
 
       <div className="flex items-center gap-4">
+        <button onClick={openChatModal} className="relative p-2 rounded-full hover:bg-gray-100">
+            <MessageSquare className="w-5 h-5 text-gray-600" />
+            {hasUnreadChats && (
+                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full blinking-dot"></span>
+            )}
+        </button>
         <NotificationPanel />
         <button onClick={onLogout} className='flex items-center gap-2 bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>
           <LogOut className="w-4 h-4" />

@@ -43,6 +43,8 @@ export const AppContextProvider = (props) => {
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const [orderForDispute, setOrderForDispute] = useState(null);
+    const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+    const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
     
     const cartItems = userData?.cartItems || {};
     const wishlistItems = userData?.wishlistItems || {};
@@ -162,6 +164,97 @@ export const AppContextProvider = (props) => {
             setUserOrders([]);
         }
     }, [userData, firestore]);
+
+    useEffect(() => {
+        if (userData && !isAdmin) {
+            const convRef = doc(firestore, 'conversations', userData._id);
+            const unsubscribe = onSnapshot(convRef, (doc) => {
+                if (doc.exists() && doc.data().userUnread) {
+                    setHasUnreadMessages(true);
+                } else {
+                    setHasUnreadMessages(false);
+                }
+            });
+            return () => unsubscribe();
+        } else {
+            setHasUnreadMessages(false);
+        }
+    }, [userData, isAdmin, firestore]);
+
+    const openChatModal = async () => {
+        setIsChatModalOpen(true);
+        if (!userData || isAdmin) return;
+    
+        const conversationRef = doc(firestore, 'conversations', userData._id);
+        const convSnap = await getDoc(conversationRef);
+        if (convSnap.exists() && convSnap.data().userUnread) {
+            await setDoc(conversationRef, { userUnread: false }, { merge: true });
+        }
+    };
+
+    const closeChatModal = () => setIsChatModalOpen(false);
+
+    const sendMessage = async (text) => {
+        if (!userData) return;
+    
+        const conversationRef = doc(firestore, 'conversations', userData._id);
+        const messagesRef = collection(conversationRef, 'messages');
+    
+        try {
+            const messageData = {
+                text,
+                senderId: userData._id,
+                senderName: userData.name || 'User',
+                senderRole: 'user',
+                createdAt: serverTimestamp(),
+            };
+    
+            await addDoc(messagesRef, messageData);
+            
+            await setDoc(conversationRef, {
+                userId: userData._id,
+                userName: userData.name || 'User',
+                lastMessage: text,
+                lastMessageAt: serverTimestamp(),
+                userUnread: false,
+                adminUnread: true,
+            }, { merge: true });
+    
+        } catch (error) {
+            console.error("Error sending message: ", error);
+            toast.error("Failed to send message.");
+        }
+    };
+
+    const sendAdminMessage = async (conversationId, text) => {
+        if (!userData || !isAdmin) return;
+    
+        const conversationRef = doc(firestore, 'conversations', conversationId);
+        const messagesRef = collection(conversationRef, 'messages');
+    
+        try {
+            const messageData = {
+                text,
+                senderId: userData._id,
+                senderName: "Admin Support",
+                senderRole: 'admin',
+                createdAt: serverTimestamp(),
+            };
+    
+            await addDoc(messagesRef, messageData);
+            
+            await setDoc(conversationRef, {
+                lastMessage: text,
+                lastMessageAt: serverTimestamp(),
+                userUnread: true,
+                adminUnread: false, 
+            }, { merge: true });
+    
+        } catch (error) {
+            console.error("Error sending admin message: ", error);
+            toast.error("Failed to send message.");
+        }
+    };
 
     const addProductReview = async (productId, rating, comment) => {
         if (!userData) {
@@ -1159,7 +1252,10 @@ export const AppContextProvider = (props) => {
         banners, bannersLoading,
         promotions, promotionsLoading,
         addBanner, deleteBanner, updateBanner, updateBannerStatus,
-        addPromotion, deletePromotion, updatePromotionStatus
+        addPromotion, deletePromotion, updatePromotionStatus,
+        isChatModalOpen, openChatModal, closeChatModal,
+        sendMessage, sendAdminMessage,
+        hasUnreadMessages
     }
 
     return (

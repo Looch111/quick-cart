@@ -63,5 +63,14 @@ service cloud.firestore {
         allow create: if isSignedIn();
         allow write, delete: if isAdmin();
     }
+
+    // Chat conversations
+    match /conversations/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+
+      match /messages/{messageId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
   }
 }
