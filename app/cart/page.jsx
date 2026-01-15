@@ -44,7 +44,7 @@ const Cart = () => {
                 return null;
             })
             .filter(Boolean)
-            .sort((a, b) => a.name.localeCompare(b.name) || (a.size && b.size ? a.size.localeCompare(b.size) : 0));
+            .sort((a, b) => a.name.localeCompare(a.name) || (a.size && b.size ? a.size.localeCompare(b.size) : 0));
     }, [cartItems, allRawProducts]);
 
 
