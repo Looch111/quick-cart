@@ -7,6 +7,7 @@ import Footer from "@/components/admin/Footer";
 import EditBannerModal from '@/components/admin/EditBannerModal';
 import Image from 'next/image';
 import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal';
+import { assets } from '@/assets/assets';
 
 const Switch = ({ checked, onChange }) => {
     return (
@@ -182,7 +183,7 @@ const MarketingPage = () => {
                         <div className="md:hidden space-y-4">
                             {banners.map((banner) => (
                                 <div key={banner.id} className="border rounded-lg p-4">
-                                    <Image src={banner.image} alt={banner.title} width={500} height={300} className="w-full h-auto rounded-md mb-3" />
+                                    <Image src={banner.image || assets.upload_area} alt={banner.title} width={500} height={300} className="w-full h-auto rounded-md mb-3" />
                                     <h4 className="font-semibold text-gray-800">{banner.title}</h4>
                                     <div className='flex items-center justify-between'>
                                     <p className="text-xs text-gray-500"><strong>Link:</strong> {banner.link}</p>
@@ -222,7 +223,7 @@ const MarketingPage = () => {
                                     {banners.map((banner) => (
                                         <tr key={banner.id} className="bg-white border-b">
                                             <td className="px-6 py-4 font-medium text-gray-900">{banner.title}</td>
-                                            <td className="px-6 py-4"><Image src={banner.image} alt={banner.title} width={128} height={72} className="w-32 h-auto rounded"/></td>
+                                            <td className="px-6 py-4"><Image src={banner.image || assets.upload_area} alt={banner.title} width={128} height={72} className="w-32 h-auto rounded"/></td>
                                             <td className="px-6 py-4">{banner.link}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">

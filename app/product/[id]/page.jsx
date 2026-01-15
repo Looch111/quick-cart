@@ -165,7 +165,7 @@ const Product = () => {
     const productData = useMemo(() => product ? { ...product, _id: product.id } : null, [product]);
 
     useEffect(() => {
-        if (productData) {
+        if (productData && productData.image && productData.image.length > 0) {
             setMainImage(productData.image[0]);
             if (productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0) {
                 setSelectedSize(Object.keys(productData.sizes)[0]);
@@ -220,13 +220,13 @@ const Product = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                 <div className="px-5 lg:px-16 xl:px-20">
                     <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4 relative aspect-square">
-                        <Image
+                        {mainImage && <Image
                             src={mainImage}
                             alt={productData.name}
                             className="w-full h-full object-contain mix-blend-multiply"
                             fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
+                        />}
                         {isOutOfStock && (
                             <div className="absolute top-4 left-4 bg-red-500 text-white text-sm px-3 py-1 rounded-full">
                                 Out of Stock
