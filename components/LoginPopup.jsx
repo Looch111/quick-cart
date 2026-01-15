@@ -16,8 +16,9 @@ const GoogleIcon = () => (
 
 const LoginPopup = () => {
     const { showLogin, setShowLogin, userData } = useAppContext();
-    const { signInWithEmail, signUpWithEmail } = useAuth();
+    const { signInWithEmail, signUpWithEmail, sendPasswordReset } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
+    const [isResettingPassword, setIsResettingPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -27,6 +28,7 @@ const LoginPopup = () => {
         if (showLogin) {
             // Reset to login view every time the popup opens
             setIsLogin(true);
+            setIsResettingPassword(false);
             setError('');
             setEmail('');
             setPassword('');
@@ -60,6 +62,18 @@ const LoginPopup = () => {
         toast.error("Google Sign-in is not available yet. Please use email and password.");
     };
 
+    const handlePasswordReset = async (e) => {
+        e.preventDefault();
+        setError('');
+        try {
+            await sendPasswordReset(email);
+            setIsResettingPassword(false);
+            setIsLogin(true);
+        } catch (err) {
+            // Errors are handled and toasted in the useAuth hook.
+        }
+    };
+
     const handleEmailAuth = (e) => {
         e.preventDefault();
         if (isLogin) {
@@ -79,64 +93,112 @@ const LoginPopup = () => {
                     </svg>
                 </button>
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-800">{isLogin ? <>Sign in to <span className="text-orange-600">EUI</span> Tap&Shop</> : "Create an account"}</h1>
-                    <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : <>Get started with <span className="text-orange-600">EUI</span> Tap&Shop</>}</p>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                         {isResettingPassword 
+                            ? "Reset Password" 
+                            : isLogin 
+                                ? <>Sign in to <span className="text-orange-600">EUI</span> Tap&Shop</>
+                                : "Create an account"
+                        }
+                    </h1>
+                    <p className="text-gray-500 mt-2 text-sm">
+                        {isResettingPassword
+                            ? "Enter your email to receive a reset link."
+                            : isLogin 
+                                ? "Welcome back! Please sign in to continue" 
+                                : <>Get started with <span className="text-orange-600">EUI</span> Tap&Shop</>
+                        }
+                    </p>
                 </div>
-                <div className="mt-6">
-                    <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
-                        <GoogleIcon />
-                        <span className="text-gray-700 font-medium text-sm">Continue with Google</span>
-                    </button>
-                </div>
-                <div className="flex items-center my-4">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
-                </div>
-                {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
-                <form className="space-y-4" onSubmit={handleEmailAuth}>
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
-                        <input
-                            id="email"
-                            className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
-                            type="email"
-                            placeholder="Enter your email address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="relative">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
-                            id="password"
-                            className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
-                            type={passwordVisible ? "text" : "password"}
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                         <button
-                            type="button"
-                            onClick={() => setPasswordVisible(!passwordVisible)}
-                            className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-sm leading-5"
-                        >
-                            {passwordVisible ? (
-                                <EyeOff className="h-5 w-5 text-gray-500" />
-                            ) : (
-                                <Eye className="h-5 w-5 text-gray-500" />
-                            )}
+
+                {isResettingPassword ? (
+                    <form className="space-y-4 mt-6" onSubmit={handlePasswordReset}>
+                        {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                            <input
+                                id="email"
+                                className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                                type="email"
+                                placeholder="Enter your email address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
+                            Send Reset Link
                         </button>
-                    </div>
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
-                        Continue
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
-                    </button>
-                </form>
+                    </form>
+                ) : (
+                    <>
+                        <div className="mt-6">
+                            <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
+                                <GoogleIcon />
+                                <span className="text-gray-700 font-medium text-sm">Continue with Google</span>
+                            </button>
+                        </div>
+                        <div className="flex items-center my-4">
+                            <div className="flex-grow border-t border-gray-300"></div>
+                            <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
+                            <div className="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
+                        <form className="space-y-4" onSubmit={handleEmailAuth}>
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                                <input
+                                    id="email"
+                                    className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                                    type="email"
+                                    placeholder="Enter your email address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="relative">
+                                <div className="flex justify-between items-center">
+                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                                    {isLogin && (
+                                        <span onClick={() => { setIsResettingPassword(true); setError(''); }} className="text-xs text-orange-600 font-semibold cursor-pointer hover:underline">Forgot Password?</span>
+                                    )}
+                                </div>
+                                <input
+                                    id="password"
+                                    className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                                    type={passwordVisible ? "text" : "password"}
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setPasswordVisible(!passwordVisible)}
+                                    className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-sm leading-5"
+                                >
+                                    {passwordVisible ? (
+                                        <EyeOff className="h-5 w-5 text-gray-500" />
+                                    ) : (
+                                        <Eye className="h-5 w-5 text-gray-500" />
+                                    )}
+                                </button>
+                            </div>
+                            <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
+                                Continue
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
+                            </button>
+                        </form>
+                    </>
+                )}
+
                 <div className="mt-4 text-center text-xs">
-                    {isLogin ? (
+                    {isResettingPassword ? (
+                         <p className="text-gray-500">
+                            Remembered your password? <span onClick={() => {setIsResettingPassword(false); setIsLogin(true); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
+                        </p>
+                    ) : isLogin ? (
                         <p className="text-gray-500">
                             Don't have an account? <span onClick={() => {setIsLogin(false); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
                         </p>

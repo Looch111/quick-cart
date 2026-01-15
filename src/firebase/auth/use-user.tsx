@@ -9,6 +9,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
   getAdditionalUserInfo,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { useAuth as useFirebaseAuth } from '../provider';
 import toast from 'react-hot-toast';
@@ -91,6 +92,21 @@ export function useAuth() {
         }
     };
 
+    const sendPasswordReset = async (email) => {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            toast.success('Password reset email sent! Please check your inbox.');
+        } catch (error) {
+            console.error("Error sending password reset email: ", error);
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+                toast.error('Could not find a user with that email address.');
+            } else {
+                toast.error('Failed to send password reset email. Please try again.');
+            }
+            throw error;
+        }
+    };
+
     const signOut = async () => {
         try {
             await firebaseSignOut(auth);
@@ -103,8 +119,7 @@ export function useAuth() {
     return {
         signUpWithEmail,
         signInWithEmail,
+        sendPasswordReset,
         signOut,
     };
 }
-
-    
