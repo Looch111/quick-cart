@@ -10,11 +10,20 @@ import toast from 'react-hot-toast';
 export default function FirebaseErrorListener() {
   useEffect(() => {
     const handleError = (error) => {
-      console.error('Firestore Permission Error:', error.context);
-      toast.error(
-        `Permission denied. Check security rules for ${error.context.operation} on ${error.context.path}`
-      );
-      // In a real app, you might want to log this to a service like Sentry
+      // Check if the error is our custom permission error and has context
+      if (error instanceof FirestorePermissionError && error.context) {
+        // Log the detailed context for debugging
+        console.error('Firestore Permission Error:', error.context);
+        
+        // Show a helpful toast message to the user
+        toast.error(
+          `Permission denied. Check security rules for ${error.context.operation} on ${error.context.path}`
+        );
+      } else {
+        // Fallback for generic errors
+        console.error('An unknown permission error occurred:', error);
+        toast.error('An unexpected permission error occurred.');
+      }
     };
 
     errorEmitter.on('permission-error', handleError);
