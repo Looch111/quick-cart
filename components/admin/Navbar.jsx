@@ -13,8 +13,10 @@ const Navbar = () => {
 
   const { router, handleLogout } = useAppContext()
   const { data: allOrders } = useCollection('orders');
+  const { data: allProducts } = useCollection('products');
   const pathname = usePathname()
   const [hasNewOrders, setHasNewOrders] = useState(false);
+  const [hasNewProducts, setHasNewProducts] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -28,6 +30,15 @@ const Navbar = () => {
   }, [allOrders]);
   
   useEffect(() => {
+    if (allProducts && allProducts.length > 0) {
+        const newProducts = allProducts.filter(product => product.status === "pending");
+        setHasNewProducts(newProducts.length > 0);
+    } else {
+        setHasNewProducts(false);
+    }
+  }, [allProducts]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
@@ -40,7 +51,7 @@ const Navbar = () => {
   const menuItems = [
     { name: 'Dashboard', path: '/admin' },
     { name: 'Orders', path: '/admin/orders', notification: hasNewOrders },
-    { name: 'Products', path: '/admin/products' },
+    { name: 'Products', path: '/admin/products', notification: hasNewProducts },
     { name: 'Users', path: '/admin/users' },
     { name: 'Marketing', path: '/admin/marketing' },
     { name: 'Promotions', path: '/admin/promotions' },
@@ -53,7 +64,7 @@ const Navbar = () => {
   }
 
   return (
-    <div ref={menuRef} className='flex items-center px-4 md:px-8 py-3 justify-between border-b fixed top-0 left-0 w-full bg-white z-50'>
+    <div ref={menuRef} className='flex items-center px-4 md:px-8 py-3 justify-between border-b border-gray-300 fixed top-0 left-0 w-full bg-white z-50'>
       <Link href="/">
         <Image className='cursor-pointer w-32 md:w-[170px]' src={assets.logo} alt="" width={170} height={45}/>
       </Link>
@@ -88,7 +99,7 @@ const Navbar = () => {
 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-md lg:hidden z-40">
+        <div className="absolute top-full left-0 w-full bg-white shadow-md lg:hidden z-40 border-t border-gray-200">
             <div className='flex flex-col p-4 gap-2'>
             {menuItems.map((item) => {
               const isActive = pathname === item.path;
@@ -110,7 +121,7 @@ const Navbar = () => {
         </div>
       )}
 
-      {hasNewOrders && <audio src="https://cdn.pixabay.com/audio/2021/08/04/audio_9521327341.mp3" autoPlay ></audio>}
+      {(hasNewOrders || hasNewProducts) && <audio src="https://cdn.pixabay.com/audio/2021/08/04/audio_9521327341.mp3" autoPlay ></audio>}
     </div>
   )
 }
