@@ -9,6 +9,8 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
   getAdditionalUserInfo,
+  sendPasswordResetEmail,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { useAuth as useFirebaseAuth } from '../provider';
 import toast from 'react-hot-toast';
@@ -59,9 +61,8 @@ export function useAuth() {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
-            toast.success('Account created successfully! Welcome!');
-            // The onboarding tour will be triggered by the isNewUser flag in the user's document
-            return {isNewUser: true};
+            await sendEmailVerification(userCredential.user);
+            return {isNewUser: true, user: userCredential.user};
         } catch (error) {
             console.error("Error signing up: ", error);
             if (error.code === 'auth/email-already-in-use') {
@@ -78,9 +79,13 @@ export function useAuth() {
 
     const signInWithEmail = async (email, password) => {
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            if (!userCredential.user.emailVerified) {
+                toast.error('Please verify your email before logging in.');
+                return { isUnverified: true, user: userCredential.user };
+            }
             toast.success('Signed in successfully!');
-             return {isNewUser: false};
+            return {isNewUser: false};
         } catch (error) {
             console.error("Error signing in: ", error);
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
@@ -91,6 +96,30 @@ export function useAuth() {
             throw error;
         }
     };
+
+    const sendPasswordReset = async (email) => {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            toast.success('Password reset link sent! Check your email.');
+        } catch (error) {
+            console.error("Error sending password reset email: ", error);
+            if (error.code === 'auth/user-not-found') {
+                toast.error('No account found with that email address.');
+            } else {
+                toast.error('Failed to send reset link. Please try again.');
+            }
+        }
+    }
+
+    const resendVerificationEmail = async (user) => {
+        try {
+            await sendEmailVerification(user);
+            toast.success('Verification email sent! Check your inbox.');
+        } catch (error) {
+            console.error("Error resending verification email:", error);
+            toast.error("Failed to resend verification email. Please try again.");
+        }
+    }
 
     const signOut = async () => {
         try {
@@ -105,5 +134,7 @@ export function useAuth() {
         signUpWithEmail,
         signInWithEmail,
         signOut,
+        sendPasswordReset,
+        resendVerificationEmail,
     };
 }

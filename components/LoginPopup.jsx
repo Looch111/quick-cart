@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { useAuth } from "@/src/firebase/auth/use-user";
 import toast from "react-hot-toast";
-import { Eye, EyeOff, User } from "lucide-react";
+import { Eye, EyeOff, Mail, ArrowLeft } from "lucide-react";
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -16,28 +16,28 @@ const GoogleIcon = () => (
 
 const LoginPopup = () => {
     const { showLogin, setShowLogin, userData } = useAppContext();
-    const { signInWithEmail, signUpWithEmail } = useAuth();
-    const [isLogin, setIsLogin] = useState(true);
+    const { signInWithEmail, signUpWithEmail, sendPasswordReset, resendVerificationEmail } = useAuth();
+    const [currentState, setCurrentState] = useState('login'); // 'login', 'signup', 'reset', 'unverified'
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
+    const [unverifiedUser, setUnverifiedUser] = useState(null);
 
     useEffect(() => {
         if (showLogin) {
-            // Reset to login view every time the popup opens
-            setIsLogin(true);
+            setCurrentState('login');
             setError('');
             setName('');
             setEmail('');
             setPassword('');
             setPasswordVisible(false);
+            setUnverifiedUser(null);
         }
     }, [showLogin]);
-    
+
     useEffect(() => {
-        // If user data becomes available (i.e., successful login) while the popup is open, close it.
         if (userData && showLogin) {
             setShowLogin(false);
         }
@@ -50,21 +50,41 @@ const LoginPopup = () => {
     const handleAuthAction = async (authPromise) => {
         setError('');
         try {
-            await authPromise;
-            // The isNewUser flag from the auth result will trigger the context to show the tour
-            // The useEffect above will handle closing the popup on successful login.
+            const result = await authPromise;
+            if (result?.isUnverified) {
+                setUnverifiedUser(result.user);
+                setCurrentState('unverified');
+            } else if (result?.isNewUser) {
+                setCurrentState('unverified');
+                setUnverifiedUser(result.user);
+                toast.success('Account created! Please verify your email.');
+            } else {
+                 // Successful login
+            }
         } catch (err) {
-            // Errors are handled in useAuth, but you could add more specific UI error handling here if needed.
+            // Errors are handled in useAuth hook and displayed via toast
         }
     };
 
+    const handlePasswordReset = async (e) => {
+        e.preventDefault();
+        await sendPasswordReset(email);
+        setCurrentState('login');
+    }
+
+    const handleResendVerification = async () => {
+        if (unverifiedUser) {
+            await resendVerificationEmail(unverifiedUser);
+        }
+    }
+    
     const handleGoogleSignIn = () => {
         toast.error("Google Sign-in is not available yet. Please use email and password.");
     };
 
     const handleEmailAuth = (e) => {
         e.preventDefault();
-        if (isLogin) {
+        if (currentState === 'login') {
             handleAuthAction(signInWithEmail(email, password));
         } else {
              if (!name) {
@@ -75,6 +95,152 @@ const LoginPopup = () => {
         }
     };
 
+    const renderContent = () => {
+        switch (currentState) {
+            case 'unverified':
+                return (
+                    <>
+                        <div className="text-center">
+                            <Mail className="w-12 h-12 mx-auto text-orange-500" />
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-800 mt-4">Verify Your Email</h1>
+                            <p className="text-gray-500 mt-2 text-sm">A verification link has been sent to your email address. Please check your inbox and click the link to activate your account.</p>
+                        </div>
+                        <div className="mt-6 text-center text-sm">
+                            <p className="text-gray-500">
+                                Didn't receive an email? <span onClick={handleResendVerification} className="text-orange-600 font-semibold cursor-pointer hover:underline">Resend link</span>
+                            </p>
+                            <p className="text-gray-500 mt-4">
+                                <span onClick={() => setCurrentState('login')} className="text-orange-600 font-semibold cursor-pointer hover:underline">Back to Login</span>
+                            </p>
+                        </div>
+                    </>
+                );
+            case 'reset':
+                return (
+                    <>
+                        <div className="text-center">
+                             <h1 className="text-xl md:text-2xl font-bold text-gray-800">Reset Password</h1>
+                            <p className="text-gray-500 mt-2 text-sm">Enter your email to receive a password reset link.</p>
+                        </div>
+                        <form className="space-y-4 mt-6" onSubmit={handlePasswordReset}>
+                             <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                                <input id="email" className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm" type="email" placeholder="Enter your email address" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                            </div>
+                            <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
+                                Send Reset Link
+                            </button>
+                        </form>
+                        <div className="mt-4 text-center text-xs">
+                             <p className="text-gray-500">
+                                <span onClick={() => setCurrentState('login')} className="text-orange-600 font-semibold cursor-pointer hover:underline inline-flex items-center gap-1"><ArrowLeft className="w-4 h-4"/> Back to Login</span>
+                            </p>
+                        </div>
+                    </>
+                );
+            default: // 'login' or 'signup'
+                return (
+                    <>
+                        <div className="text-center">
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+                                {currentState === 'login' ? (
+                                    <>
+                                        Sign in to <span className="text-orange-600">EUI</span> Tap&Shop
+                                    </>
+                                ) : "Create an account"}
+                            </h1>
+                            <p className="text-gray-500 mt-2 text-sm">{currentState === 'login' ? "Welcome back! Please sign in to continue" : "Get started with EUI Tap&Shop"}</p>
+                        </div>
+                        <div className="mt-6">
+                            <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
+                                <GoogleIcon />
+                                <span className="text-gray-700 font-medium text-sm">Continue with Google</span>
+                            </button>
+                        </div>
+                        <div className="flex items-center my-4">
+                            <div className="flex-grow border-t border-gray-300"></div>
+                            <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
+                            <div className="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
+                        <form className="space-y-4" onSubmit={handleEmailAuth}>
+                            {currentState === 'signup' && (
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+                                    <input
+                                        id="name"
+                                        className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                                        type="text"
+                                        placeholder="Enter your full name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            )}
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                                <input
+                                    id="email"
+                                    className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                                    type="email"
+                                    placeholder="Enter your email address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="relative">
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                                <input
+                                    id="password"
+                                    className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                                    type={passwordVisible ? "text" : "password"}
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setPasswordVisible(!passwordVisible)}
+                                    className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-sm leading-5"
+                                >
+                                    {passwordVisible ? (
+                                        <EyeOff className="h-5 w-5 text-gray-500" />
+                                    ) : (
+                                        <Eye className="h-5 w-5 text-gray-500" />
+                                    )}
+                                </button>
+                            </div>
+                             {currentState === 'login' && (
+                                <div className="text-right text-xs">
+                                    <span onClick={() => setCurrentState('reset')} className="text-orange-600 font-semibold cursor-pointer hover:underline">
+                                        Forgot password?
+                                    </span>
+                                </div>
+                            )}
+                            <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
+                                Continue
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
+                            </button>
+                        </form>
+                        <div className="mt-4 text-center text-xs">
+                            {currentState === 'login' ? (
+                                <p className="text-gray-500">
+                                    Don't have an account? <span onClick={() => {setCurrentState('signup'); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
+                                </p>
+                            ) : (
+                                <p className="text-gray-500">
+                                    Already have an account? <span onClick={() => {setCurrentState('login'); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
+                                </p>
+                            )}
+                        </div>
+                    </>
+                )
+        }
+    }
+
 
     return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 px-4">
@@ -84,94 +250,7 @@ const LoginPopup = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-                <div className="text-center">
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-                        {isLogin ? (
-                            <>
-                                Sign in to <span className="text-orange-600">EUI</span> Tap&Shop
-                            </>
-                        ) : "Create an account"}
-                    </h1>
-                    <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with EUI Tap&Shop"}</p>
-                </div>
-                <div className="mt-6">
-                    <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50">
-                        <GoogleIcon />
-                        <span className="text-gray-700 font-medium text-sm">Continue with Google</span>
-                    </button>
-                </div>
-                <div className="flex items-center my-4">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
-                </div>
-                {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
-                <form className="space-y-4" onSubmit={handleEmailAuth}>
-                     {!isLogin && (
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-                            <input
-                                id="name"
-                                className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
-                                type="text"
-                                placeholder="Enter your full name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
-                        </div>
-                    )}
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
-                        <input
-                            id="email"
-                            className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
-                            type="email"
-                            placeholder="Enter your email address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="relative">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
-                            id="password"
-                            className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
-                            type={passwordVisible ? "text" : "password"}
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                         <button
-                            type="button"
-                            onClick={() => setPasswordVisible(!passwordVisible)}
-                            className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-sm leading-5"
-                        >
-                            {passwordVisible ? (
-                                <EyeOff className="h-5 w-5 text-gray-500" />
-                            ) : (
-                                <Eye className="h-5 w-5 text-gray-500" />
-                            )}
-                        </button>
-                    </div>
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-800 text-white hover:bg-gray-900 rounded-full font-semibold text-sm">
-                        Continue
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" fillRule="evenodd"></path></svg>
-                    </button>
-                </form>
-                <div className="mt-4 text-center text-xs">
-                    {isLogin ? (
-                        <p className="text-gray-500">
-                            Don't have an account? <span onClick={() => {setIsLogin(false); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign up</span>
-                        </p>
-                    ) : (
-                        <p className="text-gray-500">
-                            Already have an account? <span onClick={() => {setIsLogin(true); setError('')}} className="text-orange-600 font-semibold cursor-pointer hover:underline">Sign in</span>
-                        </p>
-                    )}
-                </div>
+                {renderContent()}
             </div>
         </div>
     );
