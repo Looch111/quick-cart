@@ -33,10 +33,8 @@ export function useCollection(
   const [error, setError] = useState(null);
 
   const memoizedQuery = useMemo(() => {
-    // If the path is null or undefined, it's a signal to not fetch yet.
     if (!firestore || !pathOrQuery) return null;
 
-    // Check if the user passed a pre-constructed query
     if (typeof pathOrQuery !== 'string') {
       return pathOrQuery as Query;
     }
@@ -46,17 +44,16 @@ export function useCollection(
     if (orderByClause) q = query(q, orderBy(...orderByClause));
     if (limitClause) q = query(q, limit(limitClause));
     return q;
-    // By stringifying the non-primitive dependencies, we ensure useMemo only
-    // re-runs when their actual values change, not just their reference.
   }, [firestore, pathOrQuery, JSON.stringify(whereClause), JSON.stringify(orderByClause), limitClause]);
 
   useEffect(() => {
-    // If the query isn't ready (e.g., waiting for user ID), do nothing.
     if (!memoizedQuery) {
       setLoading(false);
-      setData([]); // Ensure data is cleared
+      setData([]);
+      setError(null);
       return;
     }
+
     setLoading(true);
     const unsubscribe = onSnapshot(
       memoizedQuery,
@@ -75,7 +72,7 @@ export function useCollection(
           operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
-        setError(permissionError);
+        setError(permissionError); // Set the custom error
         setLoading(false);
       }
     );
@@ -84,4 +81,3 @@ export function useCollection(
 
   return { data, loading, error };
 }
-

@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import { onSnapshot, doc, DocumentReference } from 'firebase/firestore';
@@ -14,7 +15,6 @@ export function useDoc(pathOrDocRef, id) {
   const [error, setError] = useState(null);
 
   const memoizedDocRef = useMemo(() => {
-    // If the path is null/undefined, or if an ID is required but not provided, do nothing.
     if (!firestore || !pathOrDocRef) return null;
     if (typeof pathOrDocRef === 'string' && !id) return null;
     
@@ -27,10 +27,10 @@ export function useDoc(pathOrDocRef, id) {
   }, [firestore, pathOrDocRef, id]);
 
   useEffect(() => {
-    // If the doc ref isn't ready, do nothing.
     if (!memoizedDocRef) {
         setLoading(false);
-        setData(null); // Ensure data is cleared
+        setData(null);
+        setError(null);
         return;
     }
     setLoading(true);
@@ -40,7 +40,7 @@ export function useDoc(pathOrDocRef, id) {
         if (snapshot.exists()) {
           setData({ id: snapshot.id, ...snapshot.data() });
         } else {
-          setData(null); // Document doesn't exist
+          setData(null);
         }
         setLoading(false);
         setError(null);
@@ -52,7 +52,7 @@ export function useDoc(pathOrDocRef, id) {
           operation: 'get',
         });
         errorEmitter.emit('permission-error', permissionError);
-        setError(permissionError);
+        setError(permissionError); // Set the custom error
         setLoading(false);
       }
     );
