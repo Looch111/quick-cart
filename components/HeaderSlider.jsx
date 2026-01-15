@@ -3,12 +3,14 @@ import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
+import { useCollection } from "@/src/firebase";
 
 const HeaderSlider = () => {
-    const { banners, router, isAdmin } = useAppContext();
+    const { router, isAdmin } = useAppContext();
+    const {data: banners, loading} = useCollection('banners');
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const activeBanners = banners.filter(b => b.status === 'active');
+    const activeBanners = (banners || []).filter(b => b.status === 'active');
 
     useEffect(() => {
         if (activeBanners.length === 0) return;
@@ -21,6 +23,10 @@ const HeaderSlider = () => {
     const handleSlideChange = (index) => {
         setCurrentSlide(index);
     };
+
+    if (loading) {
+        return <div className="w-full h-64 bg-gray-200 mt-6 rounded-xl animate-pulse"></div>;
+    }
 
     if (activeBanners.length === 0) {
         return null;

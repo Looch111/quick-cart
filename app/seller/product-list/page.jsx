@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
@@ -9,6 +9,7 @@ import { Edit, Trash2, CheckCircle, XCircle, Clock } from "lucide-react";
 import EditProductModal from "@/components/admin/EditProductModal";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
+import { useCollection } from "@/src/firebase";
 
 const StatusBadge = ({ status }) => {
     const statusMap = {
@@ -29,23 +30,21 @@ const StatusBadge = ({ status }) => {
 
 const ProductList = () => {
 
-  const { router, allRawProducts, userData, deleteProduct, productsLoading, currency } = useAppContext()
+  const { router, userData, deleteProduct, currency } = useAppContext()
+  const {data: allRawProducts, loading: productsLoading} = useCollection('products');
 
-  const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sellerProducts, setSellerProducts] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
 
-  useEffect(() => {
-    if (userData && !productsLoading) {
-      setSellerProducts(allRawProducts.filter(p => p.userId === userData._id));
-      setLoading(false);
-    } else if (userData === null && !productsLoading) {
-      setLoading(false);
-    }
-  }, [allRawProducts, userData, productsLoading])
+  const sellerProducts = useMemo(() => {
+    if (!userData || !allRawProducts) return [];
+    return allRawProducts
+        .filter(p => p.userId === userData._id)
+        .map(p => ({...p, _id: p.id}));
+  }, [allRawProducts, userData]);
+
 
   const handleEditClick = (product) => {
     setEditingProduct(product);
@@ -83,7 +82,7 @@ const ProductList = () => {
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between">
-      {loading ? <Loading /> : <div className="w-full md:p-10 p-4">
+      {productsLoading ? <Loading /> : <div className="w-full md:p-10 p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-medium">Your Products</h2>
           <div className="relative max-w-xs w-full">

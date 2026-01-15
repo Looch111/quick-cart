@@ -1,15 +1,11 @@
 'use client';
-import React, { useEffect, useState } from "react";
-import { assets } from "@/assets/assets";
+import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
-import { useFirestore } from "@/src/firebase";
-import { doc, getDoc, writeBatch } from 'firebase/firestore';
 import toast from "react-hot-toast";
-import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
-
+import { useCollection } from "@/src/firebase";
 
 const getStatusClass = (status) => {
     switch (status) {
@@ -23,27 +19,19 @@ const getStatusClass = (status) => {
 };
 
 const Orders = () => {
-    const { currency, userData, allOrders, productsLoading, updateItemStatus } = useAppContext();
-    const [sellerItems, setSellerItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showDeliveredModal, setShowDeliveredModal] = useState(false);
-    const [itemToUpdate, setItemToUpdate] = useState(null);
+    const { currency, userData, updateItemStatus } = useAppContext();
+    const {data: allOrders, loading: ordersLoading} = useCollection('orders');
+    
+    const sellerItems = useMemo(() => {
+        if (!userData || !allOrders) return [];
 
-    useEffect(() => {
-        if (!userData || productsLoading) {
-            setLoading(true);
-        } else if (allOrders) {
-            const items = allOrders.flatMap(order => 
-                order.items
-                    .filter(item => item.sellerId === userData._id)
-                    .map(item => ({ ...item, orderId: order._id, orderDate: order.date, address: order.address, orderAmount: order.amount, orderStatus: order.status }))
-            ).sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate));
-            setSellerItems(items);
-            setLoading(false);
-        } else {
-            setLoading(false);
-        }
-    }, [allOrders, userData, productsLoading]);
+        return allOrders.flatMap(order => 
+            order.items
+                .filter(item => item.sellerId === userData._id)
+                .map(item => ({ ...item, orderId: order.id, orderDate: order.date, address: order.address, orderAmount: order.amount, orderStatus: order.status }))
+        ).sort((a,b) => (b.orderDate?.seconds || 0) - (a.orderDate?.seconds || 0));
+    }, [allOrders, userData]);
+
 
     const handleStatusChange = (orderId, itemId, currentStatus, newStatus) => {
         if (newStatus === 'Shipped' && currentStatus !== 'Processing') {
@@ -56,7 +44,7 @@ const Orders = () => {
     return (
         <>
         <div className="flex-1 min-h-screen flex flex-col justify-between text-sm">
-            {loading ? <Loading /> : <div className="md:p-10 p-4 space-y-5">
+            {ordersLoading ? <Loading /> : <div className="md:p-10 p-4 space-y-5">
                 <h2 className="text-lg font-medium">Your Items to Fulfill</h2>
                 <div className="overflow-x-auto rounded-md bg-white shadow-md">
                     <table className="min-w-full table-auto">
@@ -82,7 +70,7 @@ const Orders = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">{new Date(item.orderDate).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4">{new Date(item.orderDate?.toDate()).toLocaleDateString()}</td>
                                         <td className="px-6 py-4">
                                             <p className="font-medium">{item.address.fullName}</p>
                                             <p className="text-xs text-gray-500">{item.address.hall}, Room {item.address.roomNumber}</p>

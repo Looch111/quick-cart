@@ -12,22 +12,17 @@ import {
 import { DollarSign, ShoppingCart, Package } from 'lucide-react';
 import Footer from '@/components/seller/Footer';
 import { useAppContext } from '@/context/AppContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Loading from '@/components/Loading';
+import { useCollection } from '@/src/firebase';
 
-const salesData = [
-  { name: 'Jan', sales: 0 },
-  { name: 'Feb', sales: 0 },
-  { name: 'Mar', sales: 0 },
-  { name: 'Apr', sales: 0 },
-  { name: 'May', sales: 0 },
-  { name: 'Jun', sales: 0 },
-  { name: 'Jul', sales: 0 },
-  { name: 'Aug', sales: 0 },
-  { name: 'Sep', sales: 0 },
-  { name: 'Oct', sales: 0 },
-  { name: 'Nov', sales: 0 },
-  { name: 'Dec', sales: 0 },
+const salesDataTemplate = [
+  { name: 'Jan', sales: 0 }, { name: 'Feb', sales: 0 },
+  { name: 'Mar', sales: 0 }, { name: 'Apr', sales: 0 },
+  { name: 'May', sales: 0 }, { name: 'Jun', sales: 0 },
+  { name: 'Jul', sales: 0 }, { name: 'Aug', sales: 0 },
+  { name: 'Sep', sales: 0 }, { name: 'Oct', sales: 0 },
+  { name: 'Nov', sales: 0 }, { name: 'Dec', sales: 0 },
 ];
 
 const Card = ({ title, value, icon, change }) => (
@@ -44,25 +39,30 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const SellerDashboard = () => {
-  const { allOrders, products, userData, currency, productsLoading, platformSettings, sellerWalletBalance } = useAppContext();
-  const [sellerStats, setSellerStats] = useState({
-    productsSold: 0,
-    activeListings: 0,
-    recentOrders: [],
-    monthlySales: salesData,
-  });
-  const [loading, setLoading] = useState(true);
+  const { userData, currency, sellerWalletBalance } = useAppContext();
+  const { data: allOrders, loading: ordersLoading } = useCollection('orders');
+  const { data: products, loading: productsLoading } = useCollection('products');
 
-  useEffect(() => {
-    if (userData && allOrders && products && !productsLoading && platformSettings) {
-      const sellerProducts = products.filter(p => p.userId === userData._id);
-      const sellerProductIds = sellerProducts.map(p => p._id);
+  const loading = ordersLoading || productsLoading;
+
+  const sellerStats = useMemo(() => {
+    if (!userData || !allOrders || !products) {
+        return {
+            productsSold: 0,
+            activeListings: 0,
+            recentOrders: [],
+            monthlySales: salesDataTemplate,
+        };
+    }
+
+    const sellerProducts = products.filter(p => p.userId === userData._id);
+    const sellerProductIds = sellerProducts.map(p => p.id);
       
-      let productsSold = 0;
-      const recentOrders = [];
-      const monthlySalesData = [...salesData].map(item => ({...item})); // Deep copy
+    let productsSold = 0;
+    const recentOrders = [];
+    const monthlySalesData = [...salesDataTemplate].map(item => ({...item})); 
 
-      allOrders.forEach(order => {
+    allOrders.forEach(order => {
         let orderSales = 0;
         let sellerItemsInOrder = 0;
         
@@ -74,8 +74,9 @@ const SellerDashboard = () => {
             orderSales += itemTotal;
             sellerItemsInOrder += item.quantity;
 
-            if (order.status === 'Completed') {
-              const orderMonth = new Date(order.date).getMonth();
+            const orderDate = order.date?.toDate();
+            if (order.status === 'Completed' && orderDate) {
+              const orderMonth = orderDate.getMonth();
               if (monthlySalesData[orderMonth]) {
                   monthlySalesData[orderMonth].sales += itemTotal;
               }
@@ -86,30 +87,22 @@ const SellerDashboard = () => {
           
           recentOrders.push({
             ...order,
-            amount: orderSales, // Show only seller's gross sales for this order
+            id: order.id,
+            date: order.date?.toDate(),
+            amount: orderSales, 
           });
         }
-      });
-      
-      setSellerStats({
+    });
+
+    return {
         productsSold,
         activeListings: sellerProducts.length,
         recentOrders: recentOrders.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5),
         monthlySales: monthlySalesData,
-      });
-
-      setLoading(false);
-    } else if (userData && !productsLoading) {
-      const sellerProducts = products.filter(p => p.userId === userData._id);
-       setSellerStats(prev => ({
-        ...prev,
-        activeListings: sellerProducts.length,
-      }));
-      setLoading(false);
-    }
-  }, [userData, allOrders, products, productsLoading, platformSettings]);
+    };
+  }, [userData, allOrders, products]);
   
-  if (loading || productsLoading) {
+  if (loading) {
     return <Loading />;
   }
 
@@ -155,8 +148,8 @@ const SellerDashboard = () => {
                 </thead>
                 <tbody>
                   {sellerStats.recentOrders.map((order) => (
-                    <tr key={order._id} className="bg-white border-b">
-                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">...{order._id.slice(-6)}</td>
+                    <tr key={order.id} className="bg-white border-b">
+                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">...{order.id.slice(-6)}</td>
                       <td className="px-6 py-4">{order.address.fullName}</td>
                       <td className="px-6 py-4">{currency}{order.amount.toFixed(2)}</td>
                       <td className="px-6 py-4">{new Date(order.date).toLocaleDateString()}</td>

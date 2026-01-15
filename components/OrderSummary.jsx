@@ -5,12 +5,13 @@ import toast from "react-hot-toast";
 import { Wallet, X } from "lucide-react";
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import PaymentCancellationModal from "./PaymentCancellationModal";
+import { useCollection } from "@/src/firebase";
 
 const OrderSummary = () => {
 
   const { 
     currency, router, cartItems, userAddresses, 
-    userData, setShowLogin, getCartAmount, walletBalance, promotions, platformSettings,
+    userData, setShowLogin, getCartAmount, walletBalance, platformSettings,
     placeOrder, placeOrderWithWallet, openAddressModal
    } = useAppContext()
 
@@ -23,6 +24,9 @@ const OrderSummary = () => {
   const [orderStatus, setOrderStatus] = useState('idle'); // idle, loading, done
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+  const {data: allRawProducts, loading: productsLoading} = useCollection('products');
+  const {data: promotions, loading: promotionsLoading} = useCollection('promotions');
+
   useEffect(() => {
     if (userAddresses.length > 0) {
       setSelectedAddress(userAddresses[0]);
@@ -31,7 +35,7 @@ const OrderSummary = () => {
     }
   }, [userAddresses]);
 
-  const cartAmount = getCartAmount();
+  const cartAmount = getCartAmount(allRawProducts);
   const deliveryFee = cartAmount > (platformSettings?.freeShippingThreshold || 50) ? 0 : (platformSettings?.shippingFee || 5);
   const totalAmount = cartAmount + deliveryFee - discount;
 
@@ -110,12 +114,12 @@ const OrderSummary = () => {
     
     let result;
     if (paymentMethod === 'wallet') {
-        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems);
+        result = await placeOrderWithWallet(selectedAddress, totalAmount, cartItems, allRawProducts);
     } else {
         result = await new Promise((resolve) => {
              handleFlutterwavePayment({
                 callback: async (response) => {
-                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems);
+                    const orderResult = await placeOrder(selectedAddress, response, totalAmount, cartItems, allRawProducts);
                     resolve(orderResult);
                     closePaymentModal();
                 },
@@ -251,9 +255,9 @@ const OrderSummary = () => {
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
               className="flex-grow w-full outline-none p-2.5 text-gray-600 border rounded-md"
-              disabled={!!appliedPromo}
+              disabled={!!appliedPromo || promotionsLoading}
             />
-            <button onClick={handleApplyPromo} className="bg-orange-600 text-white px-9 py-2.5 hover:bg-orange-700 rounded-full text-sm disabled:bg-orange-300" disabled={!!appliedPromo}>
+            <button onClick={handleApplyPromo} className="bg-orange-600 text-white px-9 py-2.5 hover:bg-orange-700 rounded-full text-sm disabled:bg-orange-300" disabled={!!appliedPromo || promotionsLoading}>
               Apply
             </button>
           </div>
@@ -290,7 +294,7 @@ const OrderSummary = () => {
 
       <button 
         onClick={handlePlaceOrder} 
-        disabled={orderStatus === 'loading' || orderStatus === 'done' || getCartCount() === 0}
+        disabled={orderStatus === 'loading' || orderStatus === 'done' || getCartCount() === 0 || productsLoading}
         className="w-full bg-orange-600 text-white py-3 rounded-full hover:bg-orange-700 transition font-semibold disabled:bg-orange-400 disabled:cursor-not-allowed mt-5"
       >
         {orderStatus === 'loading' ? 'Placing Order...' : orderStatus === 'done' ? 'Order Placed!' : 'Place Order'}

@@ -16,6 +16,7 @@ import Footer from '@/components/admin/Footer';
 import { useAppContext } from '@/context/AppContext';
 import { useCollection } from '@/src/firebase';
 import Loading from '@/components/Loading';
+import { useMemo } from 'react';
 
 const Card = ({ title, value, icon, change }) => (
     <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
@@ -31,50 +32,53 @@ const Card = ({ title, value, icon, change }) => (
 );
 
 const AdminDashboard = () => {
-    const { allOrders, currency, productsLoading } = useAppContext();
+    const { currency } = useAppContext();
+    const { data: allOrders, loading: ordersLoading } = useCollection('orders');
     const { data: users, loading: usersLoading } = useCollection('users');
 
-    const loading = productsLoading || usersLoading;
+    const loading = ordersLoading || usersLoading;
 
-    const totalRevenue = allOrders.reduce((sum, order) => sum + order.amount, 0);
-    const totalUsers = users?.length || 0;
-    const totalOrders = allOrders?.length || 0;
-    
-    // Calculate sales for the current month
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    const salesThisMonth = allOrders.reduce((sum, order) => {
-        const orderDate = new Date(order.date);
-        if (orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear) {
-            return sum + order.amount;
-        }
-        return sum;
-    }, 0);
+    const { totalRevenue, salesThisMonth, totalUsers, totalOrders, recentOrders, salesData, userData } = useMemo(() => {
+        const _allOrders = allOrders || [];
+        const _users = users || [];
 
+        const totalRevenue = _allOrders.reduce((sum, order) => sum + order.amount, 0);
+        const totalUsers = _users.length;
+        const totalOrders = _allOrders.length;
+        
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        const salesThisMonth = _allOrders.reduce((sum, order) => {
+            const orderDate = order.date?.toDate();
+            if (orderDate && orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear) {
+                return sum + order.amount;
+            }
+            return sum;
+        }, 0);
 
-    const recentOrders = [...allOrders].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-
-    const processChartData = () => {
+        const recentOrders = [..._allOrders]
+            .sort((a, b) => (b.date?.seconds || 0) - (a.date?.seconds || 0))
+            .slice(0, 5)
+            .map(o => ({...o, _id: o.id, date: o.date?.toDate()}));
+        
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const salesData = monthNames.map(month => ({ name: month, sales: 0 }));
         
-        // Cumulative user data
         const initialUserCounts = Array(12).fill(0);
 
-        allOrders.forEach(order => {
-            if (order.date) {
-                const month = new Date(order.date).getMonth();
+        _allOrders.forEach(order => {
+            const orderDate = order.date?.toDate();
+            if (orderDate && orderDate.getFullYear() === currentYear) {
+                const month = orderDate.getMonth();
                 salesData[month].sales += order.amount;
             }
         });
         
-        (users || []).forEach(user => {
-          if (user.createdAt) {
-            const date = user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
-            const month = date.getMonth();
-            if (date.getFullYear() === currentYear) {
-                initialUserCounts[month] += 1;
-            }
+        _users.forEach(user => {
+          const creationDate = user.createdAt?.toDate();
+          if (creationDate && creationDate.getFullYear() === currentYear) {
+            const month = creationDate.getMonth();
+            initialUserCounts[month] += 1;
           }
         });
 
@@ -89,11 +93,9 @@ const AdminDashboard = () => {
             users: cumulativeUserCounts[index] || 0
         }));
 
-        return { salesData, userData };
-    };
+        return { totalRevenue, salesThisMonth, totalUsers, totalOrders, recentOrders, salesData, userData };
+    }, [allOrders, users]);
 
-    const { salesData, userData } = processChartData();
-  
     if (loading) {
         return <Loading />
     }

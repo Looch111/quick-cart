@@ -4,25 +4,30 @@ import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
+import { useCollection } from "@/src/firebase";
 
 const FeaturedProduct = () => {
-  const { router, products, currency } = useAppContext();
+  const { router, currency } = useAppContext();
+  const { data: products, loading } = useCollection('products', { where: ['status', '==', 'approved'] });
   const [featuredProduct, setFeaturedProduct] = useState(null);
 
   useEffect(() => {
-    // Find a specific product to feature.
-    // In a real app, this could be fetched from a 'featured' flag in the CMS
-    const productToFeature = products.find(p => p.name.includes("Venu 2S Smartwatch"));
-    if (productToFeature) {
-        setFeaturedProduct(productToFeature);
-    } else if (products.length > 0) {
-        // Fallback to the first product if the specific one isn't found
-        setFeaturedProduct(products[0]);
+    if (products && products.length > 0) {
+        const productToFeature = products.find(p => p.name.includes("Venu 2S Smartwatch"));
+        if (productToFeature) {
+            setFeaturedProduct(productToFeature);
+        } else if (products.length > 0) {
+            setFeaturedProduct(products[0]);
+        }
     }
   }, [products]);
 
-  if (!featuredProduct) {
-    return null; // Don't render anything if there's no product to feature
+  if (loading || !featuredProduct) {
+    return (
+        <div className="mt-14 py-12">
+             <div className="w-full h-80 bg-gray-200 rounded-lg animate-pulse"></div>
+        </div>
+    );
   }
 
   const { _id, name, description, image, offerPrice } = featuredProduct;

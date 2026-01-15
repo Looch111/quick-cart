@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { assets } from "@/assets/assets";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
@@ -10,7 +10,7 @@ import { useAppContext } from "@/context/AppContext";
 import React from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { useCollection } from "@/src/firebase";
+import { useCollection, useDoc } from "@/src/firebase";
 import { User, Send, MessageSquare } from "lucide-react";
 
 const StarRating = ({ rating, onRatingChange, isInteractive = true }) => {
@@ -116,7 +116,7 @@ const ReviewsList = ({ productId }) => {
     });
 
     if (loading) return <p>Loading reviews...</p>;
-    if (reviews.length === 0) return <p className="text-sm text-gray-500">No reviews yet.</p>;
+    if (!reviews || reviews.length === 0) return <p className="text-sm text-gray-500">No reviews yet.</p>;
 
     return (
         <div className="space-y-6">
@@ -147,59 +147,45 @@ const ReviewsList = ({ productId }) => {
 
 const Product = () => {
     const params = useParams();
-    const { products, users, router, addToCart, currency, openSizeModal } = useAppContext()
+    const productId = params.id;
+    const { router, addToCart, currency, openSizeModal } = useAppContext();
+
+    const { data: product, loading: productLoading } = useDoc('products', productId);
+    const { data: seller, loading: sellerLoading } = useDoc('users', product?.userId);
+    const { data: relatedProductsData, loading: relatedLoading } = useCollection('products', {
+        where: ['category', '==', product?.category],
+        limit: 6
+    });
 
     const [mainImage, setMainImage] = useState(null);
-    const [productData, setProductData] = useState(null);
-    const [seller, setSeller] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
     const [currentTime, setCurrentTime] = useState(null);
 
-
-    const productId = params.id;
+    const productData = useMemo(() => product ? { ...product, _id: product.id } : null, [product]);
 
     useEffect(() => {
-        const fetchProductData = (id) => {
-            const product = products.find(product => product._id === id);
-            setProductData(product);
-            if (product) {
-                setMainImage(product.image[0]);
-                 if (product.userId && users.length > 0) {
-                    const productSeller = users.find(u => u.id === product.userId);
-                    setSeller(productSeller);
-                }
-                if (product.sizes && typeof product.sizes === 'object' && Object.keys(product.sizes).length > 0) {
-                    setSelectedSize(Object.keys(product.sizes)[0]);
-                }
+        if (productData) {
+            setMainImage(productData.image[0]);
+            if (productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0) {
+                setSelectedSize(Object.keys(productData.sizes)[0]);
             }
         }
-
-        if (productId && products && products.length > 0 && users) {
-            fetchProductData(productId);
-        }
-    }, [productId, products, users]);
+    }, [productData]);
     
     useEffect(() => {
-        // Set current time on client side to avoid hydration mismatch
         setCurrentTime(new Date());
-
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
-    if (!productData) {
+    if (productLoading || !productData) {
         return <Loading />;
     }
     
     const isOutOfStock = productData && productData.stock === 0;
     const hasSizes = productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0;
     
-    // Determine if flash sale is active
     const isFlashSaleActive = currentTime && productData.flashSalePrice > 0 && productData.flashSaleEndDate && new Date(productData.flashSaleEndDate) > currentTime;
-
-    // Determine current price and original price for display
     const currentPrice = isFlashSaleActive ? productData.flashSalePrice : productData.offerPrice;
     const originalPrice = isFlashSaleActive ? productData.price : (productData.offerPrice < productData.price ? productData.price : null);
 
@@ -207,7 +193,7 @@ const Product = () => {
         if (hasSizes) {
             openSizeModal(productData);
         } else {
-            addToCart(productData._id);
+            addToCart(productData._id, allRawProducts);
         }
     };
 
@@ -216,11 +202,15 @@ const Product = () => {
         if (hasSizes) {
             openSizeModal(productData);
         } else {
-            addToCart(productData._id);
+            addToCart(productData._id, allRawProducts);
             router.push('/cart');
         }
     };
 
+    const relatedProducts = relatedProductsData
+        .filter(p => p.id !== productId && p.status === 'approved')
+        .slice(0, 5)
+        .map(p => ({...p, _id: p.id}));
 
     return (
     <>
@@ -298,7 +288,7 @@ const Product = () => {
                             </div>
                         </div>
                     )}
-                     {seller && (
+                     {!sellerLoading && seller && (
                         <a href={`mailto:${seller.email}`} className="mt-6 flex items-center gap-2 text-sm text-orange-600 hover:underline">
                             <MessageSquare className="w-4 h-4"/>
                             Ask a question
@@ -375,9 +365,11 @@ const Product = () => {
                     <p className="text-3xl font-medium">Related <span className="font-medium text-orange-600">Products</span></p>
                     <div className="w-28 h-0.5 bg-orange-600 mt-2"></div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 pb-14 w-full">
-                    {products.filter(p => p.category === productData.category && p._id !== productData._id).slice(0, 5).map((product, index) => <ProductCard key={index} product={product} />)}
-                </div>
+                {relatedLoading ? <p>Loading...</p> : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 pb-14 w-full">
+                        {relatedProducts.map((product, index) => <ProductCard key={index} product={product} />)}
+                    </div>
+                )}
                 <button onClick={() => router.push('/all-products')} className="px-8 py-2 mb-16 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">
                     See more
                 </button>

@@ -1,15 +1,22 @@
 'use client'
-import { useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAppContext } from "@/context/AppContext";
+import { useCollection } from "@/src/firebase";
+import { useMemo } from "react";
 
 const Wishlist = () => {
 
-    const { products, wishlistItems } = useAppContext();
+    const { wishlistItems } = useAppContext();
+    const {data: productsData, loading} = useCollection('products');
 
-    const wishlistedProducts = products.filter(product => wishlistItems[product._id]);
+    const wishlistedProducts = useMemo(() => {
+        if (!productsData || !wishlistItems) return [];
+        return productsData
+            .filter(product => wishlistItems[product.id])
+            .map(p => ({...p, _id: p.id}));
+    }, [productsData, wishlistItems]);
 
     return (
         <>
@@ -20,8 +27,14 @@ const Wishlist = () => {
                     <div className="w-16 h-0.5 bg-orange-600 rounded-full"></div>
                 </div>
 
-                {wishlistedProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 flex-col items-center gap-6 py-14 w-full">
+                {loading ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-start gap-6 py-14 w-full">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={i} className="w-full h-72 bg-gray-200 rounded-lg animate-pulse"></div>
+                        ))}
+                    </div>
+                ) : wishlistedProducts.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-start gap-6 py-14 w-full">
                         {wishlistedProducts.map((product, index) => <ProductCard key={index} product={product} />)}
                     </div>
                 ) : (

@@ -3,14 +3,34 @@
 import React from "react";
 import ProductCard from "./ProductCard";
 import { useAppContext } from "@/context/AppContext";
+import { useCollection } from "@/src/firebase";
 
 const FlashSales = () => {
-    const { allRawProducts, router, userData } = useAppContext();
+    const { router, userData } = useAppContext();
+    const { data: allRawProducts, loading } = useCollection('products', {
+        where: ['status', '==', 'approved'],
+    });
 
-    const flashSaleProducts = allRawProducts
+    const flashSaleProducts = (allRawProducts || [])
         .filter(p => p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > new Date())
         .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5);
+        .slice(0, 5)
+        .map(p => ({ ...p, _id: p.id }));
+
+    if (loading) {
+        return (
+             <div className="flex flex-col items-center pt-14">
+                <div className="w-full flex justify-between items-end mb-4">
+                    <div className="animate-pulse bg-gray-200 h-10 w-1/3 rounded-md"></div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-start gap-6 pb-14 w-full">
+                     {[...Array(5)].map((_, i) => (
+                        <div key={i} className="w-full h-72 bg-gray-200 rounded-lg animate-pulse"></div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
 
     if (flashSaleProducts.length === 0) {
         return null;
@@ -32,16 +52,9 @@ const FlashSales = () => {
                 <button onClick={() => { router.push('/all-products') }} className="px-6 md:px-12 py-2.5 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">
                     View All Deals
                 </button>
-                {userData?.role === 'admin' && (
-                    <button onClick={() => router.push('/admin/promotions')} className="px-6 md:px-12 py-2.5 border rounded text-white bg-orange-600 hover:bg-orange-700 transition">
-                        Manage Promotions
-                    </button>
-                )}
             </div>
         </div>
     );
 };
 
 export default FlashSales;
-
-    

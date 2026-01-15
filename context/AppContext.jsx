@@ -22,22 +22,12 @@ export const AppContextProvider = (props) => {
     const { user: firebaseUser, loading: authLoading } = useUser();
     const { signOut } = useAuth();
     const firestore = useFirestore();
-
-    const { data: productsData, loading: productsLoading } = useCollection('products');
-    const { data: ordersData, loading: ordersLoading } = useCollection('orders');
-    const { data: bannersData, loading: bannersLoading } = useCollection('banners');
-    const { data: promotionsData, loading: promotionsLoading } = useCollection('promotions');
+    
+    // REMOVED global data fetching. Data will be fetched in components.
     const { data: settingsData, loading: settingsLoading } = useDoc('settings', 'platform');
-    const { data: usersData, loading: usersLoading } = useCollection('users');
-
-    const [products, setProducts] = useState([]);
-    const [allRawProducts, setAllRawProducts] = useState([]);
-    const [allOrders, setAllOrders] = useState([]);
-    const [banners, setBanners] = useState([]);
-    const [promotions, setPromotions] = useState([]);
+    
     const [platformSettings, setPlatformSettings] = useState({});
     const [userData, setUserData] = useState(undefined);
-    const [users, setUsers] = useState([]);
     const [userAddresses, setUserAddresses] = useState([]);
     const [userOrders, setUserOrders] = useState([]);
     const [isSeller, setIsSeller] = useState(false);
@@ -79,19 +69,8 @@ export const AppContextProvider = (props) => {
         setOrderForDispute(null);
         setIsDisputeModalOpen(false);
     };
-
-    useEffect(() => { 
-        if (!productsLoading) {
-            const mappedProducts = productsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }));
-            setAllRawProducts(mappedProducts);
-            setProducts(mappedProducts.filter(p => p.status === 'approved'));
-        }
-    }, [productsData, productsLoading]);
-    useEffect(() => { if (!ordersLoading) setAllOrders(ordersData.map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) }))); }, [ordersData, ordersLoading]);
-    useEffect(() => { if (!bannersLoading) setBanners(bannersData.map(b => ({ ...b, id: b.id }))); }, [bannersData, bannersLoading]);
-    useEffect(() => { if (!promotionsLoading) setPromotions(promotionsData.map(p => ({ ...p, id: p.id }))); }, [promotionsData, promotionsLoading]);
+    
     useEffect(() => { if (!settingsLoading && settingsData) setPlatformSettings(settingsData); }, [settingsData, settingsLoading]);
-    useEffect(() => { if (!usersLoading) setUsers(usersData); }, [usersData, usersLoading]);
 
     useEffect(() => {
         let unsubscribeUser;
@@ -106,7 +85,6 @@ export const AppContextProvider = (props) => {
               setIsSeller(dbUser.role === 'seller' || dbUser.role === 'admin');
               setIsAdmin(dbUser.role === 'admin');
             } else {
-              // This case might happen briefly if the document is being created.
                setUserData(null);
             }
           });
@@ -134,10 +112,9 @@ export const AppContextProvider = (props) => {
                 }
               },
               createdAt: serverTimestamp(),
-              isNewUser: true // Flag for onboarding tour
+              isNewUser: true
             };
             await setDoc(userDocRef, newUser);
-             // The onSnapshot listener will pick this up and set userData
           }
     
           setShowLogin(false);
@@ -344,7 +321,7 @@ export const AppContextProvider = (props) => {
         toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
     }
 
-    const updateProduct = async (updatedProduct) => {
+    const updateProduct = async (updatedProduct, allRawProducts) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -423,45 +400,50 @@ export const AppContextProvider = (props) => {
     };
     
     const generateNotifications = async (order, orderId) => {
-        const adminUsers = usersData.filter(u => u.role === 'admin');
-        const sellerIds = [...new Set(order.items.map(item => item.sellerId))];
+        try {
+            const usersQuery = query(collection(firestore, 'users'), where('role', '==', 'admin'));
+            const adminSnapshot = await getDocs(usersQuery);
+            const adminUsers = adminSnapshot.docs.map(doc => doc.data());
     
-        const notifications = [];
-    
-        // Admin notifications
-        adminUsers.forEach(admin => {
-            notifications.push({
-                userId: admin.id,
-                message: `New order #${orderId.slice(-6)} has been placed.`,
-                link: '/admin/orders',
-                read: false,
-                createdAt: serverTimestamp()
-            });
-        });
-    
-        // Seller notifications
-        sellerIds.forEach(sellerId => {
-            if (sellerId) {
+            const sellerIds = [...new Set(order.items.map(item => item.sellerId))];
+        
+            const notifications = [];
+        
+            adminUsers.forEach(adminUser => {
                 notifications.push({
-                    userId: sellerId,
-                    message: `You have a new order for your product(s)! Order #${orderId.slice(-6)}.`,
-                    link: '/seller/orders',
+                    userId: adminUser.uid,
+                    message: `New order #${orderId.slice(-6)} has been placed.`,
+                    link: '/admin/orders',
                     read: false,
                     createdAt: serverTimestamp()
                 });
-            }
-        });
-    
-        const batch = writeBatch(firestore);
-        notifications.forEach(notif => {
-            const notifRef = doc(collection(firestore, `users/${notif.userId}/notifications`));
-            batch.set(notifRef, notif);
-        });
-    
-        await batch.commit();
+            });
+        
+            sellerIds.forEach(sellerId => {
+                if (sellerId) {
+                    notifications.push({
+                        userId: sellerId,
+                        message: `You have a new order for your product(s)! Order #${orderId.slice(-6)}.`,
+                        link: '/seller/orders',
+                        read: false,
+                        createdAt: serverTimestamp()
+                    });
+                }
+            });
+        
+            const batch = writeBatch(firestore);
+            notifications.forEach(notif => {
+                const notifRef = doc(collection(firestore, `users/${notif.userId}/notifications`));
+                batch.set(notifRef, notif);
+            });
+        
+            await batch.commit();
+        } catch (error) {
+            console.error("Error generating notifications:", error);
+        }
     };
     
-    const placeOrder = async (address, paymentResponse, totalAmount, itemsToOrder) => {
+    const placeOrder = async (address, paymentResponse, totalAmount, itemsToOrder, allRawProducts) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             return { success: false };
@@ -547,7 +529,7 @@ export const AppContextProvider = (props) => {
         }
     }
     
-    const placeOrderWithWallet = async (address, totalAmount, itemsToOrder) => {
+    const placeOrderWithWallet = async (address, totalAmount, itemsToOrder, allRawProducts) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             return { success: false };
@@ -641,7 +623,6 @@ export const AppContextProvider = (props) => {
         const commissionRate = platformSettings.commission / 100;
         const batch = writeBatch(firestore);
     
-        // Group earnings by seller
         const sellerPayouts = order.items.reduce((acc, item) => {
             if (item.sellerId) {
                 if (!acc[item.sellerId]) {
@@ -663,7 +644,7 @@ export const AppContextProvider = (props) => {
                 const newTransaction = {
                     id: `sale_${order._id}_${Date.now()}`,
                     type: 'Sale',
-                    amount: netEarnings, // Storing net for consistency in transaction list
+                    amount: netEarnings, 
                     grossSale,
                     commission,
                     netEarnings,
@@ -678,7 +659,6 @@ export const AppContextProvider = (props) => {
             }
         }
         
-        // Mark the order as payout processed
         const orderRef = doc(firestore, 'orders', order._id);
         batch.update(orderRef, { payoutProcessed: true });
 
@@ -705,7 +685,7 @@ export const AppContextProvider = (props) => {
                     reason: reason,
                     date: new Date().toISOString()
                 },
-                autoCompletionDate: null // Pause auto-completion
+                autoCompletionDate: null 
             }, { merge: true });
             
             closeDisputeModal();
@@ -730,7 +710,6 @@ export const AppContextProvider = (props) => {
                 const updatedItems = [...orderData.items];
                 updatedItems[itemIndex].status = newStatus;
                 
-                // Update overall order status based on item statuses
                 const allItemsShipped = updatedItems.every(item => item.status === 'Shipped');
                 const anyItemShipped = updatedItems.some(item => item.status === 'Shipped');
                 
@@ -766,14 +745,12 @@ export const AppContextProvider = (props) => {
     
         const orderData = { ...orderSnap.data(), _id: orderSnap.id };
     
-        // If admin is marking the order as "Completed"
         if (newStatus === "Completed") {
             if (orderData.payoutProcessed) {
                 toast.warn("Payout has already been processed for this order.");
                 await setDoc(orderDocRef, { status: newStatus }, { merge: true });
                 return false;
             }
-            // Payout should only happen if moving from a non-paid status to Completed
             if (orderData.status === "Delivered" || orderData.status === "Shipped") {
                 await processSellerPayouts(orderData);
                 await setDoc(orderDocRef, { status: newStatus, payoutProcessed: true }, { merge: true });
@@ -783,7 +760,6 @@ export const AppContextProvider = (props) => {
                 return false;
             }
         } 
-        // If admin marks as "Delivered" (e.g., buyer is unresponsive)
         else if (newStatus === "Delivered") {
             const confirmationWindowHours = platformSettings?.confirmationWindowHours || 72;
             const autoCompletionDate = new Date();
@@ -792,7 +768,6 @@ export const AppContextProvider = (props) => {
             toast.success(`Order marked as Delivered. Buyer confirmation window has started.`);
         }
         else {
-            // For all other status updates, just update the status
             await setDoc(orderDocRef, { status: newStatus }, { merge: true });
             toast.success(`Order status updated to ${newStatus}`);
         }
@@ -839,7 +814,6 @@ export const AppContextProvider = (props) => {
             }
         }
     
-        // Finally, update the order status back to 'Shipped' and reset payout flag
         const orderRef = doc(firestore, 'orders', order._id);
         batch.update(orderRef, { status: 'Shipped', payoutProcessed: false, autoCompletionDate: null });
     
@@ -898,7 +872,6 @@ export const AppContextProvider = (props) => {
         const userDocRef = doc(firestore, 'users', userData._id);
         try {
             await setDoc(userDocRef, { [field]: value }, { merge: true });
-            // Also update local state for immediate UI feedback
             setUserData(prev => ({...prev, [field]: value}));
         } catch (error) {
             console.error("Error updating user field:", error);
@@ -916,7 +889,7 @@ export const AppContextProvider = (props) => {
         toast.success("Bank details updated successfully!");
     }
 
-    const addToCart = (itemId) => {
+    const addToCart = (itemId, allRawProducts) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -958,7 +931,7 @@ export const AppContextProvider = (props) => {
         });
     };
     
-    const addMultipleToCart = async (items) => {
+    const addMultipleToCart = async (items, allRawProducts) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -1007,7 +980,7 @@ export const AppContextProvider = (props) => {
     }
 
 
-    const updateCartQuantity = async (itemId, quantity) => {
+    const updateCartQuantity = async (itemId, quantity, allRawProducts) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -1056,9 +1029,9 @@ export const AppContextProvider = (props) => {
         return Object.values(cartItems).reduce((sum, quantity) => sum + quantity, 0);
     }
 
-    const getCartAmount = () => {
+    const getCartAmount = (allRawProducts) => {
         let totalAmount = 0;
-        if (!allRawProducts.length || !cartItems) return 0;
+        if (!allRawProducts || !allRawProducts.length || !cartItems) return 0;
         
         for (const itemId in cartItems) {
             const [productId] = itemId.split('_');
@@ -1101,10 +1074,7 @@ export const AppContextProvider = (props) => {
 
     const value = {
         currency, router,
-        userData, setUserData, users, isSeller, isAdmin, authLoading,
-        products,
-        allRawProducts, 
-        productsLoading,
+        userData, setUserData, isSeller, isAdmin, authLoading,
         cartItems,
         addToCart, updateCartQuantity, addMultipleToCart,
         getCartCount, getCartAmount,
@@ -1112,11 +1082,9 @@ export const AppContextProvider = (props) => {
         getWishlistCount,
         handleLogout,
         showLogin, setShowLogin,
-        banners, addBanner, deleteBanner, updateBanner, updateBannerStatus,
-        promotions, addPromotion, deletePromotion, updatePromotionStatus,
         userAddresses, addAddress,
-        allOrders,
-        placeOrder, userOrders,
+        userOrders,
+        placeOrder,
         walletBalance, walletTransactions,
         sellerWalletBalance, sellerWalletTransactions,
         updateOrderStatus,
@@ -1131,7 +1099,9 @@ export const AppContextProvider = (props) => {
         requestWithdrawal,
         addProductReview,
         confirmOrderDelivery, reportIssue, updateItemStatus,
-        isDisputeModalOpen, openDisputeModal, closeDisputeModal, orderForDispute
+        isDisputeModalOpen, openDisputeModal, closeDisputeModal, orderForDispute,
+        addBanner, deleteBanner, updateBanner, updateBannerStatus,
+        addPromotion, deletePromotion, updatePromotionStatus
     }
 
     return (

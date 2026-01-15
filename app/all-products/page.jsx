@@ -8,8 +8,8 @@ import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
+import { useCollection } from "@/src/firebase";
 
-// Custom hook for debouncing
 const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -41,7 +41,9 @@ const SearchFocus = ({ searchInputRef }) => {
 }
 
 const AllProducts = () => {
-    const { products, currency } = useAppContext();
+    const { currency } = useAppContext();
+    const { data: productsData, loading: productsLoading } = useCollection('products', { where: ['status', '==', 'approved'] });
+
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState([]);
     const [priceRange, setPriceRange] = useState({ min: '', max: '' });
@@ -51,8 +53,11 @@ const AllProducts = () => {
 
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const debouncedPriceRange = useDebounce(priceRange, 500);
+    
+    const products = useMemo(() => (productsData || []).map(p => ({...p, _id: p.id})), [productsData]);
 
     const categories = useMemo(() => {
+        if (!products) return [];
         const allCategories = products.map(p => p.category);
         return [...new Set(allCategories)];
     }, [products]);
@@ -66,21 +71,19 @@ const AllProducts = () => {
     };
 
     const filteredAndSortedProducts = useMemo(() => {
+        if (!products) return [];
         let filtered = [...products];
 
-        // Search term filter
         if (debouncedSearchTerm) {
             filtered = filtered.filter(p =>
                 p.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
             );
         }
 
-        // Category filter
         if (categoryFilter.length > 0) {
             filtered = filtered.filter(p => categoryFilter.includes(p.category));
         }
 
-        // Price range filter
         filtered = filtered.filter(p => {
             const price = p.flashSalePrice > 0 && new Date(p.flashSaleEndDate) > new Date() ? p.flashSalePrice : p.offerPrice;
             const minPrice = debouncedPriceRange.min !== '' ? parseFloat(debouncedPriceRange.min) : 0;
@@ -88,7 +91,6 @@ const AllProducts = () => {
             return price >= minPrice && price <= maxPrice;
         });
 
-        // Sorting
         switch (sortBy) {
             case 'price-asc':
                 filtered.sort((a, b) => a.offerPrice - b.offerPrice);
@@ -104,7 +106,7 @@ const AllProducts = () => {
                 break;
             case 'newest':
             default:
-                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+                filtered.sort((a, b) => (b.date?.seconds || 0) - (a.date?.seconds || 0));
                 break;
         }
 
@@ -151,7 +153,6 @@ const AllProducts = () => {
 
     const FilterSidebar = () => (
         <div className="lg:w-64 xl:w-72 space-y-6">
-            {/* Sort By */}
             <div>
                 <h3 className="font-semibold mb-2">Sort by</h3>
                 <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="w-full p-2 border rounded-md text-sm">
@@ -162,7 +163,6 @@ const AllProducts = () => {
                     <option value="name-desc">Name: Z to A</option>
                 </select>
             </div>
-            {/* Price Range */}
             <div>
                 <h3 className="font-semibold mb-2">Price Range</h3>
                  <div className="flex items-center gap-2">
@@ -186,7 +186,6 @@ const AllProducts = () => {
                 </div>
             </div>
 
-            {/* Categories */}
             <div>
                 <h3 className="font-semibold mb-2">Categories</h3>
                 <div className="space-y-2">
@@ -204,7 +203,6 @@ const AllProducts = () => {
                 </div>
             </div>
              
-             {/* Reset Button */}
             <div>
                  <button onClick={resetFilters} className="w-full mt-4 text-sm text-center py-2 border rounded-md hover:bg-gray-100">
                     Reset Filters
@@ -245,12 +243,10 @@ const AllProducts = () => {
                 </div>
                 
                 <div className="flex gap-8 w-full pb-14">
-                    {/* Desktop Sidebar */}
                     <aside className="hidden lg:block">
                         <FilterSidebar />
                     </aside>
                     
-                    {/* Mobile Sidebar */}
                      {isFilterOpen && (
                         <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setIsFilterOpen(false)}></div>
                     )}
@@ -264,17 +260,24 @@ const AllProducts = () => {
                         <FilterSidebar />
                     </aside>
 
-                    {/* Products Grid */}
                     <main className="flex-1">
-                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-6 w-full">
-                            {filteredAndSortedProducts.length > 0 ? (
-                                filteredAndSortedProducts.map((product) => (
-                                    <ProductCard key={product._id} product={product} />
-                                ))
-                            ) : (
-                                <p className="col-span-full text-center text-gray-500">No products found.</p>
-                            )}
-                        </div>
+                        {productsLoading ? (
+                             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-6 w-full">
+                                {[...Array(8)].map((_, i) => (
+                                    <div key={i} className="w-full h-72 bg-gray-200 rounded-lg animate-pulse"></div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-6 w-full">
+                                {filteredAndSortedProducts.length > 0 ? (
+                                    filteredAndSortedProducts.map((product) => (
+                                        <ProductCard key={product._id} product={product} />
+                                    ))
+                                ) : (
+                                    <p className="col-span-full text-center text-gray-500">No products found.</p>
+                                )}
+                            </div>
+                        )}
                     </main>
                 </div>
             </div>

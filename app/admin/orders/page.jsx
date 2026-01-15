@@ -1,36 +1,31 @@
 
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useAppContext } from "@/context/AppContext";
 import Loading from "@/components/Loading";
-import toast from "react-hot-toast";
 import Image from "next/image";
 import { RotateCcw } from "lucide-react";
 import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
+import { useCollection } from "@/src/firebase";
 
 const Orders = () => {
 
-    const { currency, updateOrderStatus, allOrders, productsLoading, reverseSellerPayouts } = useAppContext();
-
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { currency, updateOrderStatus, reverseSellerPayouts } = useAppContext();
+    const { data: ordersData, loading: ordersLoading } = useCollection('orders');
+    
     const [showReverseModal, setShowReverseModal] = useState(false);
     const [orderToReverse, setOrderToReverse] = useState(null);
 
-    useEffect(() => {
-        if (!productsLoading) {
-            setOrders(allOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
-            setLoading(false);
-        } else {
-            setLoading(true);
-        }
-    }, [allOrders, productsLoading]);
+    const orders = useMemo(() => {
+        if (!ordersData) return [];
+        return ordersData
+            .map(o => ({...o, _id: o.id, date: o.date?.toDate ? o.date.toDate() : new Date(o.date) }))
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+    }, [ordersData]);
+
 
     const handleStatusChange = async (orderId, newStatus) => {
-        const success = await updateOrderStatus(orderId, newStatus);
-        if (!success) {
-            // Error toasts are handled within the context function
-        }
+        await updateOrderStatus(orderId, newStatus);
     }
 
     const handleReverseClick = (order) => {
@@ -81,7 +76,7 @@ const Orders = () => {
     return (
         <>
         <div className="flex-1 p-4 sm:p-6 lg:p-8">
-            {loading ? <Loading /> :
+            {ordersLoading ? <Loading /> :
             <>
                 <h1 className="text-2xl font-bold text-gray-800 mb-6">Orders</h1>
                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
