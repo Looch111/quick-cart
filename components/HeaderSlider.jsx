@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
@@ -70,7 +71,7 @@ const HeaderSlider = () => {
                         <div className="flex items-center flex-1 justify-center">
                             <Image
                                 className="md:w-72 w-48 object-contain"
-                                src={slide.image}
+                                src={slide.image || assets.upload_area}
                                 alt={`Slide ${index + 1}`}
                                 width={500}
                                 height={500}
