@@ -55,9 +55,10 @@ export function useAuth() {
         }
     };
 
-    const signUpWithEmail = async (email, password) => {
+    const signUpWithEmail = async (email, password, name) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(userCredential.user, { displayName: name });
             toast.success('Account created successfully! Welcome!');
             // The onboarding tour will be triggered by the isNewUser flag in the user's document
             return {isNewUser: true};
@@ -106,5 +107,3 @@ export function useAuth() {
         signOut,
     };
 }
-
-    

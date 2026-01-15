@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { useAuth } from "@/src/firebase/auth/use-user";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, User } from "lucide-react";
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -18,6 +18,7 @@ const LoginPopup = () => {
     const { showLogin, setShowLogin, userData } = useAppContext();
     const { signInWithEmail, signUpWithEmail } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -28,6 +29,7 @@ const LoginPopup = () => {
             // Reset to login view every time the popup opens
             setIsLogin(true);
             setError('');
+            setName('');
             setEmail('');
             setPassword('');
             setPasswordVisible(false);
@@ -65,7 +67,11 @@ const LoginPopup = () => {
         if (isLogin) {
             handleAuthAction(signInWithEmail(email, password));
         } else {
-            handleAuthAction(signUpWithEmail(email, password));
+             if (!name) {
+                toast.error("Please enter your full name.");
+                return;
+            }
+            handleAuthAction(signUpWithEmail(email, password, name));
         }
     };
 
@@ -101,6 +107,20 @@ const LoginPopup = () => {
                 </div>
                 {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
                 <form className="space-y-4" onSubmit={handleEmailAuth}>
+                     {!isLogin && (
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input
+                                id="name"
+                                className="mt-1 px-3 py-2 focus:border-gray-500 transition border border-gray-300 rounded-md outline-none w-full text-gray-700 text-sm"
+                                type="text"
+                                placeholder="Enter your full name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+                    )}
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                         <input
