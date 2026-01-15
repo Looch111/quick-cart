@@ -537,6 +537,7 @@ export const AppContextProvider = (props) => {
 
             await batch.commit();
             await generateNotifications(newOrderData, newOrderRef.id);
+            toast.success("Order placed successfully!");
             return { success: true };
         } catch (error) {
             toast.error(error.message);
@@ -621,6 +622,7 @@ export const AppContextProvider = (props) => {
             });
             await batch.commit();
             await generateNotifications(newOrderData, newOrderRef.id);
+            toast.success("Order placed successfully!");
             return { success: true };
         } catch (error) {
             toast.error(error.message);
