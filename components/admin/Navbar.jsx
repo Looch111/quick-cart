@@ -135,7 +135,7 @@ const Navbar = () => {
         </div>
       )}
 
-      {(hasNewOrders || hasNewProducts) && <audio src="https://cdn.pixabay.com/audio/2021/08/04/audio_9521327341.mp3" autoPlay ></audio>}
+      {/* {(hasNewOrders || hasNewProducts) && <audio src="https://cdn.pixabay.com/audio/2021/08/04/audio_9521327341.mp3" autoPlay ></audio>} */}
     </div>
   )
 }

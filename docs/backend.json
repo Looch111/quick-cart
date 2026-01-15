@@ -28,11 +28,6 @@
           "enum": ["buyer", "seller", "admin"],
           "description": "The role of the user."
         },
-        "fcmTokens": {
-            "type": "array",
-            "description": "An array of Firebase Cloud Messaging tokens for push notifications.",
-            "items": { "type": "string" }
-        },
         "isNewUser": {
             "type": "boolean",
             "description": "Flag to determine if the user is new and needs to see the onboarding tour."

@@ -8,6 +8,6 @@ import { useFCM } from '@/src/firebase/messaging/use-fcm';
  * from layout components to prevent routing conflicts.
  */
 export default function NotificationSetup() {
-  useFCM();
+  // useFCM(); // Temporarily disabled to prevent push notification setup
   return null;
 }

@@ -10,7 +10,7 @@ import OnboardingTour from "@/components/OnboardingTour";
 import SizeSelectionModal from "@/components/SizeSelectionModal";
 import AddAddressModal from "@/components/AddAddressModal";
 import DisputeModal from "@/components/DisputeModal";
-import NotificationSetup from "@/src/components/NotificationSetup";
+// import NotificationSetup from "@/src/components/NotificationSetup";
 import FloatingSupportButton from "@/components/FloatingSupportButton";
 import ChatModal from "@/components/ChatModal";
 
@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
               <DisputeModal />
               <ChatModal />
               <OnboardingTour />
-              <NotificationSetup />
+              {/* <NotificationSetup /> */}
               {children}
               <FloatingSupportButton />
               <FirebaseErrorListener />
