@@ -7,17 +7,19 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LogOut, Menu, X } from 'lucide-react'
 import NotificationPanel from '../NotificationPanel'
+import { useCollection } from '@/src/firebase'
 
 const Navbar = () => {
 
-  const { router, allOrders, handleLogout } = useAppContext()
+  const { router, handleLogout } = useAppContext()
+  const { data: allOrders } = useCollection('orders');
   const pathname = usePathname()
   const [hasNewOrders, setHasNewOrders] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
-    if (allOrders.length > 0) {
+    if (allOrders && allOrders.length > 0) {
       const newOrders = allOrders.filter(order => order.status === "Processing" || order.status === "Order Placed");
       setHasNewOrders(newOrders.length > 0);
     } else {
