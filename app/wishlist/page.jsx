@@ -1,15 +1,23 @@
+
 'use client'
-import { useState } from "react";
+import { useMemo } from "react";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAppContext } from "@/context/AppContext";
+import { useCollection } from "@/src/firebase";
+import Loading from "@/components/Loading";
 
 const Wishlist = () => {
+    const { wishlistItems } = useAppContext();
+    const { data: productsData, loading: productsLoading } = useCollection('products');
 
-    const { products, wishlistItems } = useAppContext();
-
-    const wishlistedProducts = products.filter(product => wishlistItems[product._id]);
+    const wishlistedProducts = useMemo(() => {
+        if (!productsData || !wishlistItems) return [];
+        return productsData
+            .map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }))
+            .filter(product => wishlistItems[product._id]);
+    }, [productsData, wishlistItems]);
 
     return (
         <>
@@ -20,7 +28,11 @@ const Wishlist = () => {
                     <div className="w-16 h-0.5 bg-orange-600 rounded-full"></div>
                 </div>
 
-                {wishlistedProducts.length > 0 ? (
+                {productsLoading ? (
+                    <div className="w-full h-[50vh] flex items-center justify-center">
+                        <Loading />
+                    </div>
+                ) : wishlistedProducts.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 flex-col items-center gap-6 py-14 w-full">
                         {wishlistedProducts.map((product, index) => <ProductCard key={index} product={product} />)}
                     </div>

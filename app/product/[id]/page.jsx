@@ -1,5 +1,6 @@
+
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { assets } from "@/assets/assets";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
@@ -10,7 +11,7 @@ import { useAppContext } from "@/context/AppContext";
 import React from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { useCollection } from "@/src/firebase";
+import { useCollection, useDoc } from "@/src/firebase";
 import { User, Send, MessageSquare } from "lucide-react";
 
 const StarRating = ({ rating, onRatingChange, isInteractive = true }) => {
@@ -116,7 +117,7 @@ const ReviewsList = ({ productId }) => {
     });
 
     if (loading) return <p>Loading reviews...</p>;
-    if (reviews.length === 0) return <p className="text-sm text-gray-500">No reviews yet.</p>;
+    if (!reviews || reviews.length === 0) return <p className="text-sm text-gray-500">No reviews yet.</p>;
 
     return (
         <div className="space-y-6">
@@ -147,37 +148,41 @@ const ReviewsList = ({ productId }) => {
 
 const Product = () => {
     const params = useParams();
-    const { products, users, router, addToCart, currency, openSizeModal } = useAppContext()
+    const productId = params.id;
+    
+    const { router, addToCart, currency, openSizeModal } = useAppContext();
+    const { data: product, loading: productLoading } = useDoc('products', productId);
+    const { data: usersData, loading: usersLoading } = useCollection('users');
+    const { data: productsData, loading: productsLoadingRelated } = useCollection('products', { where: ['status', '==', 'approved']});
 
     const [mainImage, setMainImage] = useState(null);
-    const [productData, setProductData] = useState(null);
     const [seller, setSeller] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
     const [currentTime, setCurrentTime] = useState(null);
+    
+    const productData = useMemo(() => {
+        if (!product) return null;
+        return { ...product, _id: product.id, date: product.date?.toDate ? product.date.toDate() : new Date(product.date) };
+    }, [product]);
 
-
-    const productId = params.id;
+    const relatedProducts = useMemo(() => {
+        if (!productsData || !productData) return [];
+        return productsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }))
+            .filter(p => p.category === productData.category && p._id !== productData._id).slice(0, 5);
+    }, [productsData, productData]);
 
     useEffect(() => {
-        const fetchProductData = (id) => {
-            const product = products.find(product => product._id === id);
-            setProductData(product);
-            if (product) {
-                setMainImage(product.image[0]);
-                 if (product.userId && users.length > 0) {
-                    const productSeller = users.find(u => u.id === product.userId);
-                    setSeller(productSeller);
-                }
-                if (product.sizes && typeof product.sizes === 'object' && Object.keys(product.sizes).length > 0) {
-                    setSelectedSize(Object.keys(product.sizes)[0]);
-                }
+        if (productData) {
+            setMainImage(productData.image[0]);
+            if (productData.userId && usersData && usersData.length > 0) {
+                const productSeller = usersData.find(u => u.id === productData.userId);
+                setSeller(productSeller);
+            }
+            if (productData.sizes && typeof productData.sizes === 'object' && Object.keys(productData.sizes).length > 0) {
+                setSelectedSize(Object.keys(productData.sizes)[0]);
             }
         }
-
-        if (productId && products && products.length > 0 && users) {
-            fetchProductData(productId);
-        }
-    }, [productId, products, users]);
+    }, [productData, usersData]);
     
     useEffect(() => {
         // Set current time on client side to avoid hydration mismatch
@@ -189,7 +194,7 @@ const Product = () => {
         return () => clearInterval(timer);
     }, []);
 
-    if (!productData) {
+    if (productLoading || usersLoading || productsLoadingRelated || !productData) {
         return <Loading />;
     }
     
@@ -376,7 +381,7 @@ const Product = () => {
                     <div className="w-28 h-0.5 bg-orange-600 mt-2"></div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 pb-14 w-full">
-                    {products.filter(p => p.category === productData.category && p._id !== productData._id).slice(0, 5).map((product, index) => <ProductCard key={index} product={product} />)}
+                    {relatedProducts.map((product, index) => <ProductCard key={index} product={product} />)}
                 </div>
                 <button onClick={() => router.push('/all-products')} className="px-8 py-2 mb-16 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">
                     See more

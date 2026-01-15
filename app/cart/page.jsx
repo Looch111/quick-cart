@@ -10,9 +10,16 @@ import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useCollection } from "@/src/firebase";
 
 const Cart = () => {
-    const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, allRawProducts, setShowLogin } = useAppContext();
+    const { router, cartItems, addToCart, updateCartQuantity, getCartCount, authLoading, userData, currency, setShowLogin } = useAppContext();
+    const { data: allRawProductsData, loading: productsLoading } = useCollection('products');
+
+    const allRawProducts = useMemo(() => {
+        if (!allRawProductsData) return [];
+        return allRawProductsData.map(p => ({ ...p, _id: p.id, date: p.date?.toDate ? p.date.toDate() : new Date(p.date) }));
+    }, [allRawProductsData]);
 
     const handleQuantityChange = (itemId, currentQuantity, stock) => {
         if (currentQuantity > stock) {
@@ -45,7 +52,7 @@ const Cart = () => {
     }, [cartItems, allRawProducts]);
 
 
-    if (authLoading || userData === undefined) {
+    if (authLoading || userData === undefined || productsLoading) {
         return (
             <>
                 <Navbar />
