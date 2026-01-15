@@ -1,12 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
-import { useFirestore } from '@/src/firebase';
+import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
 
 
 const EditUserModal = ({ user, onSave, onCancel }) => {
-    const firestore = useFirestore();
+    const { updateUserRole } = useAppContext();
     const [role, setRole] = useState(user?.role || 'buyer');
 
     useEffect(() => {
@@ -18,15 +17,9 @@ const EditUserModal = ({ user, onSave, onCancel }) => {
     if (!user) return null;
 
     const handleSave = async () => {
-        const userRef = doc(firestore, 'users', user.id);
-        try {
-            await setDoc(userRef, { role: role }, { merge: true });
-            toast.success("User role updated successfully!");
-            onSave({ ...user, role });
-        } catch (error) {
-            toast.error("Failed to update user role.");
-            console.error("Error updating user role: ", error);
-        }
+        // Logic is now centralized in AppContext for better error handling
+        updateUserRole(user.id, role);
+        onSave({ ...user, role });
     };
 
     return (

@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 import { useFirestore, useCollection, useDoc } from "@/src/firebase";
 import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc, runTransaction, increment, arrayUnion } from "firebase/firestore";
 import { getAdditionalUserInfo } from "firebase/auth";
+import { FirestorePermissionError } from "@/src/firebase/errors";
+import { errorEmitter } from "@/src/firebase/error-emitter";
 
 export const AppContext = createContext();
 
@@ -310,104 +312,196 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    const updateSettings = async (newSettings) => {
+    const updateSettings = (newSettings) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
         const settingsDocRef = doc(firestore, 'settings', 'platform');
-        await setDoc(settingsDocRef, newSettings, { merge: true });
-        toast.success("Platform settings updated successfully!");
+        setDoc(settingsDocRef, newSettings, { merge: true })
+            .then(() => {
+                toast.success("Platform settings updated successfully!");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: settingsDocRef.path,
+                    operation: 'update',
+                    requestResourceData: newSettings,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     };
     
-    const addPromotion = async (newPromo) => {
+    const addPromotion = (newPromo) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
         const promotionsCollectionRef = collection(firestore, 'promotions');
-        await addDoc(promotionsCollectionRef, {
+        const promoData = {
             ...newPromo,
             value: Number(newPromo.value),
             status: 'active'
-        });
-        toast.success("Promotion added successfully!");
+        };
+        addDoc(promotionsCollectionRef, promoData)
+            .then(() => {
+                toast.success("Promotion added successfully!");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: promotionsCollectionRef.path,
+                    operation: 'create',
+                    requestResourceData: promoData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     };
 
-    const deletePromotion = async (id) => {
-        if (!isAdmin) {
-            toast.error("You are not authorized to perform this action.");
-            return;
-        }
-        await deleteDoc(doc(firestore, 'promotions', id));
-        toast.success("Promotion deleted.");
-    };
-
-    const updatePromotionStatus = async (id, status) => {
+    const deletePromotion = (id) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
         const promoDocRef = doc(firestore, 'promotions', id);
-        await setDoc(promoDocRef, { status }, { merge: true });
-        toast.success(`Promotion ${status}.`);
+        deleteDoc(promoDocRef)
+            .then(() => {
+                toast.success("Promotion deleted.");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: promoDocRef.path,
+                    operation: 'delete',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+    };
+
+    const updatePromotionStatus = (id, status) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const promoDocRef = doc(firestore, 'promotions', id);
+        setDoc(promoDocRef, { status }, { merge: true })
+            .then(() => {
+                toast.success(`Promotion ${status}.`);
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: promoDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { status },
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
 
-    const addAddress = async (newAddress) => {
+    const addAddress = (newAddress) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
             return;
         }
         const addressCollectionRef = collection(firestore, 'users', userData._id, 'addresses');
-        await addDoc(addressCollectionRef, newAddress);
-        toast.success("Address added successfully!");
-        closeAddressModal(); 
+        addDoc(addressCollectionRef, newAddress)
+            .then(() => {
+                toast.success("Address added successfully!");
+                closeAddressModal(); 
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: addressCollectionRef.path,
+                    operation: 'create',
+                    requestResourceData: newAddress,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
 
-    const addBanner = async (newBanner) => {
+    const addBanner = (newBanner) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
         const bannersCollectionRef = collection(firestore, 'banners');
-        await addDoc(bannersCollectionRef, {
+        const bannerData = {
             ...newBanner,
             image: newBanner.image || "https://i.imgur.com/gB343so.png",
-        });
-        toast.success("Banner added successfully!");
+        };
+        addDoc(bannersCollectionRef, bannerData)
+            .then(() => {
+                toast.success("Banner added successfully!");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: bannersCollectionRef.path,
+                    operation: 'create',
+                    requestResourceData: bannerData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
 
-    const deleteBanner = async (id) => {
-        if (!isAdmin) {
-            toast.error("You are not authorized to perform this action.");
-            return;
-        }
-        await deleteDoc(doc(firestore, 'banners', id));
-        toast.success("Banner deleted.");
-    }
-
-    const updateBanner = async (updatedBanner) => {
-        if (!isAdmin) {
-            toast.error("You are not authorized to perform this action.");
-            return;
-        }
-        const bannerDocRef = doc(firestore, 'banners', updatedBanner.id);
-        await setDoc(bannerDocRef, updatedBanner, { merge: true });
-        toast.success("Banner updated successfully!");
-    }
-
-    const updateBannerStatus = async (id, status) => {
+    const deleteBanner = (id) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
         const bannerDocRef = doc(firestore, 'banners', id);
-        await setDoc(bannerDocRef, { status }, { merge: true });
-        toast.success(`Banner ${status}.`);
+        deleteDoc(bannerDocRef)
+            .then(() => {
+                toast.success("Banner deleted.");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: bannerDocRef.path,
+                    operation: 'delete',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+    }
+
+    const updateBanner = (updatedBanner) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const bannerDocRef = doc(firestore, 'banners', updatedBanner.id);
+        setDoc(bannerDocRef, updatedBanner, { merge: true })
+            .then(() => {
+                toast.success("Banner updated successfully!");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: bannerDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updatedBanner,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+    }
+
+    const updateBannerStatus = (id, status) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const bannerDocRef = doc(firestore, 'banners', id);
+        setDoc(bannerDocRef, { status }, { merge: true })
+            .then(() => {
+                toast.success(`Banner ${status}.`);
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: bannerDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { status },
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
     
-    const addProduct = async (productData) => {
+    const addProduct = (productData) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -424,16 +518,28 @@ export const AppContextProvider = (props) => {
         }
 
         const productsCollectionRef = collection(firestore, 'products');
-        await addDoc(productsCollectionRef, {
+        const dataToAdd = {
             ...productData,
             userId: userData._id,
             date: serverTimestamp(),
             status: isAdmin ? 'approved' : 'pending'
-        });
-        toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
+        };
+
+        addDoc(productsCollectionRef, dataToAdd)
+            .then(() => {
+                toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: productsCollectionRef.path,
+                    operation: 'create',
+                    requestResourceData: dataToAdd,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
 
-    const updateProduct = async (updatedProduct) => {
+    const updateProduct = (updatedProduct) => {
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -456,18 +562,39 @@ export const AppContextProvider = (props) => {
         if (isSeller && !isAdmin) {
             dataToUpdate.status = 'pending';
         }
-        await setDoc(productDocRef, dataToUpdate, { merge: true });
-        toast.success(isSeller && !isAdmin ? "Product updated and sent for re-approval." : "Product updated successfully!");
+        
+        setDoc(productDocRef, dataToUpdate, { merge: true })
+            .then(() => {
+                toast.success(isSeller && !isAdmin ? "Product updated and sent for re-approval." : "Product updated successfully!");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: productDocRef.path,
+                    operation: 'update',
+                    requestResourceData: dataToUpdate,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
 
-    const updateProductStatus = async (productId, status) => {
+    const updateProductStatus = (productId, status) => {
         if (!isAdmin) {
             toast.error("You are not authorized to perform this action.");
             return;
         }
         const productDocRef = doc(firestore, 'products', productId);
-        await setDoc(productDocRef, { status }, { merge: true });
-        toast.success(`Product status updated to ${status}.`);
+        setDoc(productDocRef, { status }, { merge: true })
+          .then(() => {
+            toast.success(`Product status updated to ${status}.`);
+          })
+          .catch((serverError) => {
+              const permissionError = new FirestorePermissionError({
+                  path: productDocRef.path,
+                  operation: 'update',
+                  requestResourceData: { status },
+              });
+              errorEmitter.emit('permission-error', permissionError);
+          });
     };
 
     const deleteProduct = async (productId) => {
@@ -478,23 +605,32 @@ export const AppContextProvider = (props) => {
         }
         
         const productRef = doc(firestore, 'products', productId);
-        const productSnap = await getDoc(productRef);
-
-        if (!productSnap.exists()) {
-            toast.error("Product not found.");
-            return;
+        try {
+            const productSnap = await getDoc(productRef);
+            if (!productSnap.exists()) {
+                toast.error("Product not found.");
+                return;
+            }
+            const productData = productSnap.data();
+            const canDelete = isAdmin || (isSeller && productData.userId === userData._id);
+            if (!canDelete) {
+                toast.error("You are not authorized to delete this product.");
+                return;
+            }
+            deleteDoc(productRef)
+              .then(() => {
+                toast.success("Product deleted successfully");
+              })
+              .catch((serverError) => {
+                  const permissionError = new FirestorePermissionError({
+                      path: productRef.path,
+                      operation: 'delete',
+                  });
+                  errorEmitter.emit('permission-error', permissionError);
+              });
+        } catch (error) {
+            toast.error("Failed to check product permissions.");
         }
-
-        const productData = productSnap.data();
-        const canDelete = isAdmin || (isSeller && productData.userId === userData._id);
-
-        if (!canDelete) {
-            toast.error("You are not authorized to delete this product.");
-            return;
-        }
-
-        await deleteDoc(productRef);
-        toast.success("Product deleted successfully");
     }
 
     const verifyFlutterwaveTransaction = async (transactionId, userId) => {
@@ -983,7 +1119,7 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    const updateUserField = async (field, value) => {
+    const updateUserField = (field, value) => {
         if (!userData) {
             if (!showLogin) {
                 toast.error("Please log in to continue.", { id: 'login-toast' });
@@ -992,14 +1128,40 @@ export const AppContextProvider = (props) => {
             return;
         }
         const userDocRef = doc(firestore, 'users', userData._id);
-        try {
-            await setDoc(userDocRef, { [field]: value }, { merge: true });
-            setUserData(prev => ({...prev, [field]: value}));
-        } catch (error) {
-            console.error("Error updating user field:", error);
-            toast.error("Failed to update profile.");
-        }
+        
+        setDoc(userDocRef, { [field]: value }, { merge: true })
+            .then(() => {
+                setUserData(prev => ({...prev, [field]: value}));
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { [field]: value },
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
+
+    const updateUserRole = (userId, role) => {
+        if (!isAdmin) {
+            toast.error("You are not authorized to perform this action.");
+            return;
+        }
+        const userDocRef = doc(firestore, 'users', userId);
+        setDoc(userDocRef, { role }, { merge: true })
+            .then(() => {
+                toast.success("User role updated successfully!");
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { role },
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+    };
 
     const updateSellerBankDetails = async (bankDetails) => {
         if (!userData || (!isSeller && !isAdmin)) {
@@ -1246,7 +1408,7 @@ export const AppContextProvider = (props) => {
         sellerWalletBalance, sellerWalletTransactions,
         updateOrderStatus,
         addProduct, updateProduct, deleteProduct, updateProductStatus,
-        updateUserField, updateSellerBankDetails,
+        updateUserField, updateUserRole, updateSellerBankDetails,
         platformSettings, updateSettings, settingsLoading,
         verifyFlutterwaveTransaction,
         placeOrderWithWallet,
