@@ -1,0 +1,67 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Publicly readable collections
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/platform {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /promotions/{promotionId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+
+    // User-specific data
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    match /users/{userId}/addresses/{addressId} {
+      allow read, write: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Orders can be read by the owner or an admin
+    match /orders/{orderId} {
+      allow read, update: if isOwner(get(/databases/$(database)/documents/orders/$(orderId)).data.userId) || isAdmin();
+      allow create: if isSignedIn();
+    }
+    
+    // Reviews can be created by signed-in users, read by anyone.
+    match /products/{productId}/reviews/{reviewId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow write, delete: if isAdmin();
+    }
+  }
+}
