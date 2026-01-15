@@ -79,7 +79,13 @@ const LoginPopup = () => {
                     </svg>
                 </button>
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-800">{isLogin ? "Sign in to EUI Tap&Shop" : "Create an account"}</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        {isLogin ? (
+                            <>
+                                Sign in to <span className="text-orange-600">EUI</span> Tap&Shop
+                            </>
+                        ) : "Create an account"}
+                    </h1>
                     <p className="text-gray-500 mt-2 text-sm">{isLogin ? "Welcome back! Please sign in to continue" : "Get started with EUI Tap&Shop"}</p>
                 </div>
                 <div className="mt-6">
