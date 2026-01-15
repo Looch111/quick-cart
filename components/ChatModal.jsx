@@ -7,6 +7,27 @@ import { X, Send, User, Users } from 'lucide-react';
 import Image from 'next/image';
 
 const ChatWindow = ({ messages, messagesLoading, userData, isAdmin, handleSendMessage, newMessage, setNewMessage, messagesEndRef }) => {
+    const [isSupportTyping, setIsSupportTyping] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(false);
+
+    const isNewConversation = !isAdmin && !messagesLoading && messages.length === 0;
+
+    useEffect(() => {
+        if (isNewConversation) {
+            setIsSupportTyping(true);
+            const typingTimer = setTimeout(() => {
+                setIsSupportTyping(false);
+                setShowWelcome(true);
+            }, 1500); // Typing simulation
+
+            return () => clearTimeout(typingTimer);
+        } else {
+            // Reset for subsequent views
+            setIsSupportTyping(false);
+            setShowWelcome(false);
+        }
+    }, [isNewConversation]);
+
     return (
         <div className="flex flex-col h-full">
             <div className="flex-1 p-4 space-y-4 overflow-y-auto">
@@ -33,6 +54,34 @@ const ChatWindow = ({ messages, messagesLoading, userData, isAdmin, handleSendMe
                         </div>
                     </div>
                 ))}
+                
+                {isSupportTyping && (
+                    <div className="flex items-end gap-2 justify-start">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                             <Users className="w-5 h-5 text-gray-500" />
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-xs text-gray-500 ml-3 mb-1">Support</p>
+                            <div className="max-w-xs md:max-w-md p-3 rounded-lg bg-gray-200 text-gray-800 rounded-bl-none">
+                                <p className="text-sm italic">Typing<span className="blinking-dot">.</span><span className="blinking-dot animation-delay-200">.</span><span className="blinking-dot animation-delay-400">.</span></p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {showWelcome && (
+                    <div className="flex items-end gap-2 justify-start">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                             <Users className="w-5 h-5 text-gray-500" />
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-xs text-gray-500 ml-3 mb-1">Support</p>
+                            <div className="max-w-xs md:max-w-md p-3 rounded-lg bg-gray-200 text-gray-800 rounded-bl-none">
+                                <p className="text-sm">How can we help you today? 👋</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div ref={messagesEndRef} />
             </div>
             <form onSubmit={handleSendMessage} className="p-4 border-t flex items-center gap-2">

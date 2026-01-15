@@ -28,6 +28,13 @@
   animation: blink 1s linear infinite;
 }
 
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
 
 @keyframes drive-by-blur {
   0% {
