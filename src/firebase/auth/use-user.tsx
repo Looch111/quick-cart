@@ -34,6 +34,12 @@ export function useUser() {
   return { user, loading };
 }
 
+// ActionCodeSettings for directing users back to the app
+const actionCodeSettings = {
+    url: typeof window !== 'undefined' ? `${window.location.origin}/` : 'http://localhost:3000/',
+    handleCodeInApp: true,
+};
+
 // This is a custom hook that provides authentication-related functions.
 export function useAuth() {
     const auth = useFirebaseAuth();
@@ -61,7 +67,7 @@ export function useAuth() {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
-            await sendEmailVerification(userCredential.user);
+            await sendEmailVerification(userCredential.user, actionCodeSettings);
             return {isNewUser: true, user: userCredential.user};
         } catch (error) {
             console.error("Error signing up: ", error);
@@ -99,7 +105,7 @@ export function useAuth() {
 
     const sendPasswordReset = async (email) => {
         try {
-            await sendPasswordResetEmail(auth, email);
+            await sendPasswordResetEmail(auth, email, actionCodeSettings);
             toast.success('Password reset link sent! Check your email.');
         } catch (error) {
             console.error("Error sending password reset email: ", error);
@@ -113,7 +119,7 @@ export function useAuth() {
 
     const resendVerificationEmail = async (user) => {
         try {
-            await sendEmailVerification(user);
+            await sendEmailVerification(user, actionCodeSettings);
             toast.success('Verification email sent! Check your inbox.');
         } catch (error) {
             console.error("Error resending verification email:", error);
