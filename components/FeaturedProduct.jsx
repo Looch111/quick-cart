@@ -15,9 +15,9 @@ const FeaturedProduct = () => {
     if (products && products.length > 0) {
         const productToFeature = products.find(p => p.name.includes("Venu 2S Smartwatch"));
         if (productToFeature) {
-            setFeaturedProduct(productToFeature);
+            setFeaturedProduct({...productToFeature, _id: productToFeature.id});
         } else if (products.length > 0) {
-            setFeaturedProduct(products[0]);
+            setFeaturedProduct({...products[0], _id: products[0].id});
         }
     }
   }, [products]);
