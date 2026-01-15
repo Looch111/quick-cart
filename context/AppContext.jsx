@@ -236,7 +236,7 @@ export const AppContextProvider = (props) => {
             const messageData = {
                 text,
                 senderId: userData._id,
-                senderName: "Admin Support",
+                senderName: userData.name || 'Admin',
                 senderRole: 'admin',
                 createdAt: serverTimestamp(),
             };

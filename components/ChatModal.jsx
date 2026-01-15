@@ -76,14 +76,17 @@ const ChatModal = () => {
                     <div key={msg.id} className={`flex items-end gap-2 ${msg.senderId === userData?._id ? 'justify-end' : 'justify-start'}`}>
                         {msg.senderId !== userData?._id && (
                              <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                                {msg.senderRole === 'admin' ? <User className="w-5 h-5 text-gray-500" /> : <User className="w-5 h-5 text-gray-500" />}
+                                <User className="w-5 h-5 text-gray-500" />
                             </div>
                         )}
-                        <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === userData?._id ? 'bg-orange-500 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}`}>
-                            <p className="text-sm">{msg.text}</p>
-                            <p className="text-xs opacity-70 mt-1 text-right">
-                                {msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                            </p>
+                        <div className="flex flex-col">
+                            {msg.senderId !== userData?._id && <p className="text-xs text-gray-500 ml-3 mb-1">{msg.senderName}</p>}
+                            <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === userData?._id ? 'bg-orange-500 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}`}>
+                                <p className="text-sm">{msg.text}</p>
+                                <p className="text-xs opacity-70 mt-1 text-right">
+                                    {msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 ))}
