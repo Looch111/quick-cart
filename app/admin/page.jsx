@@ -19,13 +19,13 @@ import Loading from '@/components/Loading';
 import { useMemo } from 'react';
 
 const Card = ({ title, value, icon, change }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-gray-500">{title}</p>
-        <p className="text-2xl font-bold text-gray-800">{value}</p>
+        <p className="text-xl sm:text-2xl font-bold text-gray-800">{value}</p>
         {change && <p className={`text-xs mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</p>}
       </div>
-      <div className="bg-orange-100 text-orange-600 p-3 rounded-full">
+      <div className="bg-orange-100 text-orange-600 p-2 sm:p-3 rounded-full">
         {icon}
       </div>
     </div>
@@ -107,7 +107,7 @@ const AdminDashboard = () => {
        <div className="w-full p-4 md:p-10">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Dashboard</h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card title="Total Revenue" value={`${currency}${totalRevenue.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
             <Card title="Sales (This Month)" value={`${currency}${salesThisMonth.toFixed(2)}`} icon={<Activity className="w-6 h-6" />} />
             <Card title="Total Users" value={totalUsers} icon={<Users className="w-6 h-6" />} />
