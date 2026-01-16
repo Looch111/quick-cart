@@ -107,7 +107,7 @@ const AdminDashboard = () => {
        <div className="w-full p-4 md:p-10">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Dashboard</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card title="Total Revenue" value={`${currency}${totalRevenue.toFixed(2)}`} icon={<DollarSign className="w-6 h-6" />} />
             <Card title="Sales (This Month)" value={`${currency}${salesThisMonth.toFixed(2)}`} icon={<Activity className="w-6 h-6" />} />
             <Card title="Total Users" value={totalUsers} icon={<Users className="w-6 h-6" />} />
