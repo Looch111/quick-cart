@@ -107,11 +107,11 @@ const ProductCard = ({ product }) => {
             onClick={() => { router.push('/product/' + product._id); scrollTo(0, 0) }}
             className="flex flex-col w-full cursor-pointer group h-full"
         >
-            <div className="relative bg-gray-500/10 rounded-lg w-full aspect-square flex items-center justify-center p-2 overflow-hidden">
+            <div className="relative bg-gray-500/10 rounded-lg w-full aspect-square overflow-hidden">
                 <Image
                     src={product.image[0]}
                     alt={product.name}
-                    className="group-hover:scale-105 transition-transform duration-300 object-contain w-full h-full"
+                    className="group-hover:scale-105 transition-transform duration-300 object-cover w-full h-full"
                     width={200}
                     height={200}
                 />
