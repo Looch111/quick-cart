@@ -41,7 +41,7 @@ const FeaturedProduct = () => {
       </div>
 
       <div className="grid grid-cols-5 md:grid-cols-2 gap-4 md:gap-8 items-center mt-12 bg-gray-50 rounded-lg p-4 md:p-8">
-        <div className="col-span-2 md:col-span-1 bg-white rounded-lg p-2 md:p-6 flex items-center justify-center aspect-square">
+        <div className="col-span-2 md:col-span-1 bg-white rounded-lg flex items-center justify-center aspect-square overflow-hidden">
             <Image
                 src={image[0]}
                 alt={name}
