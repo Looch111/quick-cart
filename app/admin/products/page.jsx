@@ -1,4 +1,3 @@
-
 'use client'
 import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
@@ -6,7 +5,7 @@ import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/admin/Footer";
 import Loading from "@/components/Loading";
-import { Edit, Trash2, CheckCircle, XCircle, Clock, User } from "lucide-react";
+import { Edit, Trash2, CheckCircle, XCircle, Clock, User, Zap } from "lucide-react";
 import EditProductModal from "@/components/admin/EditProductModal";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
@@ -67,6 +66,12 @@ const ProductList = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         if (!productsLoading && !usersLoading) {
@@ -116,13 +121,7 @@ const ProductList = () => {
             product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (product.poster && product.poster.name && product.poster.name.toLowerCase().includes(searchTerm.toLowerCase()))
         )
-        .sort((a, b) => {
-            const statusOrder = { 'pending': 0, 'approved': 1, 'rejected': 2 };
-            if (statusOrder[a.status] !== statusOrder[b.status]) {
-                return statusOrder[a.status] - statusOrder[b.status];
-            }
-            return (b.date?.seconds || 0) - (a.date?.seconds || 0);
-        });
+        .sort((a, b) => (b.date?.seconds || 0) - (a.date?.seconds || 0));
 
     return (
         <div className="flex-1 min-h-screen flex flex-col justify-between">
@@ -147,47 +146,64 @@ const ProductList = () => {
 
                 {/* Mobile View: Cards */}
                 <div className="md:hidden space-y-4">
-                    {filteredProducts.map(product => (
-                        <div key={product._id} className="bg-white border rounded-lg p-4 shadow-sm">
-                            <div className="flex gap-4">
-                                <Image
-                                    src={product.image[0]}
-                                    alt={product.name}
-                                    width={80}
-                                    height={80}
-                                    className="w-20 h-20 object-contain rounded-md bg-gray-100"
-                                />
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-800">{product.name}</h3>
-                                    <p className="text-xs text-gray-500">{product.category}</p>
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <p className="text-sm font-semibold text-orange-600">{currency}{product.offerPrice}</p>
-                                        <p className="text-xs text-gray-400 line-through">{currency}{product.price}</p>
-                                    </div>
-                                    <div className="mt-1">
-                                        <StatusBadge status={product.status} />
+                    {filteredProducts.map(product => {
+                        const isFlashSaleActive = product.flashSalePrice && new Date(product.flashSaleEndDate) > currentTime;
+                        return (
+                            <div key={product._id} className="bg-white border rounded-lg p-4 shadow-sm">
+                                <div className="flex gap-4">
+                                    <Image
+                                        src={product.image[0]}
+                                        alt={product.name}
+                                        width={80}
+                                        height={80}
+                                        className="w-20 h-20 object-contain rounded-md bg-gray-100"
+                                    />
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-800">{product.name}</h3>
+                                        <p className="text-xs text-gray-500">{product.category}</p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            {isFlashSaleActive ? (
+                                                <>
+                                                    <span className="font-semibold text-green-600 flex items-center gap-1 text-sm">
+                                                        <Zap className="w-4 h-4" />
+                                                        {currency}{product.flashSalePrice}
+                                                    </span>
+                                                    <span className="text-gray-400 line-through text-xs">
+                                                        {currency}{product.offerPrice}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p className="text-sm font-semibold text-orange-600">{currency}{product.offerPrice}</p>
+                                                    {product.price > product.offerPrice && <p className="text-xs text-gray-400 line-through">{currency}{product.price}</p>}
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className="mt-1">
+                                            <StatusBadge status={product.status} />
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="border-t mt-3 pt-3 text-xs text-gray-500">
+                                    <p>Posted by: <span className="font-medium text-gray-700">{product.poster?.name || 'N/A'} ({product.poster?.role})</span></p>
+                                    <p>Date: <span className="font-medium text-gray-700">{new Date(product.date?.toDate()).toLocaleDateString()}</span></p>
+                                </div>
+                                <div className="flex justify-end items-center gap-2 mt-3 pt-3 border-t">
+                                    <select onChange={(e) => updateProductStatus(product._id, e.target.value)} value={product.status} className="text-xs border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                    </select>
+                                    <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700 p-2">
+                                        <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700 p-2">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="border-t mt-3 pt-3 text-xs text-gray-500">
-                                <p>Posted by: <span className="font-medium text-gray-700">{product.poster?.name || 'N/A'} ({product.poster?.role})</span></p>
-                                <p>Date: <span className="font-medium text-gray-700">{new Date(product.date?.toDate()).toLocaleDateString()}</span></p>
-                            </div>
-                            <div className="flex justify-end items-center gap-2 mt-3 pt-3 border-t">
-                                <select onChange={(e) => updateProductStatus(product._id, e.target.value)} value={product.status} className="text-xs border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
-                                    <option value="pending">Pending</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                </select>
-                                <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700 p-2">
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700 p-2">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
 
                 {/* Desktop View: Table */}
@@ -204,57 +220,74 @@ const ProductList = () => {
                             </tr>
                         </thead>
                         <tbody className="text-sm text-gray-500">
-                            {filteredProducts.map((product, index) => (
-                                <tr key={index} className="border-t border-gray-500/20">
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center space-x-3">
-                                            <div className="bg-gray-100 rounded p-2 flex-shrink-0">
-                                                <Image
-                                                    src={product.image[0]}
-                                                    alt="product Image"
-                                                    className="w-12 h-12 object-contain"
-                                                    width={48}
-                                                    height={48}
-                                                />
+                            {filteredProducts.map((product, index) => {
+                                const isFlashSaleActive = product.flashSalePrice && new Date(product.flashSaleEndDate) > currentTime;
+                                return (
+                                    <tr key={index} className="border-t border-gray-500/20">
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="bg-gray-100 rounded p-2 flex-shrink-0">
+                                                    <Image
+                                                        src={product.image[0]}
+                                                        alt="product Image"
+                                                        className="w-12 h-12 object-contain"
+                                                        width={48}
+                                                        height={48}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-gray-800">{product.name}</span>
+                                                    <p className="text-xs text-gray-500">{product.category}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span className="font-medium text-gray-800">{product.name}</span>
-                                                <p className="text-xs text-gray-500">{product.category}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                       <div className="flex items-center gap-2">
-                                            <UserAvatar user={product.poster} />
-                                            <div>
-                                                <p className="font-medium text-gray-800">{product.poster?.name || 'Unknown'}</p>
-                                                <p className="text-xs capitalize">{product.poster?.role || 'N/A'}</p>
-                                                <p className="text-xs">{new Date(product.date?.toDate()).toLocaleDateString()}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">{currency}{product.offerPrice}</td>
-                                    <td className="px-4 py-3">{product.stock > 0 ? product.stock : <span className="text-red-500 font-medium">Out of Stock</span>}</td>
-                                    <td className="px-4 py-3">
-                                        <StatusBadge status={product.status} />
-                                    </td>
-                                    <td className="px-4 py-3">
+                                        </td>
+                                        <td className="px-4 py-3">
                                         <div className="flex items-center gap-2">
-                                            <select onChange={(e) => updateProductStatus(product._id, e.target.value)} value={product.status} className="text-xs border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
-                                                <option value="pending">Pending</option>
-                                                <option value="approved">Approved</option>
-                                                <option value="rejected">Rejected</option>
-                                            </select>
-                                            <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700 p-2">
-                                                <Edit className="w-4 h-4" />
-                                            </button>
-                                            <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700 p-2">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                                <UserAvatar user={product.poster} />
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{product.poster?.name || 'Unknown'}</p>
+                                                    <p className="text-xs capitalize">{product.poster?.role || 'N/A'}</p>
+                                                    <p className="text-xs">{new Date(product.date?.toDate()).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {isFlashSaleActive ? (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-green-600 flex items-center gap-1">
+                                                        <Zap className="w-4 h-4" />
+                                                        {currency}{product.flashSalePrice}
+                                                    </span>
+                                                    <span className="text-gray-400 line-through text-xs">
+                                                        {currency}{product.offerPrice}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span>{currency}{product.offerPrice}</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">{product.stock > 0 ? product.stock : <span className="text-red-500 font-medium">Out of Stock</span>}</td>
+                                        <td className="px-4 py-3">
+                                            <StatusBadge status={product.status} />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-2">
+                                                <select onChange={(e) => updateProductStatus(product._id, e.target.value)} value={product.status} className="text-xs border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
+                                                    <option value="pending">Pending</option>
+                                                    <option value="approved">Approved</option>
+                                                    <option value="rejected">Rejected</option>
+                                                </select>
+                                                <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-blue-700 p-2">
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => handleDeleteClick(product._id)} className="text-red-500 hover:text-red-700 p-2">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>
