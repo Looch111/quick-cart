@@ -9,7 +9,7 @@ const HomeProducts = () => {
   const { router } = useAppContext();
   const { data: productsData, loading: productsLoading } = useCollection('products', {
     where: ['status', '==', 'approved'],
-    orderBy: ['date', 'desc'],
+    orderBy: ['name', 'asc'],
     limit: 10
   });
 
