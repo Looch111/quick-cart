@@ -10,12 +10,18 @@ import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, q
 import { getAdditionalUserInfo } from "firebase/auth";
 import { FirestorePermissionError } from "@/src/firebase/errors";
 import { errorEmitter } from "@/src/firebase/error-emitter";
+import { createClient } from '@supabase/supabase-js';
 
 export const AppContext = createContext();
 
 export const useAppContext = () => {
     return useContext(AppContext)
 }
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
 
 export const AppContextProvider = (props) => {
 
@@ -503,6 +509,10 @@ export const AppContextProvider = (props) => {
     }
     
     const addProduct = async (productData) => {
+        if (!supabase) {
+            toast.error("Image storage is not configured. Please check environment variables.");
+            return;
+        }
         if (!firestore) {
             toast.error("Connection not ready, please try again.");
             return;
@@ -532,19 +542,20 @@ export const AppContextProvider = (props) => {
         let imageUrls = [];
         try {
             const uploadPromises = imageFiles.map(async (file) => {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                    method: 'POST',
-                    body: formData,
-                });
-                const data = await res.json();
-                if (data.secure_url) {
-                    return data.secure_url;
-                } else {
-                    throw new Error(data.error.message || 'Cloudinary upload failed');
+                const filePath = `public/${Date.now()}-${file.name}`;
+                const { data, error } = await supabase.storage
+                    .from('product-images')
+                    .upload(filePath, file);
+
+                if (error) {
+                    throw error;
                 }
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('product-images')
+                    .getPublicUrl(data.path);
+                
+                return publicUrl;
             });
             imageUrls = await Promise.all(uploadPromises);
             toast.dismiss(uploadToast);
@@ -579,6 +590,10 @@ export const AppContextProvider = (props) => {
     }
 
     const updateProduct = async (updatedProduct) => {
+        if (!supabase) {
+            toast.error("Image storage is not configured. Please check environment variables.");
+            return;
+        }
         if (!firestore) {
             toast.error("Connection not ready, please try again.");
             return;
@@ -608,22 +623,21 @@ export const AppContextProvider = (props) => {
             const uploadToast = toast.loading('Uploading new images...');
             try {
                 const uploadPromises = newImageFiles.map(async (file) => {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-                    const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                        method: 'POST',
-                        body: formData,
-                    });
-                    const data = await res.json();
-                    if (data.secure_url) {
-                        return data.secure_url;
-                    } else {
-                        throw new Error(data.error.message || 'Cloudinary upload failed');
-                    }
+                    const filePath = `public/${Date.now()}-${file.name}`;
+                    const { data, error } = await supabase.storage
+                        .from('product-images')
+                        .upload(filePath, file);
+
+                    if (error) throw error;
+                    
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('product-images')
+                        .getPublicUrl(data.path);
+
+                    return publicUrl;
                 });
-                const newImageUrls = (await Promise.all(uploadPromises));
-                finalImageUrls.push(...newImageUrls);
+                const newUrls = await Promise.all(uploadPromises);
+                finalImageUrls.push(...newUrls);
                 toast.dismiss(uploadToast);
             } catch (error) {
                 toast.dismiss(uploadToast);
