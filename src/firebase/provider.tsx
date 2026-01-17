@@ -28,8 +28,12 @@ export function useFirestore() {
   return useFirebase().firestore;
 }
 
+export function useStorage() {
+  return useFirebase().storage;
+}
+
 export function FirebaseProvider({ children }) {
-  const { firebaseApp, auth, firestore } = useMemo(initializeFirebase, []);
+  const { firebaseApp, auth, firestore, storage } = useMemo(initializeFirebase, []);
   const [messaging, setMessaging] = useState(null);
 
   useEffect(() => {
@@ -43,8 +47,8 @@ export function FirebaseProvider({ children }) {
   }, [firebaseApp]);
   
   const contextValue = useMemo(
-    () => ({ firebaseApp, auth, firestore, messaging }),
-    [firebaseApp, auth, firestore, messaging]
+    () => ({ firebaseApp, auth, firestore, messaging, storage }),
+    [firebaseApp, auth, firestore, messaging, storage]
   );
   return (
     <FirebaseContext.Provider value={contextValue}>

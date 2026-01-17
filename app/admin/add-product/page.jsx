@@ -5,13 +5,14 @@ import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import toast from "react-hot-toast";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, UploadCloud } from "lucide-react";
 
 const AddProduct = () => {
 
   const { addProduct } = useAppContext()
 
-  const [imageUrls, setImageUrls] = useState(['', '', '', '']);
+  const [images, setImages] = useState(Array(4).fill(null));
+  const [imagePreviews, setImagePreviews] = useState(Array(4).fill(null));
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Earphone');
@@ -24,11 +25,34 @@ const AddProduct = () => {
   const [totalStock, setTotalStock] = useState('');
 
 
-  const handleImageUrlChange = (index, value) => {
-    const newImageUrls = [...imageUrls];
-    newImageUrls[index] = value;
-    setImageUrls(newImageUrls);
+  const handleImageChange = (index, file) => {
+    if (file) {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            toast.error("File is too large. Max size is 5MB.");
+            return;
+        }
+        const newImages = [...images];
+        newImages[index] = file;
+        setImages(newImages);
+
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = URL.createObjectURL(file);
+        setImagePreviews(newPreviews);
+    }
   };
+
+  const removeImage = (index) => {
+    const newImages = [...images];
+    newImages[index] = null;
+    setImages(newImages);
+
+    const newPreviews = [...imagePreviews];
+    if (newPreviews[index] && newPreviews[index].startsWith('blob:')) {
+        URL.revokeObjectURL(newPreviews[index]);
+    }
+    newPreviews[index] = null;
+    setImagePreviews(newPreviews);
+  }
 
   const handleSizeChange = (index, field, value) => {
     const newSizes = [...sizes];
@@ -80,6 +104,13 @@ const AddProduct = () => {
         return;
     }
 
+    const imageFiles = images.filter(img => img !== null);
+
+    if(imageFiles.length === 0) {
+        toast.error("Please provide at least one image.");
+        return;
+    }
+
     const productData = {
         name,
         description,
@@ -87,21 +118,17 @@ const AddProduct = () => {
         price: Number(price),
         offerPrice: Number(offerPrice),
         flashSalePrice: Number(flashSalePrice) || null,
-        image: imageUrls.filter(url => url).map(url => getImageUrl(url)),
+        image: imageFiles,
         stock: stock,
         sizes: hasSizes ? productSizes : {},
         flashSaleEndDate: flashSaleEndDate || null,
     }
 
-    if(productData.image.length === 0) {
-        toast.error("Please provide at least one image URL.");
-        return;
-    }
-
-    addProduct(productData);
+    await addProduct(productData);
 
     // Reset form
-    setImageUrls(['', '', '', '']);
+    setImages(Array(4).fill(null));
+    setImagePreviews(Array(4).fill(null));
     setName('');
     setDescription('');
     setCategory('Earphone');
@@ -113,45 +140,39 @@ const AddProduct = () => {
     setFlashSaleEndDate('');
     setHasSizes(false);
   };
-  
-  const getImageUrl = (url) => {
-    if (!url) return assets.upload_area;
-    
-    let correctedUrl = url;
-    if (correctedUrl.includes('imgur.com') && !correctedUrl.includes('i.imgur.com')) {
-      correctedUrl = correctedUrl.replace('imgur.com', 'i.imgur.com');
-    }
-
-    if (correctedUrl.startsWith('https://i.imgur.com/') && !/\.(png|jpg|jpeg|gif)$/.test(correctedUrl)) {
-      return `${correctedUrl}.png`;
-    }
-    
-    return correctedUrl;
-  };
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between">
       <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-4xl">
         <div>
-          <p className="text-base font-medium">Product Image URLs</p>
-          <div className="flex flex-col gap-3 mt-2">
+          <p className="text-base font-medium">Upload Product Images</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
             {[...Array(4)].map((_, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <Image
-                  className="w-24 h-24 object-contain border rounded bg-gray-100"
-                  src={getImageUrl(imageUrls[index])}
-                  alt={`Product image ${index + 1}`}
-                  width={100}
-                  height={100}
-                  onError={(e) => e.currentTarget.src = assets.upload_area.src}
-                />
-                <input
-                  type="text"
-                  placeholder={`Image URL ${index + 1}`}
-                  className="outline-none w-full md:py-2.5 py-2 px-3 rounded border border-gray-300"
-                  onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                  value={imageUrls[index]}
-                />
+              <div key={index} className="relative aspect-square border-2 border-dashed rounded-lg flex items-center justify-center text-gray-400">
+                {imagePreviews[index] ? (
+                    <>
+                        <Image
+                            src={imagePreviews[index]}
+                            alt={`Preview ${index + 1}`}
+                            fill
+                            className="object-contain rounded-lg p-2"
+                        />
+                         <button type="button" onClick={() => removeImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full z-10">
+                            <Trash2 className="w-3 h-3" />
+                        </button>
+                    </>
+                ) : (
+                    <label className="flex flex-col items-center justify-center cursor-pointer w-full h-full">
+                        <UploadCloud className="w-8 h-8" />
+                        <span className="text-xs mt-2 text-center">Click to upload</span>
+                        <input
+                            type="file"
+                            className="hidden"
+                            accept="image/png, image/jpeg, image/gif"
+                            onChange={(e) => handleImageChange(index, e.target.files[0])}
+                        />
+                    </label>
+                )}
               </div>
             ))}
           </div>

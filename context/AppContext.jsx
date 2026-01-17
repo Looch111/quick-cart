@@ -4,7 +4,8 @@ import { useAuth, useUser } from "@/src/firebase/auth/use-user";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import { useFirestore, useCollection, useDoc } from "@/src/firebase";
+import { useFirestore, useCollection, useDoc, useStorage } from "@/src/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc, runTransaction, increment, arrayUnion } from "firebase/firestore";
 import { getAdditionalUserInfo } from "firebase/auth";
 import { FirestorePermissionError } from "@/src/firebase/errors";
@@ -23,6 +24,7 @@ export const AppContextProvider = (props) => {
     const { user: firebaseUser, loading: authLoading } = useUser();
     const { signOut } = useAuth();
     const firestore = useFirestore();
+    const storage = useStorage();
     
     // Data is now fetched directly in the components that need it.
     // This avoids fetching all data for all users on every page load.
@@ -501,7 +503,11 @@ export const AppContextProvider = (props) => {
             });
     }
     
-    const addProduct = (productData) => {
+    const addProduct = async (productData) => {
+        if (!storage || !firestore) {
+            toast.error("Connection not ready, please try again.");
+            return;
+        }
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -517,9 +523,33 @@ export const AppContextProvider = (props) => {
             return;
         }
 
+        const imageFiles = productData.image.filter(img => img instanceof File);
+        if (imageFiles.length === 0) {
+            toast.error("Please upload at least one image.");
+            return;
+        }
+
+        const uploadToast = toast.loading('Uploading images...');
+        const imageUrls = [];
+        try {
+            for (const file of imageFiles) {
+                const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                imageUrls.push(downloadURL);
+            }
+            toast.dismiss(uploadToast);
+        } catch (error) {
+            toast.dismiss(uploadToast);
+            toast.error("Image upload failed. Please try again.");
+            console.error("Image upload error: ", error);
+            return;
+        }
+
         const productsCollectionRef = collection(firestore, 'products');
         const dataToAdd = {
             ...productData,
+            image: imageUrls,
             userId: userData._id,
             date: serverTimestamp(),
             status: isAdmin ? 'approved' : 'pending'
@@ -539,7 +569,11 @@ export const AppContextProvider = (props) => {
             });
     }
 
-    const updateProduct = (updatedProduct) => {
+    const updateProduct = async (updatedProduct) => {
+        if (!storage || !firestore) {
+            toast.error("Connection not ready, please try again.");
+            return;
+        }
         if (!userData) {
             toast.error("Please log in to continue.", { id: 'login-toast' });
             if (!showLogin) setShowLogin(true);
@@ -557,8 +591,37 @@ export const AppContextProvider = (props) => {
             return;
         }
 
+        const existingImageUrls = updatedProduct.image.filter(img => typeof img === 'string');
+        const newImageFiles = updatedProduct.image.filter(img => img instanceof File);
+        let finalImageUrls = [...existingImageUrls];
+
+        if (newImageFiles.length > 0) {
+            const uploadToast = toast.loading('Uploading new images...');
+            try {
+                for (const file of newImageFiles) {
+                    if (file) { // check if file is not null
+                        const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
+                        const snapshot = await uploadBytes(storageRef, file);
+                        const downloadURL = await getDownloadURL(snapshot.ref);
+                        finalImageUrls.push(downloadURL);
+                    }
+                }
+                toast.dismiss(uploadToast);
+            } catch (error) {
+                toast.dismiss(uploadToast);
+                toast.error("Image upload failed. Please try again.");
+                console.error("Image upload error: ", error);
+                return;
+            }
+        }
+        
+        if (finalImageUrls.length === 0) {
+            toast.error("Product must have at least one image.");
+            return;
+        }
+
         const productDocRef = doc(firestore, 'products', updatedProduct._id);
-        const dataToUpdate = { ...updatedProduct };
+        const dataToUpdate = { ...updatedProduct, image: finalImageUrls };
         if (isSeller && !isAdmin) {
             dataToUpdate.status = 'pending';
         }

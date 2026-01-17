@@ -1,6 +1,7 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import { firebaseConfig } from './config';
 
 // App is a singleton, so we can initialize it once and then reuse it.
@@ -13,14 +14,16 @@ export function initializeFirebase() {
       firebaseApp: existingApp,
       auth: getAuth(existingApp),
       firestore: getFirestore(existingApp),
+      storage: getStorage(existingApp),
     };
   }
 
   const firebaseApp = initializeApp(firebaseConfig);
   const auth = getAuth(firebaseApp);
   const firestore = getFirestore(firebaseApp);
+  const storage = getStorage(firebaseApp);
 
-  return { firebaseApp, auth, firestore };
+  return { firebaseApp, auth, firestore, storage };
 }
 
 export * from './provider';

@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import Image from 'next/image';
 import { assets } from '@/assets/assets';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, UploadCloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const EditProductModal = ({ product, onSave, onCancel }) => {
     const { updateProduct } = useAppContext();
     const [productData, setProductData] = useState({ ...product });
-    const [imageUrls, setImageUrls] = useState(['', '', '', '']);
+    const [images, setImages] = useState(Array(4).fill(null));
+    const [imagePreviews, setImagePreviews] = useState(Array(4).fill(null));
     const [sizes, setSizes] = useState([{ size: '', stock: '' }]);
     const [hasSizes, setHasSizes] = useState(false);
     const [totalStock, setTotalStock] = useState('');
@@ -23,13 +24,18 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         } else {
             data.flashSaleEndDate = '';
         }
+
+        const initialImages = Array(4).fill(null);
+        const initialPreviews = Array(4).fill(null);
         if (data.image && Array.isArray(data.image)) {
-            const urls = [...data.image];
-            while (urls.length < 4) {
-                urls.push('');
-            }
-            setImageUrls(urls.slice(0, 4));
+            data.image.slice(0, 4).forEach((img, i) => {
+                initialImages[i] = img;
+                initialPreviews[i] = img;
+            });
         }
+        setImages(initialImages);
+        setImagePreviews(initialPreviews);
+        
 
         if (data.sizes && typeof data.sizes === 'object' && Object.keys(data.sizes).length > 0) {
             setHasSizes(true);
@@ -46,22 +52,34 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 
     if (!product) return null;
 
-    const getImageUrl = (url) => {
-        if (!url) return assets.upload_area;
-        let correctedUrl = url;
-        if (correctedUrl.includes('imgur.com') && !correctedUrl.includes('i.imgur.com')) {
-            correctedUrl = correctedUrl.replace('imgur.com', 'i.imgur.com');
+    const handleImageChange = (index, file) => {
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                toast.error("File is too large. Max size is 5MB.");
+                return;
+            }
+            const newImages = [...images];
+            newImages[index] = file;
+            setImages(newImages);
+    
+            const newPreviews = [...imagePreviews];
+            newPreviews[index] = URL.createObjectURL(file);
+            setImagePreviews(newPreviews);
         }
-        if (correctedUrl.startsWith('https://i.imgur.com/') && !/\.(png|jpg|jpeg|gif)$/.test(correctedUrl)) {
-            return `${correctedUrl}.png`;
-        }
-        return correctedUrl;
     };
+    
+    const removeImage = (index) => {
+        const newImages = [...images];
+        const newPreviews = [...imagePreviews];
 
-    const handleImageUrlChange = (index, value) => {
-        const newImageUrls = [...imageUrls];
-        newImageUrls[index] = value;
-        setImageUrls(newImageUrls);
+        if (newPreviews[index] && newPreviews[index].startsWith('blob:')) {
+            URL.revokeObjectURL(newPreviews[index]);
+        }
+
+        newImages[index] = null;
+        newPreviews[index] = null;
+        setImages(newImages);
+        setImagePreviews(newPreviews);
     };
 
     const handleSizeChange = (index, field, value) => {
@@ -79,7 +97,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         setSizes(newSizes);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const dataToSave = { ...productData };
         
         if (dataToSave.flashSaleEndDate && (!dataToSave.flashSalePrice || Number(dataToSave.flashSalePrice) <= 0)) {
@@ -112,9 +130,10 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
         } else {
             dataToSave.flashSaleEndDate = new Date(dataToSave.flashSaleEndDate).toISOString();
         }
-        dataToSave.image = imageUrls.map(url => getImageUrl(url)).filter(url => url !== assets.upload_area);
         
-        updateProduct(dataToSave);
+        dataToSave.image = images.filter(img => img !== null);
+        
+        await updateProduct(dataToSave);
         onSave(dataToSave);
     };
 
@@ -134,26 +153,35 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">Edit Product</h1>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Image URLs</label>
-                        <div className="flex flex-col gap-3 mt-2">
-                            {[...Array(4)].map((_, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                <Image
-                                    className="w-24 h-24 object-contain border rounded bg-gray-100"
-                                    src={getImageUrl(imageUrls[index])}
-                                    alt={`Product image ${index + 1}`}
-                                    width={100}
-                                    height={100}
-                                    onError={(e) => e.currentTarget.src = assets.upload_area.src}
-                                />
-                                <input
-                                    type="text"
-                                    placeholder={`Image URL ${index + 1}`}
-                                    className="outline-none w-full md:py-2.5 py-2 px-3 rounded border border-gray-300"
-                                    onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                                    value={imageUrls[index]}
-                                />
-                                </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Images</label>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                        {[...Array(4)].map((_, index) => (
+                            <div key={index} className="relative aspect-square border-2 border-dashed rounded-lg flex items-center justify-center text-gray-400">
+                                {imagePreviews[index] ? (
+                                    <>
+                                        <Image
+                                            src={imagePreviews[index]}
+                                            alt={`Preview ${index + 1}`}
+                                            fill
+                                            className="object-contain rounded-lg p-2"
+                                        />
+                                        <button type="button" onClick={() => removeImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full z-10">
+                                            <Trash2 className="w-3 h-3" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <label className="flex flex-col items-center justify-center cursor-pointer w-full h-full">
+                                        <UploadCloud className="w-8 h-8" />
+                                        <span className="text-xs mt-2 text-center">Click to upload</span>
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/png, image/jpeg, image/gif"
+                                            onChange={(e) => handleImageChange(index, e.target.files[0])}
+                                        />
+                                    </label>
+                                )}
+                            </div>
                             ))}
                         </div>
                     </div>
@@ -184,7 +212,7 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                             name="deliveryInfo"
                             placeholder="e.g., 2-3 business days"
                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            value={productData.deliveryInfo}
+                            value={productData.deliveryInfo || ''}
                             onChange={handleChange}
                         />
                     </div>
