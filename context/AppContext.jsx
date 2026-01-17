@@ -5,8 +5,7 @@ import { useAuth, useUser } from "@/src/firebase/auth/use-user";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import { useFirestore, useCollection, useDoc, useStorage } from "@/src/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useFirestore, useCollection, useDoc } from "@/src/firebase";
 import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc, runTransaction, increment, arrayUnion } from "firebase/firestore";
 import { getAdditionalUserInfo } from "firebase/auth";
 import { FirestorePermissionError } from "@/src/firebase/errors";
@@ -25,7 +24,6 @@ export const AppContextProvider = (props) => {
     const { user: firebaseUser, loading: authLoading } = useUser();
     const { signOut } = useAuth();
     const firestore = useFirestore();
-    const storage = useStorage();
     
     // Data is now fetched directly in the components that need it.
     // This avoids fetching all data for all users on every page load.
@@ -505,7 +503,7 @@ export const AppContextProvider = (props) => {
     }
     
     const addProduct = async (productData) => {
-        if (!storage || !firestore) {
+        if (!firestore) {
             toast.error("Connection not ready, please try again.");
             return;
         }
@@ -533,15 +531,26 @@ export const AppContextProvider = (props) => {
         const uploadToast = toast.loading('Uploading images...');
         let imageUrls = [];
         try {
-            const uploadPromises = imageFiles.map(file => {
-                const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
-                return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
+            const uploadPromises = imageFiles.map(async (file) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await res.json();
+                if (data.secure_url) {
+                    return data.secure_url;
+                } else {
+                    throw new Error(data.error.message || 'Cloudinary upload failed');
+                }
             });
             imageUrls = await Promise.all(uploadPromises);
             toast.dismiss(uploadToast);
         } catch (error) {
             toast.dismiss(uploadToast);
-            toast.error("Image upload failed. Please try again.");
+            toast.error(`Image upload failed: ${error.message}`);
             console.error("Image upload error: ", error);
             return;
         }
@@ -570,7 +579,7 @@ export const AppContextProvider = (props) => {
     }
 
     const updateProduct = async (updatedProduct) => {
-        if (!storage || !firestore) {
+        if (!firestore) {
             toast.error("Connection not ready, please try again.");
             return;
         }
@@ -598,19 +607,27 @@ export const AppContextProvider = (props) => {
         if (newImageFiles.length > 0) {
             const uploadToast = toast.loading('Uploading new images...');
             try {
-                const uploadPromises = newImageFiles.map(file => {
-                    if (file) {
-                        const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
-                        return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
+                const uploadPromises = newImageFiles.map(async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const data = await res.json();
+                    if (data.secure_url) {
+                        return data.secure_url;
+                    } else {
+                        throw new Error(data.error.message || 'Cloudinary upload failed');
                     }
-                    return Promise.resolve(null);
                 });
-                const newImageUrls = (await Promise.all(uploadPromises)).filter(Boolean);
+                const newImageUrls = (await Promise.all(uploadPromises));
                 finalImageUrls.push(...newImageUrls);
                 toast.dismiss(uploadToast);
             } catch (error) {
                 toast.dismiss(uploadToast);
-                toast.error("Image upload failed. Please try again.");
+                toast.error(`Image upload failed: ${error.message}`);
                 console.error("Image upload error: ", error);
                 return;
             }
