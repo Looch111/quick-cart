@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import admin from '@/app/lib/firebase-admin';
 import { db } from '@/app/lib/firebase-admin';
@@ -29,6 +30,10 @@ const getBankCode = (bankName) => {
 }
 
 export async function POST(request) {
+    if (!db) {
+        return NextResponse.json({ success: false, message: "Server configuration error: Cannot connect to database." }, { status: 500 });
+    }
+
     const { amount, bankDetails, userId } = await request.json();
 
     if (!amount || !bankDetails || !userId) {

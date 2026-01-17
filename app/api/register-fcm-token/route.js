@@ -4,6 +4,10 @@ import admin from '@/app/lib/firebase-admin';
 import { db } from '@/app/lib/firebase-admin';
 
 export async function POST(request) {
+    if (!db) {
+        return NextResponse.json({ success: false, message: "Server configuration error: Cannot connect to database." }, { status: 500 });
+    }
+
     const { token: fcmToken } = await request.json();
     const idToken = request.headers.get('authorization')?.split('Bearer ')[1];
 
