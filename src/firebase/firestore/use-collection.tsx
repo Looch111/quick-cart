@@ -75,10 +75,13 @@ export function useCollection(
       },
       (err) => {
         console.error("Firestore Error in useCollection:", err);
-        const permissionError = new FirestorePermissionError({
-          path: typeof pathOrQuery === 'string' ? pathOrQuery : 'complex query',
-          operation: 'list',
-        }, err);
+        const permissionError = new FirestorePermissionError(
+          {
+            path: 'path' in (memoizedQuery as any) ? (memoizedQuery as any).path : 'unknown',
+            operation: 'list',
+          },
+          err
+        );
         errorEmitter.emit('permission-error', permissionError);
         setError(permissionError); // Set the custom error
         setLoading(false);
