@@ -48,6 +48,11 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (Number(price) > 0 && Number(price) <= Number(offerPrice)) {
+        toast.error("The Original Price must be higher than the Selling Price to show a discount.");
+        return;
+    }
     
     let productSizes = {};
     let stock = 0;
@@ -202,17 +207,17 @@ const AddProduct = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Standard Pricing */}
+            {/* Pricing */}
             <div className='space-y-4 border p-4 rounded-md'>
-                <h3 className='font-semibold text-lg'>Standard Pricing</h3>
+                <h3 className='font-semibold text-lg'>Pricing</h3>
                 <div className="flex flex-col gap-1 w-full">
                     <label className="text-base font-medium" htmlFor="product-price">
-                    Original Price
+                    Original Price <span className="text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <input
                     id="product-price"
                     type="number"
-                    placeholder="0"
+                    placeholder="e.g., 100"
                     className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                     onChange={(e) => setPrice(e.target.value)}
                     value={price}
@@ -220,12 +225,12 @@ const AddProduct = () => {
                 </div>
                 <div className="flex flex-col gap-1 w-full">
                     <label className="text-base font-medium" htmlFor="offer-price">
-                    Standard Offer Price
+                    Selling Price
                     </label>
                     <input
                     id="offer-price"
                     type="number"
-                    placeholder="0"
+                    placeholder="e.g., 80"
                     className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                     onChange={(e) => setOfferPrice(e.target.value)}
                     value={offerPrice}
