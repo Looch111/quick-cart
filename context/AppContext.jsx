@@ -1,3 +1,4 @@
+
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -530,14 +531,13 @@ export const AppContextProvider = (props) => {
         }
 
         const uploadToast = toast.loading('Uploading images...');
-        const imageUrls = [];
+        let imageUrls = [];
         try {
-            for (const file of imageFiles) {
+            const uploadPromises = imageFiles.map(file => {
                 const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
-                const snapshot = await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(snapshot.ref);
-                imageUrls.push(downloadURL);
-            }
+                return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
+            });
+            imageUrls = await Promise.all(uploadPromises);
             toast.dismiss(uploadToast);
         } catch (error) {
             toast.dismiss(uploadToast);
@@ -598,14 +598,15 @@ export const AppContextProvider = (props) => {
         if (newImageFiles.length > 0) {
             const uploadToast = toast.loading('Uploading new images...');
             try {
-                for (const file of newImageFiles) {
-                    if (file) { // check if file is not null
+                const uploadPromises = newImageFiles.map(file => {
+                    if (file) {
                         const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
-                        const snapshot = await uploadBytes(storageRef, file);
-                        const downloadURL = await getDownloadURL(snapshot.ref);
-                        finalImageUrls.push(downloadURL);
+                        return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
                     }
-                }
+                    return Promise.resolve(null);
+                });
+                const newImageUrls = (await Promise.all(uploadPromises)).filter(Boolean);
+                finalImageUrls.push(...newImageUrls);
                 toast.dismiss(uploadToast);
             } catch (error) {
                 toast.dismiss(uploadToast);
