@@ -54,7 +54,7 @@ export function useDoc(pathOrDocRef, id) {
         const permissionError = new FirestorePermissionError({
           path: memoizedDocRef.path,
           operation: 'get',
-        });
+        }, err);
         errorEmitter.emit('permission-error', permissionError);
         setError(permissionError); // Set the custom error
         setLoading(false);

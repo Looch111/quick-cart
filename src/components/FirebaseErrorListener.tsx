@@ -9,7 +9,7 @@ import { XCircle } from 'lucide-react';
 // contextual toast notification. This is invaluable for debugging security rules.
 export default function FirebaseErrorListener() {
   useEffect(() => {
-    const handleError = (error: unknown) => {
+    const handleError = (error: any) => {
       if (error instanceof FirestorePermissionError) {
         // In a real app, you might want to log this to a service like Sentry
         console.error('Firestore Permission Error:', error, error.context);
@@ -31,7 +31,7 @@ export default function FirebaseErrorListener() {
                       Firestore Permission Denied
                     </p>
                     <p className="mt-1 text-sm text-gray-500">
-                      Operation <span className="font-mono bg-red-100 text-red-700 rounded px-1">{error.context.operation}</span> on path <span className="font-mono bg-red-100 text-red-700 rounded px-1">{error.context.path}</span> was denied. Check your security rules.
+                      {error.message}
                     </p>
                   </div>
                 </div>
@@ -46,7 +46,7 @@ export default function FirebaseErrorListener() {
               </div>
             </div>
           ),
-          { duration: 10000 } // Keep the toast longer for debugging
+          { duration: 30000 } // Keep the toast longer for debugging
         );
       }
     };

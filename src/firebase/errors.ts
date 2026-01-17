@@ -8,10 +8,15 @@ export type SecurityRuleContext = {
 // permission to perform an action.
 export class FirestorePermissionError extends Error {
   context: SecurityRuleContext;
-  constructor(context: SecurityRuleContext) {
-    super(`Firestore Permission Error: ${JSON.stringify(context, null, 2)}`);
+  originalError?: any;
+  constructor(context: SecurityRuleContext, originalError?: any) {
+    const baseMessage = `Firestore Permission Error: Operation '${context.operation}' on path '${context.path}' was denied.`;
+    const details = originalError?.message ? ` Details: ${originalError.message}` : '';
+    super(`${baseMessage}${details}`);
+
     this.name = 'FirestorePermissionError';
     this.context = context;
+    this.originalError = originalError;
     Object.setPrototypeOf(this, FirestorePermissionError.prototype);
   }
 }
