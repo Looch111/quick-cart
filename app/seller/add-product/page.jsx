@@ -216,7 +216,6 @@ const AddProduct = () => {
                     className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
                     onChange={(e) => setPrice(e.target.value)}
                     value={price}
-                    required
                     />
                 </div>
                 <div className="flex flex-col gap-1 w-full">
