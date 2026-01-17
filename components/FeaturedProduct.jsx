@@ -45,7 +45,7 @@ const FeaturedProduct = () => {
             <Image
                 src={image[0]}
                 alt={name}
-                className="group-hover:brightness-75 transition duration-300 w-full h-auto object-contain md:max-h-80"
+                className="group-hover:brightness-75 transition duration-300 w-full h-full object-cover"
                 width={400}
                 height={400}
             />
