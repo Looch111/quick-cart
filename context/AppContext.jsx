@@ -47,6 +47,7 @@ export const AppContextProvider = (props) => {
     const [isSeller, setIsSeller] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
+    const [hasOrdersToConfirm, setHasOrdersToConfirm] = useState(false);
 
     const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
     const [productForSizeSelection, setProductForSizeSelection] = useState(null);
@@ -163,6 +164,8 @@ export const AppContextProvider = (props) => {
             const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
                 const orders = snapshot.docs.map(doc => ({ ...doc.data(), _id: doc.id, date: doc.data().date?.toDate ? doc.data().date.toDate() : new Date() }));
                 setUserOrders(orders);
+                const needsConfirmation = orders.some(order => order.status === 'Shipped');
+                setHasOrdersToConfirm(needsConfirmation);
             });
 
             return () => {
@@ -172,6 +175,7 @@ export const AppContextProvider = (props) => {
         } else {
             setUserAddresses([]);
             setUserOrders([]);
+            setHasOrdersToConfirm(false);
         }
     }, [userData, firestore]);
 
@@ -1548,6 +1552,7 @@ export const AppContextProvider = (props) => {
         showLogin, setShowLogin,
         userAddresses, addAddress,
         userOrders,
+        hasOrdersToConfirm,
         placeOrder,
         walletBalance, walletTransactions,
         sellerWalletBalance, sellerWalletTransactions,

@@ -8,7 +8,7 @@ import { Heart, ShoppingCart, User, Settings, LogOut, Package, Search, X, Wallet
 
 const Navbar = () => {
 
-  const { isSeller, isAdmin, router, getWishlistCount, getCartCount, setShowLogin, userData, handleLogout } = useAppContext();
+  const { isSeller, isAdmin, router, getWishlistCount, getCartCount, setShowLogin, userData, handleLogout, hasOrdersToConfirm } = useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -81,7 +81,7 @@ const Navbar = () => {
         </Link>
 
         <div className="relative" ref={dropdownRef}>
-          <button id="nav-account-button" onClick={handleAccountClick} className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition overflow-hidden">
+          <button id="nav-account-button" onClick={handleAccountClick} className="relative flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition overflow-hidden">
             {userData ? (
                 userData.photoURL ? (
                     <Image src={userData.photoURL} alt={userData.name || 'User Avatar'} width={32} height={32} className="object-cover" />
@@ -94,6 +94,9 @@ const Navbar = () => {
                 )
             ) : (
                 <User className="w-5 h-5 text-gray-600" />
+            )}
+            {hasOrdersToConfirm && (
+              <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-600 ring-2 ring-white" />
             )}
           </button>
 
@@ -142,9 +145,12 @@ const Navbar = () => {
                   <CartIcon />
                   Cart
                 </Link>
-                <Link onClick={() => setIsDropdownOpen(false)} href="/my-orders" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
-                  <BagIcon />
-                  My Orders
+                <Link onClick={() => setIsDropdownOpen(false)} href="/my-orders" className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
+                  <div className="flex items-center gap-3">
+                    <BagIcon />
+                    <span>My Orders</span>
+                  </div>
+                  {hasOrdersToConfirm && <span className="block h-2 w-2 rounded-full bg-red-600" />}
                 </Link>
                 {isSeller &&
                   <Link onClick={() => setIsDropdownOpen(false)} href="/seller" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
