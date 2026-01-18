@@ -7,19 +7,33 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LogOut, Menu, X } from 'lucide-react'
 import NotificationPanel from '../NotificationPanel'
+import { useCollection } from '@/src/firebase'
 
 const Navbar = () => {
 
-  const { router, handleLogout } = useAppContext()
+  const { router, handleLogout, userData } = useAppContext()
+  const { data: allOrders } = useCollection('orders');
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasNewOrders, setHasNewOrders] = useState(false);
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (allOrders && userData) {
+        const newSellerOrders = allOrders.some(order => 
+            order.items.some(item => item.sellerId === userData._id && item.status === 'Processing')
+        );
+        setHasNewOrders(newSellerOrders);
+    } else {
+        setHasNewOrders(false);
+    }
+  }, [allOrders, userData]);
 
   const menuItems = [
     { name: 'Dashboard', path: '/seller' },
     { name: 'Add Product', path: '/seller/add-product' },
     { name: 'Product List', path: '/seller/product-list' },
-    { name: 'Orders', path: '/seller/orders' },
+    { name: 'Orders', path: '/seller/orders', notification: hasNewOrders },
     { name: 'Wallet', path: '/seller/wallet' },
   ];
 
@@ -49,8 +63,11 @@ const Navbar = () => {
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
           return (
-            <Link href={item.path} key={item.name} className={`hover:text-gray-900 transition ${isActive ? "text-orange-600 font-medium" : ""}`}>
+            <Link href={item.path} key={item.name} className={`relative hover:text-gray-900 transition ${isActive ? "text-orange-600 font-medium" : ""}`}>
               {item.name}
+              {item.notification && (
+                <span className="absolute -top-0.5 -right-2.5 w-2 h-2 bg-red-500 rounded-full blinking-dot"></span>
+              )}
             </Link>
           )
         })}
@@ -64,8 +81,11 @@ const Navbar = () => {
         </button>
 
         {/* Mobile Menu Button */}
-        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 rounded-md hover:bg-gray-100">
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 rounded-md hover:bg-gray-100 relative">
           {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {hasNewOrders && !isMenuOpen && (
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full blinking-dot"></span>
+          )}
         </button>
       </div>
 
@@ -80,9 +100,12 @@ const Navbar = () => {
                   href={item.path} 
                   key={item.name} 
                   onClick={() => setIsMenuOpen(false)}
-                  className={`hover:text-gray-900 transition px-3 py-2 rounded-md text-base ${isActive ? "bg-orange-100 text-orange-600 font-medium" : ""}`}
+                  className={`relative hover:text-gray-900 transition px-3 py-2 rounded-md text-base ${isActive ? "bg-orange-100 text-orange-600 font-medium" : ""}`}
                 >
                   {item.name}
+                  {item.notification && (
+                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full blinking-dot"></span>
+                  )}
                 </Link>
               )
             })}
