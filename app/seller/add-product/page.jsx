@@ -474,10 +474,10 @@ const BulkUpload = () => {
                         <thead className="text-gray-700 bg-gray-100 text-left sticky top-0">
                             <tr>
                                 <th className="px-4 py-3 font-medium">Image</th>
-                                <th className="px-4 py-3 font-medium">Name</th>
-                                <th className="px-4 py-3 font-medium">Category</th>
-                                <th className="px-4 py-3 font-medium">Price</th>
-                                <th className="px-4 py-3 font-medium">Stock/Sizes</th>
+                                <th className="px-4 py-3 font-medium">Product Details</th>
+                                <th className="px-4 py-3 font-medium">Pricing</th>
+                                <th className="px-4 py-3 font-medium">Inventory</th>
+                                <th className="px-4 py-3 font-medium">Flash Sale</th>
                             </tr>
                         </thead>
                         <tbody className="text-gray-600 divide-y divide-gray-200">
@@ -489,10 +489,27 @@ const BulkUpload = () => {
                                             : <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">No img</div>
                                         }
                                     </td>
-                                    <td className="px-4 py-2 font-medium text-gray-800">{product.name}</td>
-                                    <td className="px-4 py-2">{product.category}</td>
-                                    <td className="px-4 py-2">{currency}{product.offerPrice}</td>
+                                    <td className="px-4 py-2">
+                                        <p className="font-medium text-gray-800">{product.name}</p>
+                                        <p className="text-xs text-gray-500">{product.category}</p>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <div className="flex flex-col">
+                                            <span className="text-gray-800">{currency}{product.offerPrice}</span>
+                                            {product.price && <span className="text-xs text-gray-400 line-through">{currency}{product.price}</span>}
+                                        </div>
+                                    </td>
                                     <td className="px-4 py-2 truncate max-w-xs">{product.sizes || product.stock}</td>
+                                    <td className="px-4 py-2">
+                                        {product.flashSalePrice ? (
+                                            <div>
+                                                <p className="text-green-600 font-semibold">{currency}{product.flashSalePrice}</p>
+                                                <p className="text-xs text-gray-500">Ends: {product.flashSaleEndDate}</p>
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">Not set</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
