@@ -1,0 +1,8 @@
+name,description,category,price,offerPrice,stock,sizes,deliveryInfo,flashSalePrice,flashSaleEndDate,image_url_1,image_url_2,image_url_3,image_url_4
+"ProBook X1","A powerful and sleek laptop for professionals.",Laptop,1500,1350,25,,"1-2 business days",,,https://i.imgur.com/qL3f2Or.png,,
+"Classic Cotton Tee","A comfortable and stylish t-shirt for everyday wear.",Clothes,40,25,,"{""S"": 50, ""M"": 100, ""L"": 80, ""XL"": 30}","3-5 business days",,,https://i.imgur.com/J0NtrW3.png,,
+"GameSphere 5","Next-generation gaming console for an immersive experience.",Gaming,550,500,40,,"2-4 business days",479,2024-12-31T23:59,https://i.imgur.com/5OAb1p2.png,https://i.imgur.com/gB343so.png,,
+"SkySoarer Drone","Capture stunning aerial footage with this 4K drone.",Drones,800,750,15,,"2-3 business days",,,https://i.imgur.com/M5kE4aA.png,,
+"EchoSphere","Your voice-controlled smart home hub.",Smart Home,120,99,100,,"1-3 business days",,,https://i.imgur.com/eAnv1G9.png,,
+"SoundWave Pro","Noise-cancelling over-ear headphones.",Headphone,350,299,60,,"1-3 business days",279,2024-11-30T23:59,https://i.imgur.com/obVbe2Y.png,https://i.imgur.com/tL8gVp2.png,,
+"Chrono Watch Z","A stylish smartwatch with fitness tracking.",Watch,250,199,75,,"2-4 business days",,,https://i.imgur.com/qL3f2Or.png,,

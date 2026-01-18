@@ -410,15 +410,44 @@ const BulkUpload = () => {
         }
         setIsUploading(true);
         Papa.parse(csvFile, {
-            header: true,
+            header: false, // We'll handle headers manually for more flexibility
             skipEmptyLines: true,
             complete: (results) => {
                 if (results.errors.length > 0) {
-                    toast.error(`Error parsing CSV: ${results.errors[0].message}`);
+                    const firstError = results.errors[0];
+                    // Provide a more specific error message
+                    toast.error(`Error parsing CSV on line ${firstError.row + 1}: ${firstError.message}`);
                     setIsUploading(false);
                     return;
                 }
-                addBulkProducts(results.data).finally(() => {
+
+                if (results.data.length < 2) {
+                    toast.error("CSV file is empty or missing a header row.");
+                    setIsUploading(false);
+                    return;
+                }
+
+                const headerRow = results.data[0];
+                const dataRows = results.data.slice(1);
+
+                // Map rows to objects based on the header
+                const productsToUpload = dataRows
+                    .filter(row => row.some(field => field.trim() !== '')) // Ignore completely empty rows
+                    .map((row) => {
+                        const product = {};
+                        headerRow.forEach((header, index) => {
+                            product[header.trim()] = row[index] || '';
+                        });
+                        return product;
+                    });
+                
+                if (productsToUpload.length === 0) {
+                    toast.error("No valid product data found in the CSV file.");
+                    setIsUploading(false);
+                    return;
+                }
+
+                addBulkProducts(productsToUpload).finally(() => {
                     setIsUploading(false);
                     setCsvFile(null);
                 });
