@@ -11,6 +11,7 @@ import EditProductModal from "@/components/admin/EditProductModal";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/admin/DeleteConfirmationModal";
 import { useCollection } from "@/src/firebase";
+import UserAvatar from "@/components/UserAvatar";
 
 const StatusBadge = ({ status }) => {
     const statusMap = {
@@ -28,35 +29,6 @@ const StatusBadge = ({ status }) => {
         </span>
     );
 };
-
-const UserAvatar = ({ user, size = 'sm' }) => {
-    const dimensions = size === 'sm' ? 'w-8 h-8' : 'w-10 h-10';
-    const textSize = size === 'sm' ? 'text-sm' : 'text-lg';
-    const iconSize = size === 'sm' ? 'w-4 h-4' : 'w-6 h-6';
-
-    if (!user) {
-        return (
-            <div className={`${dimensions} rounded-full bg-gray-200 flex items-center justify-center overflow-hidden`}>
-                <User className={`${iconSize} text-gray-500`} />
-            </div>
-        )
-    }
-
-    return (
-        <div className={`${dimensions} rounded-full bg-gray-200 flex items-center justify-center overflow-hidden`}>
-            {user.photoURL ? (
-                <Image src={user.photoURL} alt={user.name || 'User Avatar'} width={size === 'sm' ? 32 : 40} height={size === 'sm' ? 32 : 40} className="object-cover" />
-            ) : user.name ? (
-                <span className={`${textSize} font-medium text-gray-600`}>{user.name[0].toUpperCase()}</span>
-            ) : user.email ? (
-                <span className={`${textSize} font-medium text-gray-600`}>{user.email[0].toUpperCase()}</span>
-            ) : (
-                <User className={`${iconSize} text-gray-500`} />
-            )}
-        </div>
-    );
-};
-
 
 const ProductList = () => {
     const { router, deleteProduct, productsLoading, updateProductStatus, currency, allRawProducts, markNotificationsAsReadByLink } = useAppContext();
