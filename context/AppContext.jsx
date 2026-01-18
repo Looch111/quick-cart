@@ -1,4 +1,5 @@
 
+
 'use client'
 import { assets } from "@/assets/assets";
 import { useAuth, useUser } from "@/src/firebase/auth/use-user";
@@ -854,7 +855,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
+                items: orderItems.map(({id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id: id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
@@ -933,7 +934,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
+                items: orderItems.map(({id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id: id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
