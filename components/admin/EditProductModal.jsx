@@ -284,6 +284,10 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                                 <option value="Camera">Camera</option>
                                 <option value="Accessories">Accessories</option>
                                 <option value="Clothes">Clothes</option>
+                                <option value="Gaming">Gaming</option>
+                                <option value="Drones">Drones</option>
+                                <option value="Smart Home">Smart Home</option>
+                                <option value="TV & Audio">TV & Audio</option>
                             </select>
                         </div>
                         <div className="flex items-center gap-4 pt-6">
