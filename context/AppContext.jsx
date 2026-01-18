@@ -699,36 +699,85 @@ export const AppContextProvider = (props) => {
             if (!showLogin) setShowLogin(true);
             return;
         }
-        
-        const productRef = doc(firestore, 'products', productId);
+    
+        const loadingToast = toast.loading("Deleting product and cleaning up references...");
+    
         try {
+            const productRef = doc(firestore, 'products', productId);
             const productSnap = await getDoc(productRef);
+    
             if (!productSnap.exists()) {
+                toast.dismiss(loadingToast);
                 toast.error("Product not found.");
                 return;
             }
+    
             const productData = productSnap.data();
             const canDelete = isAdmin || (isSeller && productData.userId === userData._id);
+    
             if (!canDelete) {
+                toast.dismiss(loadingToast);
                 toast.error("You are not authorized to delete this product.");
                 return;
             }
-            deleteDoc(productRef)
-              .then(() => {
-                toast.success("Product deleted successfully");
-              })
-              .catch((serverError) => {
-                  const permissionError = new FirestorePermissionError({
-                      path: productRef.path,
-                      operation: 'delete',
-                  });
-                  errorEmitter.emit('permission-error', permissionError);
-              });
+    
+            const batch = writeBatch(firestore);
+    
+            // 1. Delete the product document
+            batch.delete(productRef);
+    
+            // 2. Query all users to clean up carts and wishlists
+            const usersRef = collection(firestore, 'users');
+            const usersSnapshot = await getDocs(usersRef);
+    
+            usersSnapshot.forEach(userDoc => {
+                const userRef = userDoc.ref;
+                const userData = userDoc.data();
+                let needsUpdate = false;
+                const updateData = {};
+    
+                // Clean up cartItems
+                if (userData.cartItems) {
+                    const newCartItems = { ...userData.cartItems };
+                    let cartChanged = false;
+                    for (const itemId in newCartItems) {
+                        if (itemId.startsWith(productId)) {
+                            delete newCartItems[itemId];
+                            cartChanged = true;
+                        }
+                    }
+                    if (cartChanged) {
+                        updateData.cartItems = newCartItems;
+                        needsUpdate = true;
+                    }
+                }
+    
+                // Clean up wishlistItems
+                if (userData.wishlistItems && userData.wishlistItems[productId]) {
+                    const newWishlistItems = { ...userData.wishlistItems };
+                    delete newWishlistItems[productId];
+                    updateData.wishlistItems = newWishlistItems;
+                    needsUpdate = true;
+                }
+    
+                if (needsUpdate) {
+                    batch.update(userRef, updateData);
+                }
+            });
+    
+            // 3. Commit the batch operation
+            await batch.commit();
+    
+            toast.dismiss(loadingToast);
+            toast.success("Product deleted successfully from store and all user carts/wishlists.");
+    
         } catch (error) {
-            toast.error("Failed to check product permissions.");
+            toast.dismiss(loadingToast);
+            console.error("Error during product deletion: ", error);
+            toast.error("Failed to delete product completely. Please check console for details.");
         }
-    }
-
+    };
+    
     const verifyFlutterwaveTransaction = async (transactionId, userId) => {
         const loadingToast = toast.loading('Verifying your payment...');
         try {
@@ -831,7 +880,7 @@ export const AppContextProvider = (props) => {
                 
                 orderItems.push({ 
                     ...product,
-                    itemId: itemId, 
+                    _id: product.id, 
                     size: size || null,
                     quantity: itemsToOrder[itemId], 
                     status: 'Processing',
@@ -855,7 +904,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id: id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
@@ -910,7 +959,7 @@ export const AppContextProvider = (props) => {
                 
                 orderItems.push({ 
                     ...product, 
-                    itemId: itemId, 
+                    _id: product.id, 
                     size: size || null,
                     quantity: itemsToOrder[itemId],
                     status: 'Processing',
@@ -934,7 +983,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id: id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
