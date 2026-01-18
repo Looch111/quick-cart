@@ -106,8 +106,11 @@ const Navbar = () => {
         </button>
 
         {/* Mobile Menu Button */}
-        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 rounded-md hover:bg-gray-100">
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 rounded-md hover:bg-gray-100 relative">
           {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {(hasNewOrders || hasNewProducts || hasUnreadChats) && !isMenuOpen && (
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full blinking-dot"></span>
+          )}
         </button>
       </div>
 
