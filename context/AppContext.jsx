@@ -636,6 +636,127 @@ export const AppContextProvider = (props) => {
         });
     }
 
+    const addBulkProducts = async (products) => {
+        if (!firestore) {
+            toast.error("Connection not ready, please try again.");
+            return;
+        }
+        if (!userData) {
+            toast.error("Please log in to continue.", { id: 'login-toast' });
+            if (!showLogin) setShowLogin(true);
+            return;
+        }
+        if (!isSeller && !isAdmin) {
+            toast.error("You must be a seller or admin to add products.");
+            return;
+        }
+    
+        const loadingToast = toast.loading(`Processing ${products.length} products...`);
+        
+        try {
+            const batch = writeBatch(firestore);
+            const productsCollectionRef = collection(firestore, 'products');
+            let productsForNotification = [];
+    
+            products.forEach((product, index) => {
+                // --- Validation ---
+                if (!product.name || !product.offerPrice || !product.category) {
+                    throw new Error(`Row ${index + 2}: Missing required fields (name, offerPrice, category).`);
+                }
+                if (!product.image_url_1) {
+                    throw new Error(`Row ${index + 2}: At least one image URL is required (image_url_1).`);
+                }
+    
+                const imageUrls = [product.image_url_1, product.image_url_2, product.image_url_3, product.image_url_4].filter(url => url);
+                let productStock = 0;
+                let productSizes = {};
+    
+                if (product.sizes) {
+                    try {
+                        const parsedSizes = JSON.parse(product.sizes);
+                        if (typeof parsedSizes !== 'object' || Array.isArray(parsedSizes)) {
+                             throw new Error(`Row ${index + 2}: 'sizes' column must be a valid JSON object (e.g., {"S": 10, "M": 20}).`);
+                        }
+                        productSizes = Object.entries(parsedSizes).reduce((acc, [size, stock]) => {
+                            const stockNum = Number(stock);
+                            if(size && !isNaN(stockNum) && stockNum >= 0) {
+                                acc[size] = stockNum;
+                                productStock += stockNum;
+                            }
+                            return acc;
+                        }, {});
+                    } catch(e) {
+                         throw new Error(`Row ${index + 2}: Invalid JSON in 'sizes' column. Please check the format.`);
+                    }
+                } else {
+                    productStock = Number(product.stock) || 0;
+                }
+    
+                const newProductRef = doc(productsCollectionRef);
+                const dataToAdd = {
+                    name: product.name,
+                    description: product.description || '',
+                    category: product.category,
+                    price: Number(product.price) || 0,
+                    offerPrice: Number(product.offerPrice),
+                    stock: productStock,
+                    sizes: productSizes,
+                    deliveryInfo: product.deliveryInfo || '',
+                    flashSalePrice: Number(product.flashSalePrice) || null,
+                    flashSaleEndDate: product.flashSaleEndDate ? new Date(product.flashSaleEndDate).toISOString() : null,
+                    image: imageUrls,
+                    userId: userData._id,
+                    date: serverTimestamp(),
+                    status: isAdmin ? 'approved' : 'pending',
+                    reviewCount: 0,
+                    averageRating: 0
+                };
+                
+                // Add product to batch
+                batch.set(newProductRef, dataToAdd);
+                productsForNotification.push(dataToAdd);
+            });
+    
+            // Commit the batch
+            await batch.commit();
+    
+            // Generate notifications for admin
+            if (!isAdmin && productsForNotification.length > 0) {
+                const generateAdminProductNotification = async () => {
+                    const adminsQuery = query(collection(firestore, 'users'), where('role', '==', 'admin'));
+                    const adminSnapshot = await getDocs(adminsQuery);
+                    if (adminSnapshot.empty) return;
+                    
+                    const notifBatch = writeBatch(firestore);
+                    const message = productsForNotification.length > 1 
+                        ? `${productsForNotification.length} new products require approval.`
+                        : `New product "${productsForNotification[0].name}" requires approval.`;
+    
+                    adminSnapshot.forEach(adminDoc => {
+                        const notifRef = doc(collection(firestore, `users/${adminDoc.id}/notifications`));
+                        notifBatch.set(notifRef, {
+                            userId: adminDoc.id,
+                            message: message,
+                            link: '/admin/products',
+                            read: false,
+                            createdAt: serverTimestamp()
+                        });
+                    });
+                    await notifBatch.commit();
+                };
+                generateAdminProductNotification().catch(console.error);
+            }
+    
+            toast.dismiss(loadingToast);
+            toast.success(`${products.length} products submitted successfully!`);
+    
+        } catch (error) {
+            toast.dismiss(loadingToast);
+            console.error("Error during bulk product upload:", error);
+            toast.error(`Upload failed: ${error.message}`);
+        }
+    };
+
     const updateProduct = async (updatedProduct) => {
         if (!supabase) {
             toast.error("Image storage is not configured. Please check environment variables.");
@@ -1599,7 +1720,7 @@ export const AppContextProvider = (props) => {
         walletBalance, walletTransactions,
         sellerWalletBalance, sellerWalletTransactions,
         updateOrderStatus,
-        addProduct, updateProduct, deleteProduct, updateProductStatus,
+        addProduct, addBulkProducts, updateProduct, deleteProduct, updateProductStatus,
         updateUserField, updateUserRole, updateSellerBankDetails,
         platformSettings, updateSettings, settingsLoading,
         verifyFlutterwaveTransaction,
