@@ -19,6 +19,9 @@ const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 export const metadata = {
   title: "QuickCart - GreatStack",
   description: "E-Commerce with Next.js ",
+  icons: {
+    icon: '/icon.jpg',
+  },
 };
 
 export default function RootLayout({ children }) {
