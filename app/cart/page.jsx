@@ -99,7 +99,7 @@ const Cart = () => {
                             {cartProducts.map(product => (
                                 <div key={product.itemId} className="bg-white border rounded-lg p-4 shadow-sm">
                                     <div className="flex gap-4">
-                                        <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-24 h-24 flex items-center justify-center">
+                                        <div className="rounded-lg overflow-hidden bg-gray-500/10 w-24 h-24">
                                             <Image
                                                 src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
                                                 alt={product.name}
@@ -157,7 +157,7 @@ const Cart = () => {
                                         <tr key={product.itemId} className="border-t">
                                             <td className="py-4 md:px-4 px-1">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2 w-20 h-20 flex items-center justify-center">
+                                                    <div className="rounded-lg overflow-hidden bg-gray-500/10 w-20 h-20">
                                                         <Image
                                                         src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
                                                         alt={product.name}
