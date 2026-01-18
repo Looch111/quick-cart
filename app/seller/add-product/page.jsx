@@ -381,7 +381,7 @@ const BulkUpload = () => {
 
     const handleDownloadTemplate = () => {
         const csvHeader = "name,description,category,price,offerPrice,stock,sizes,deliveryInfo,flashSalePrice,flashSaleEndDate,image_url_1,image_url_2,image_url_3,image_url_4\n";
-        const csvExample = "Example Laptop,Powerful machine for all your needs,Laptop,1200,1000,50,,950,2024-12-31T23:59,https://i.imgur.com/gB343so.png,https://i.imgur.com/gB343so.png,,\n";
+        const csvExample = "Example Laptop,Powerful machine for all your needs,Laptop,1200,1000,50,,1-2 business days,,,'https://i.imgur.com/gB343so.png',,,\n";
         const csvContent = csvHeader + csvExample;
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
@@ -416,7 +416,11 @@ const BulkUpload = () => {
                 setIsParsing(false);
                 if (results.errors.length > 0) {
                     const firstError = results.errors[0];
-                    toast.error(`Error parsing CSV on line ${firstError.row + 2}: ${firstError.message}`);
+                    let errorMessage = `Error on line ${firstError.row + 2}: ${firstError.message}.`;
+                    if (firstError.code === 'TooFewFields' || firstError.code === 'TooManyFields') {
+                        errorMessage += " Please ensure this row has the same number of columns as the header row, even if some cells are empty.";
+                    }
+                    toast.error(errorMessage, { duration: 8000 });
                     setCsvFile(null); // Reset
                     return;
                 }
