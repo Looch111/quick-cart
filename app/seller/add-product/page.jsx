@@ -373,9 +373,11 @@ const SingleProductUpload = () => {
 }
 
 const BulkUpload = () => {
-    const { addBulkProducts } = useAppContext();
+    const { addBulkProducts, currency } = useAppContext();
     const [csvFile, setCsvFile] = useState(null);
-    const [isUploading, setIsUploading] = useState(false);
+    const [isParsing, setIsParsing] = useState(false);
+    const [parsedProducts, setParsedProducts] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleDownloadTemplate = () => {
         const csvHeader = "name,description,category,price,offerPrice,stock,sizes,deliveryInfo,flashSalePrice,flashSaleEndDate,image_url_1,image_url_2,image_url_3,image_url_4\n";
@@ -393,71 +395,120 @@ const BulkUpload = () => {
             document.body.removeChild(link);
         }
     };
-    
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === 'text/csv') {
-            setCsvFile(file);
-        } else {
-            toast.error("Please upload a valid .csv file.");
-        }
-    };
 
-    const handleUpload = () => {
-        if (!csvFile) {
-            toast.error("Please select a file to upload.");
+    const handleFileChangeAndParse = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.type !== 'text/csv') {
+            toast.error("Please upload a valid .csv file.");
             return;
         }
-        setIsUploading(true);
-        Papa.parse(csvFile, {
-            header: false, // We'll handle headers manually for more flexibility
+
+        setCsvFile(file);
+        setIsParsing(true);
+        setParsedProducts([]);
+
+        Papa.parse(file, {
+            header: true,
             skipEmptyLines: true,
             complete: (results) => {
+                setIsParsing(false);
                 if (results.errors.length > 0) {
                     const firstError = results.errors[0];
-                    // Provide a more specific error message
-                    toast.error(`Error parsing CSV on line ${firstError.row + 1}: ${firstError.message}`);
-                    setIsUploading(false);
+                    toast.error(`Error parsing CSV on line ${firstError.row + 2}: ${firstError.message}`);
+                    setCsvFile(null); // Reset
                     return;
                 }
 
-                if (results.data.length < 2) {
-                    toast.error("CSV file is empty or missing a header row.");
-                    setIsUploading(false);
+                if (results.data.length === 0) {
+                    toast.error("CSV file is empty or contains no data rows.");
+                    setCsvFile(null); // Reset
                     return;
                 }
 
-                const headerRow = results.data[0];
-                const dataRows = results.data.slice(1);
-
-                // Map rows to objects based on the header
-                const productsToUpload = dataRows
-                    .filter(row => row.some(field => field.trim() !== '')) // Ignore completely empty rows
-                    .map((row) => {
-                        const product = {};
-                        headerRow.forEach((header, index) => {
-                            product[header.trim()] = row[index] || '';
-                        });
-                        return product;
-                    });
-                
-                if (productsToUpload.length === 0) {
-                    toast.error("No valid product data found in the CSV file.");
-                    setIsUploading(false);
-                    return;
-                }
-
-                addBulkProducts(productsToUpload).finally(() => {
-                    setIsUploading(false);
-                    setCsvFile(null);
-                });
+                const products = results.data.map((p, index) => ({ ...p, _previewId: index }));
+                setParsedProducts(products);
+                toast.success(`${products.length} products loaded for preview.`);
+            },
+            error: (err) => {
+                setIsParsing(false);
+                toast.error(`Parsing error: ${err.message}`);
+                setCsvFile(null); // Reset
             }
         });
     };
 
+    const handleSubmit = async () => {
+        if (parsedProducts.length === 0) {
+            toast.error("No products to submit.");
+            return;
+        }
+        setIsSubmitting(true);
+        await addBulkProducts(parsedProducts);
+        setIsSubmitting(false);
+        setParsedProducts([]);
+        setCsvFile(null);
+        // Reset file input
+        const input = document.getElementById('csv-upload');
+        if (input) input.value = '';
+    };
+
+    const handleClear = () => {
+        setParsedProducts([]);
+        setCsvFile(null);
+        const input = document.getElementById('csv-upload');
+        if (input) input.value = '';
+    };
+
+    if (parsedProducts.length > 0) {
+        return (
+            <div className="w-full space-y-6">
+                <h3 className="text-lg font-semibold">Product Preview <span className="font-normal text-gray-500">({parsedProducts.length} items from {csvFile.name})</span></h3>
+                <div className="overflow-x-auto rounded-md bg-white border border-gray-200 shadow-sm max-h-[50vh]">
+                    <table className="min-w-full table-auto text-sm">
+                        <thead className="text-gray-700 bg-gray-100 text-left sticky top-0">
+                            <tr>
+                                <th className="px-4 py-3 font-medium">Image</th>
+                                <th className="px-4 py-3 font-medium">Name</th>
+                                <th className="px-4 py-3 font-medium">Category</th>
+                                <th className="px-4 py-3 font-medium">Price</th>
+                                <th className="px-4 py-3 font-medium">Stock/Sizes</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-600 divide-y divide-gray-200">
+                            {parsedProducts.map(product => (
+                                <tr key={product._previewId} className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">
+                                        {product.image_url_1 ?
+                                            <Image src={product.image_url_1} alt={product.name} width={40} height={40} className="w-10 h-10 object-contain rounded bg-gray-100" />
+                                            : <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">No img</div>
+                                        }
+                                    </td>
+                                    <td className="px-4 py-2 font-medium text-gray-800">{product.name}</td>
+                                    <td className="px-4 py-2">{product.category}</td>
+                                    <td className="px-4 py-2">{currency}{product.offerPrice}</td>
+                                    <td className="px-4 py-2 truncate max-w-xs">{product.sizes || product.stock}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="flex flex-col sm:flex-row justify-end gap-4">
+                    <button onClick={handleClear} disabled={isSubmitting} className="px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded-md hover:bg-gray-200">
+                        Cancel
+                    </button>
+                    <button onClick={handleSubmit} disabled={isSubmitting} className="px-6 py-2 bg-orange-600 text-white font-medium rounded-md hover:bg-orange-700 disabled:bg-orange-300">
+                        {isSubmitting ? 'Submitting...' : `Submit ${parsedProducts.length} Products`}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-4xl space-y-6">
-             <div className="p-6 border rounded-lg bg-gray-50">
+            <div className="p-6 border rounded-lg bg-gray-50">
                 <h3 className="text-lg font-semibold mb-2">Instructions</h3>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                     <li>Download the CSV template file.</li>
@@ -468,21 +519,24 @@ const BulkUpload = () => {
                 </ol>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4">
-                 <button onClick={handleDownloadTemplate} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-md hover:bg-green-700">
+                <button onClick={handleDownloadTemplate} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-md hover:bg-green-700">
                     <Download className="w-4 h-4" />
                     Download Template
                 </button>
                 <div className="flex-grow w-full">
                     <label htmlFor="csv-upload" className="flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-100">
                         <Upload className="w-4 h-4" />
-                        {csvFile ? <span className="text-sm font-medium text-gray-700">{csvFile.name}</span> : <span className="text-sm">Select CSV File</span>}
+                        <span className="text-sm font-medium text-gray-700">{csvFile ? csvFile.name : 'Select or Drop CSV File'}</span>
                     </label>
-                    <input id="csv-upload" type="file" accept=".csv" className="hidden" onChange={handleFileChange} />
+                    <input id="csv-upload" type="file" accept=".csv" className="hidden" onChange={handleFileChangeAndParse} />
                 </div>
             </div>
-             <button onClick={handleUpload} disabled={isUploading || !csvFile} className="w-full sm:w-auto px-8 py-2.5 bg-orange-600 text-white font-medium rounded-md hover:bg-orange-700 disabled:bg-orange-300">
-                {isUploading ? "Uploading..." : `Upload & Submit`}
-            </button>
+            {isParsing && (
+                <div className="flex items-center justify-center gap-2 text-gray-600">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-orange-500 border-gray-200"></div>
+                    <span>Parsing file...</span>
+                </div>
+            )}
         </div>
     );
 };
