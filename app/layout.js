@@ -17,8 +17,8 @@ import ChatModal from "@/components/ChatModal";
 const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
 
 export const metadata = {
-  title: "QuickCart - GreatStack",
-  description: "E-Commerce with Next.js ",
+  title: "EUI Tap&Shop",
+  description: "Your Premier Campus Marketplace",
   icons: {
     icon: '/icon.jpg',
   },
