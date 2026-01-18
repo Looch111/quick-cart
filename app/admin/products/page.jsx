@@ -1,4 +1,3 @@
-
 'use client'
 import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
@@ -242,7 +241,10 @@ const ProductList = () => {
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span>{currency}{product.offerPrice}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span>{currency}{product.offerPrice}</span>
+                                                    {product.price > product.offerPrice && <span className="text-xs text-gray-400 line-through">{currency}{product.price}</span>}
+                                                </div>
                                             )}
                                         </td>
                                         <td className="px-4 py-3">{product.stock > 0 ? product.stock : <span className="text-red-500 font-medium">Out of Stock</span>}</td>
