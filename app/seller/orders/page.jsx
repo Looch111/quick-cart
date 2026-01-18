@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
@@ -19,9 +20,15 @@ const getStatusClass = (status) => {
 };
 
 const Orders = () => {
-    const { currency, userData, updateItemStatus } = useAppContext();
+    const { currency, userData, updateItemStatus, markNotificationsAsReadByLink } = useAppContext();
     const {data: allOrders, loading: ordersLoading} = useCollection('orders');
     
+    useEffect(() => {
+        if (markNotificationsAsReadByLink) {
+            markNotificationsAsReadByLink('/seller/orders');
+        }
+    }, [markNotificationsAsReadByLink]);
+
     const sellerItems = useMemo(() => {
         if (!userData || !allOrders) return [];
 

@@ -217,6 +217,27 @@ export const AppContextProvider = (props) => {
 
     const closeChatModal = () => setIsChatModalOpen(false);
 
+    const markNotificationsAsReadByLink = useCallback(async (link) => {
+        if (!userData || !firestore) return;
+    
+        const notifsRef = collection(firestore, `users/${userData._id}/notifications`);
+        const q = query(notifsRef, where('link', '==', link), where('read', '==', false));
+    
+        try {
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) return;
+    
+            const batch = writeBatch(firestore);
+            querySnapshot.forEach(docSnap => {
+                batch.update(docSnap.ref, { read: true });
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error marking notifications as read:", error);
+            // Don't toast an error here, it's a background task.
+        }
+    }, [userData, firestore]);
+
     const sendMessage = async (text) => {
         if (!userData) return;
     
@@ -581,17 +602,38 @@ export const AppContextProvider = (props) => {
         };
 
         addDoc(productsCollectionRef, dataToAdd)
-            .then(() => {
-                toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
-            })
-            .catch((serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: productsCollectionRef.path,
-                    operation: 'create',
-                    requestResourceData: dataToAdd,
-                });
-                errorEmitter.emit('permission-error', permissionError);
+        .then((docRef) => {
+            toast.success(isAdmin ? "Product added and approved!" : "Product submitted for approval!");
+            if (!isAdmin) {
+                const generateAdminProductNotification = async () => {
+                    const adminsQuery = query(collection(firestore, 'users'), where('role', '==', 'admin'));
+                    const adminSnapshot = await getDocs(adminsQuery);
+                    if (adminSnapshot.empty) return;
+                    
+                    const batch = writeBatch(firestore);
+                    adminSnapshot.forEach(adminDoc => {
+                        const notifRef = doc(collection(firestore, `users/${adminDoc.id}/notifications`));
+                        batch.set(notifRef, {
+                            userId: adminDoc.id,
+                            message: `New product "${dataToAdd.name}" requires approval.`,
+                            link: '/admin/products',
+                            read: false,
+                            createdAt: serverTimestamp()
+                        });
+                    });
+                    await batch.commit();
+                };
+                generateAdminProductNotification().catch(console.error);
+            }
+        })
+        .catch((serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: productsCollectionRef.path,
+                operation: 'create',
+                requestResourceData: dataToAdd,
             });
+            errorEmitter.emit('permission-error', permissionError);
+        });
     }
 
     const updateProduct = async (updatedProduct) => {
@@ -1576,7 +1618,8 @@ export const AppContextProvider = (props) => {
         addPromotion, deletePromotion, updatePromotionStatus,
         isChatModalOpen, openChatModal, closeChatModal,
         sendMessage, sendAdminMessage,
-        hasUnreadMessages
+        hasUnreadMessages,
+        markNotificationsAsReadByLink
     }
 
     return (

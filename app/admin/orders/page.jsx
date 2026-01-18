@@ -10,11 +10,17 @@ import { useCollection } from "@/src/firebase";
 
 const Orders = () => {
 
-    const { currency, updateOrderStatus, reverseSellerPayouts } = useAppContext();
+    const { currency, updateOrderStatus, reverseSellerPayouts, markNotificationsAsReadByLink } = useAppContext();
     const { data: ordersData, loading: ordersLoading } = useCollection('orders');
     
     const [showReverseModal, setShowReverseModal] = useState(false);
     const [orderToReverse, setOrderToReverse] = useState(null);
+
+    useEffect(() => {
+        if (markNotificationsAsReadByLink) {
+            markNotificationsAsReadByLink('/admin/orders');
+        }
+    }, [markNotificationsAsReadByLink]);
 
     const orders = useMemo(() => {
         if (!ordersData) return [];

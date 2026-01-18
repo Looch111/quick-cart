@@ -59,7 +59,7 @@ const UserAvatar = ({ user, size = 'sm' }) => {
 
 
 const ProductList = () => {
-    const { router, deleteProduct, productsLoading, updateProductStatus, currency, allRawProducts } = useAppContext();
+    const { router, deleteProduct, productsLoading, updateProductStatus, currency, allRawProducts, markNotificationsAsReadByLink } = useAppContext();
     const { data: usersData, loading: usersLoading } = useCollection('users');
 
     const [loading, setLoading] = useState(true);
@@ -68,6 +68,12 @@ const ProductList = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        if (markNotificationsAsReadByLink) {
+            markNotificationsAsReadByLink('/admin/products');
+        }
+    }, [markNotificationsAsReadByLink]);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -312,5 +318,3 @@ const ProductList = () => {
 };
 
 export default ProductList;
-
-    
