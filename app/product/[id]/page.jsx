@@ -238,7 +238,7 @@ const Product = () => {
                                 <Image
                                     src={image}
                                     alt={`${productData.name} thumbnail ${index + 1}`}
-                                    className="w-full h-full object-contain mix-blend-multiply"
+                                    className="w-full h-full object-cover"
                                     width={100}
                                     height={100}
                                 />
