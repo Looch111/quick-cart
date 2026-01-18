@@ -430,7 +430,7 @@ const BulkUpload = () => {
                     <li>Download the CSV template file.</li>
                     <li>Fill in the product details. Do not change the column headers.</li>
                     <li>For images, provide direct public URLs (e.g., from Imgur, Cloudinary). At least one is required.</li>
-                    <li>For products with different sizes, use the `sizes` column. Format it as a JSON string like `{"S": 10, "M": 20}`. Leave the `stock` column empty if you use `sizes`.</li>
+                    <li>For products with different sizes, use the 'sizes' column. Format it as a JSON string like '&#123;"S": 10, "M": 20&#125;'. Leave the 'stock' column empty if you use 'sizes'.</li>
                     <li>Upload the completed CSV file. The system will process it and submit the products for approval.</li>
                 </ol>
             </div>
