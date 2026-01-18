@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
@@ -156,7 +157,7 @@ const ProductList = () => {
                                         alt={product.name}
                                         width={80}
                                         height={80}
-                                        className="w-20 h-20 object-contain rounded-md bg-gray-100"
+                                        className="w-20 h-20 object-cover rounded-md bg-gray-100"
                                     />
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-gray-800">{product.name}</h3>
@@ -226,11 +227,11 @@ const ProductList = () => {
                                     <tr key={index} className="border-t border-gray-500/20">
                                         <td className="px-4 py-3">
                                             <div className="flex items-center space-x-3">
-                                                <div className="bg-gray-100 rounded p-2 flex-shrink-0">
+                                                <div className="bg-gray-100 rounded overflow-hidden flex-shrink-0">
                                                     <Image
                                                         src={product.image[0]}
                                                         alt="product Image"
-                                                        className="w-12 h-12 object-contain"
+                                                        className="w-12 h-12 object-cover"
                                                         width={48}
                                                         height={48}
                                                     />
@@ -311,3 +312,5 @@ const ProductList = () => {
 };
 
 export default ProductList;
+
+    
