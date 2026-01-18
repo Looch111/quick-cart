@@ -43,7 +43,7 @@ const Cart = () => {
                 return null;
             })
             .filter(Boolean)
-            .sort((a, b) => a.name.localeCompare(a.name) || (a.size && b.size ? a.size.localeCompare(b.size) : 0));
+            .sort((a, b) => a.name.localeCompare(b.name) || (a.size && b.size ? a.size.localeCompare(b.size) : 0));
     }, [cartItems, allRawProducts]);
 
 
@@ -103,7 +103,7 @@ const Cart = () => {
                                             <Image
                                                 src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
                                                 alt={product.name}
-                                                className="w-full h-full object-contain mix-blend-multiply"
+                                                className="w-full h-full object-cover"
                                                 width={100}
                                                 height={100}
                                             />
@@ -161,7 +161,7 @@ const Cart = () => {
                                                         <Image
                                                         src={product.image && product.image.length > 0 ? product.image[0] : assets.upload_area}
                                                         alt={product.name}
-                                                        className="w-full h-full object-contain mix-blend-multiply"
+                                                        className="w-full h-full object-cover"
                                                         width={80}
                                                         height={80}
                                                         />
@@ -214,5 +214,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
-    
