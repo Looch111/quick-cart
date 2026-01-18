@@ -38,39 +38,43 @@ export async function POST(request) {
         }
 
         if (data.status === "success" && data.data.status === "successful") {
-            const userRef = db.collection('users').doc(userId);
             const transactionData = data.data;
 
-            // Use a transaction to ensure atomicity
-            await db.runTransaction(async (transaction) => {
-                const userDoc = await transaction.get(userRef);
-                if (!userDoc.exists) {
-                    throw new Error("User not found.");
-                }
-
-                const userData = userDoc.data();
-                const alreadyProcessed = userData.walletTransactions?.some(tx => tx.id === transactionData.id.toString());
+            // Only update wallet if this is a wallet-funding transaction
+            if (transactionData.meta?.type === 'wallet-funding') {
+                const userRef = db.collection('users').doc(userId);
                 
-                if (alreadyProcessed) {
-                    console.log(`Transaction ${transactionData.id} has already been processed.`);
-                    return; // Exit transaction without doing anything
-                }
+                // Use a transaction to ensure atomicity
+                await db.runTransaction(async (transaction) => {
+                    const userDoc = await transaction.get(userRef);
+                    if (!userDoc.exists) {
+                        throw new Error("User not found.");
+                    }
 
-                const newTransaction = {
-                    id: transactionData.id.toString(),
-                    type: 'Top Up',
-                    amount: transactionData.amount,
-                    date: new Date().toISOString(),
-                    method: 'Flutterwave',
-                };
-                
-                transaction.update(userRef, {
-                    walletBalance: admin.firestore.FieldValue.increment(transactionData.amount),
-                    walletTransactions: admin.firestore.FieldValue.arrayUnion(newTransaction)
+                    const userData = userDoc.data();
+                    const alreadyProcessed = userData.walletTransactions?.some(tx => tx.id === transactionData.id.toString());
+                    
+                    if (alreadyProcessed) {
+                        console.log(`Transaction ${transactionData.id} has already been processed.`);
+                        return; // Exit transaction without doing anything
+                    }
+
+                    const newTransaction = {
+                        id: transactionData.id.toString(),
+                        type: 'Top Up',
+                        amount: transactionData.amount,
+                        date: new Date().toISOString(),
+                        method: 'Flutterwave',
+                    };
+                    
+                    transaction.update(userRef, {
+                        walletBalance: admin.firestore.FieldValue.increment(transactionData.amount),
+                        walletTransactions: admin.firestore.FieldValue.arrayUnion(newTransaction)
+                    });
                 });
-            });
+            }
 
-            return NextResponse.json({ success: true, message: "Payment verified and wallet updated.", data: transactionData });
+            return NextResponse.json({ success: true, message: "Payment verified successfully.", data: transactionData });
         } else {
             return NextResponse.json({ success: false, message: data.message || "Payment not successful." });
         }
