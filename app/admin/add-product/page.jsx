@@ -155,7 +155,7 @@ const AddProduct = () => {
                             src={imagePreviews[index]}
                             alt={`Preview ${index + 1}`}
                             fill
-                            className="object-contain rounded-lg p-2"
+                            className="object-cover rounded-lg"
                         />
                          <button type="button" onClick={() => removeImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full z-10">
                             <Trash2 className="w-3 h-3" />
