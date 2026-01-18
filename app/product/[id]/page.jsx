@@ -217,7 +217,7 @@ const Product = () => {
                         {mainImage && <Image
                             src={mainImage}
                             alt={productData.name}
-                            className="w-full h-full object-contain mix-blend-multiply"
+                            className="w-full h-full object-cover"
                             fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />}
