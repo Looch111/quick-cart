@@ -703,7 +703,7 @@ export const AppContextProvider = (props) => {
                     sizes: productSizes,
                     deliveryInfo: product.deliveryInfo || '',
                     flashSalePrice: Number(product.flashSalePrice) || null,
-                    flashSaleEndDate: product.flashSaleEndDate || null,
+                    flashSaleEndDate: product.flashSaleEndDate ? new Date(product.flashSaleEndDate).toISOString() : null,
                     image: imageUrls,
                     userId: userData._id,
                     date: serverTimestamp(),
