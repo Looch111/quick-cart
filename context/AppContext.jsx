@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useFirestore, useCollection, useDoc } from "@/src/firebase";
-import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc, runTransaction, increment, arrayUnion } from "firebase/firestore";
+import { doc, setDoc, addDoc, deleteDoc, collection, serverTimestamp, getDocs, query, where, writeBatch, onSnapshot, getDoc, runTransaction, increment, arrayUnion, updateDoc, deleteField } from "firebase/firestore";
 import { getAdditionalUserInfo } from "firebase/auth";
 import { FirestorePermissionError } from "@/src/firebase/errors";
 import { errorEmitter } from "@/src/firebase/error-emitter";
@@ -1656,13 +1656,39 @@ export const AppContextProvider = (props) => {
             if (!showLogin) setShowLogin(true);
             return;
         }
-        const newWishlist = { ...wishlistItems };
-        if (newWishlist[productId]) {
-            delete newWishlist[productId];
+
+        const userDocRef = doc(firestore, 'users', userData._id);
+        const isCurrentlyWishlisted = wishlistItems && wishlistItems[productId];
+
+        if (isCurrentlyWishlisted) {
+            // Remove from wishlist
+            updateDoc(userDocRef, {
+                [`wishlistItems.${productId}`]: deleteField()
+            })
+            .catch((serverError) => {
+                toast.error("Failed to remove from wishlist.");
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { [`wishlistItems.${productId}`]: 'DELETE' }
+                }, serverError);
+                errorEmitter.emit('permission-error', permissionError);
+            });
         } else {
-            newWishlist[productId] = true;
+            // Add to wishlist
+            updateDoc(userDocRef, {
+                [`wishlistItems.${productId}`]: true
+            })
+            .catch((serverError) => {
+                toast.error("Failed to add to wishlist.");
+                 const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { [`wishlistItems.${productId}`]: true },
+                }, serverError);
+                errorEmitter.emit('permission-error', permissionError);
+            });
         }
-        updateUserField('wishlistItems', newWishlist);
     };
 
     const getWishlistCount = () => {
