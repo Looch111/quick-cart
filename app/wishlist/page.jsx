@@ -35,7 +35,7 @@ const Wishlist = () => {
                     </div>
                 ) : wishlistedProducts.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-start gap-6 py-14 w-full">
-                        {wishlistedProducts.map((product, index) => <ProductCard key={index} product={product} />)}
+                        {wishlistedProducts.map((product) => <ProductCard key={product._id} product={product} />)}
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center w-full h-[50vh]">

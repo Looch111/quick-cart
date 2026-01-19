@@ -198,10 +198,10 @@ const ProductList = () => {
                             </tr>
                         </thead>
                         <tbody className="text-sm text-gray-500">
-                            {filteredProducts.map((product, index) => {
+                            {filteredProducts.map((product) => {
                                 const isFlashSaleActive = product.flashSalePrice && new Date(product.flashSaleEndDate) > currentTime;
                                 return (
-                                    <tr key={index} className="border-t border-gray-500/20">
+                                    <tr key={product._id} className="border-t border-gray-500/20">
                                         <td className="px-4 py-3">
                                             <div className="flex items-center space-x-3">
                                                 <div className="bg-gray-100 rounded overflow-hidden flex-shrink-0">
