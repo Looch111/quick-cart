@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
@@ -628,3 +629,5 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+
+    
