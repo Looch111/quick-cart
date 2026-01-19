@@ -205,6 +205,7 @@
         "type": "object",
         "properties": {
             "title": { "type": "string" },
+            "description": { "type": "string" },
             "offerText": { "type": "string" },
             "image": { "type": "string", "format": "uri" },
             "link": { "type": "string" },
@@ -331,5 +332,3 @@
     }
   }
 }
-
-    

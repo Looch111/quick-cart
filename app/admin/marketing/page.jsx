@@ -22,7 +22,7 @@ const Switch = ({ checked, onChange }) => {
 const MarketingPage = () => {
     const { banners, addBanner, deleteBanner, updateBanner, updateBannerStatus } = useAppContext();
     const [isAdding, setIsAdding] = useState(false);
-    const [newBanner, setNewBanner] = useState({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: 'Shop Now', image: '', status: 'active', secondaryButtonText: 'Find More', secondaryLink: '/all-products' });
+    const [newBanner, setNewBanner] = useState({ title: '', description: '', offerText: 'Limited Time Offer', link: '', buttonText: 'Shop Now', image: '', status: 'active', secondaryButtonText: 'Find More', secondaryLink: '/all-products' });
     const [editingBanner, setEditingBanner] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [bannerToDelete, setBannerToDelete] = useState(null);
@@ -34,7 +34,7 @@ const MarketingPage = () => {
             return;
         }
         addBanner(newBanner);
-        setNewBanner({ title: '', offerText: 'Limited Time Offer', link: '', buttonText: 'Shop Now', image: '', status: 'active', secondaryButtonText: 'Find More', secondaryLink: '/all-products' });
+        setNewBanner({ title: '', description: '', offerText: 'Limited Time Offer', link: '', buttonText: 'Shop Now', image: '', status: 'active', secondaryButtonText: 'Find More', secondaryLink: '/all-products' });
         setIsAdding(false);
     };
 
@@ -107,6 +107,16 @@ const MarketingPage = () => {
                                             className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
                                             value={newBanner.offerText}
                                             onChange={(e) => setNewBanner({ ...newBanner, offerText: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., A short description for the banner"
+                                            className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                            value={newBanner.description}
+                                            onChange={(e) => setNewBanner({ ...newBanner, description: e.target.value })}
                                         />
                                     </div>
                                     <div>
@@ -269,5 +279,3 @@ const MarketingPage = () => {
 };
 
 export default MarketingPage;
-
-    
