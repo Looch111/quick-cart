@@ -120,7 +120,7 @@ const SingleProductUpload = () => {
             image: imageFiles,
             stock: stock,
             sizes: productSizes,
-            flashSaleEndDate: flashSaleEndDate ? new Date(flashSaleEndDate).toISOString() : null,
+            flashSaleEndDate: flashSaleEndDate || null,
             deliveryInfo: deliveryInfo,
             reviewCount: 0,
             averageRating: 0

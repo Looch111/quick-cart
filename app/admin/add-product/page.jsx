@@ -1,4 +1,5 @@
 
+
 'use client'
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
@@ -121,7 +122,7 @@ const AddProduct = () => {
         image: imageFiles,
         stock: stock,
         sizes: hasSizes ? productSizes : {},
-        flashSaleEndDate: flashSaleEndDate ? new Date(flashSaleEndDate).toISOString() : null,
+        flashSaleEndDate: flashSaleEndDate || null,
     }
 
     await addProduct(productData);

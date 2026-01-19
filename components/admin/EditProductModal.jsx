@@ -19,8 +19,17 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
     useEffect(() => {
         const data = { ...product };
         if (data.flashSaleEndDate) {
-            const d = new Date(data.flashSaleEndDate);
-            data.flashSaleEndDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            // Check if it's a Firestore Timestamp object
+            if (typeof data.flashSaleEndDate.toDate === 'function') {
+                const d = data.flashSaleEndDate.toDate();
+                data.flashSaleEndDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            } 
+            // Check if it's a string that needs conversion
+            else if (typeof data.flashSaleEndDate === 'string' && data.flashSaleEndDate.includes('Z')) {
+                 const d = new Date(data.flashSaleEndDate);
+                 data.flashSaleEndDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            }
+            // Otherwise, assume it's already in 'YYYY-MM-DDTHH:mm' format
         } else {
             data.flashSaleEndDate = '';
         }
@@ -127,8 +136,6 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
 
         if (!dataToSave.flashSaleEndDate) {
             dataToSave.flashSaleEndDate = null;
-        } else {
-            dataToSave.flashSaleEndDate = new Date(dataToSave.flashSaleEndDate).toISOString();
         }
         
         dataToSave.image = images.filter(img => img !== null);
