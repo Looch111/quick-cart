@@ -15,6 +15,8 @@ const AddProduct = () => {
   const [images, setImages] = useState(Array(4).fill(null));
   const [imagePreviews, setImagePreviews] = useState(Array(4).fill(null));
   const [name, setName] = useState('');
+  const [brand, setBrand] = useState('');
+  const [color, setColor] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Earphone');
   const [price, setPrice] = useState('');
@@ -114,6 +116,8 @@ const AddProduct = () => {
 
     const productData = {
         name,
+        brand,
+        color,
         description,
         category,
         price: Number(price),
@@ -131,6 +135,8 @@ const AddProduct = () => {
     setImages(Array(4).fill(null));
     setImagePreviews(Array(4).fill(null));
     setName('');
+    setBrand('');
+    setColor('');
     setDescription('');
     setCategory('Earphone');
     setPrice('');
@@ -191,6 +197,34 @@ const AddProduct = () => {
             value={name}
             required
           />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md">
+            <div className="flex flex-col gap-1">
+              <label className="text-base font-medium" htmlFor="product-brand-admin">
+                Brand <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                id="product-brand-admin"
+                type="text"
+                placeholder="e.g., Apple"
+                className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
+                onChange={(e) => setBrand(e.target.value)}
+                value={brand}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-base font-medium" htmlFor="product-color-admin">
+                Color <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                id="product-color-admin"
+                type="text"
+                placeholder="e.g., Space Gray"
+                className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
+                onChange={(e) => setColor(e.target.value)}
+                value={color}
+              />
+            </div>
         </div>
         <div className="flex flex-col gap-1 max-w-md">
           <label

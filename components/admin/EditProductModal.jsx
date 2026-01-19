@@ -202,6 +202,28 @@ const EditProductModal = ({ product, onSave, onCancel }) => {
                             onChange={handleChange}
                         />
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                            <input
+                                type="text"
+                                name="brand"
+                                className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                value={productData.brand || ''}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                            <input
+                                type="text"
+                                name="color"
+                                className="focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                value={productData.color || ''}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <textarea

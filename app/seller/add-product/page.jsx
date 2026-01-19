@@ -13,6 +13,8 @@ const SingleProductUpload = () => {
     const [images, setImages] = useState(Array(4).fill(null));
     const [imagePreviews, setImagePreviews] = useState(Array(4).fill(null));
     const [name, setName] = useState('');
+    const [brand, setBrand] = useState('');
+    const [color, setColor] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('Earphone');
     const [price, setPrice] = useState('');
@@ -112,6 +114,8 @@ const SingleProductUpload = () => {
 
         const productData = {
             name,
+            brand,
+            color,
             description,
             category,
             price: Number(price),
@@ -132,6 +136,8 @@ const SingleProductUpload = () => {
         setImages(Array(4).fill(null));
         setImagePreviews(Array(4).fill(null));
         setName('');
+        setBrand('');
+        setColor('');
         setDescription('');
         setCategory('Earphone');
         setPrice('');
@@ -192,6 +198,34 @@ const SingleProductUpload = () => {
                     value={name}
                     required
                 />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md">
+                <div className="flex flex-col gap-1">
+                    <label className="text-base font-medium" htmlFor="product-brand">
+                        Brand <span className="text-gray-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                        id="product-brand"
+                        type="text"
+                        placeholder="e.g., Sony"
+                        className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
+                        onChange={(e) => setBrand(e.target.value)}
+                        value={brand}
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-base font-medium" htmlFor="product-color">
+                        Color <span className="text-gray-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                        id="product-color"
+                        type="text"
+                        placeholder="e.g., Midnight Black"
+                        className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300"
+                        onChange={(e) => setColor(e.target.value)}
+                        value={color}
+                    />
+                </div>
             </div>
             <div className="flex flex-col gap-1 max-w-md">
                 <label
@@ -380,8 +414,8 @@ const BulkUpload = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleDownloadTemplate = () => {
-        const csvHeader = "name,description,category,price,offerPrice,stock,sizes,deliveryInfo,flashSalePrice,flashSaleEndDate,image_url_1,image_url_2,image_url_3,image_url_4\n";
-        const csvExample = "Example Laptop,Powerful machine for all your needs,Laptop,1200,1000,50,,1-2 business days,,,'https://i.imgur.com/gB343so.png',,,\n";
+        const csvHeader = "name,description,brand,color,category,price,offerPrice,stock,sizes,deliveryInfo,flashSalePrice,flashSaleEndDate,image_url_1,image_url_2,image_url_3,image_url_4\n";
+        const csvExample = "Example Laptop,Powerful machine for all your needs,ExampleBrand,Space Gray,Laptop,1200,1000,50,,1-2 business days,,,'https://i.imgur.com/gB343so.png',,,\n";
         const csvContent = csvHeader + csvExample;
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
@@ -492,6 +526,8 @@ const BulkUpload = () => {
                                     <td className="px-4 py-2">
                                         <p className="font-medium text-gray-800">{product.name}</p>
                                         <p className="text-xs text-gray-500">{product.category}</p>
+                                        <p className="text-xs text-gray-500">Brand: {product.brand || 'N/A'}</p>
+                                        <p className="text-xs text-gray-500">Color: {product.color || 'N/A'}</p>
                                     </td>
                                     <td className="px-4 py-2">
                                         <div className="flex flex-col">

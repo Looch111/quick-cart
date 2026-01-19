@@ -104,6 +104,8 @@
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" },
+        "brand": { "type": "string" },
+        "color": { "type": "string" },
         "price": { "type": "number", "description": "The original price of the product." },
         "offerPrice": { "type": "number", "description": "The standard discounted price." },
         "flashSalePrice": { "type": "number", "description": "A special, deeper discount price for a limited time." },

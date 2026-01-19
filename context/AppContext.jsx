@@ -696,6 +696,8 @@ export const AppContextProvider = (props) => {
                 const dataToAdd = {
                     name: product.name,
                     description: product.description || '',
+                    brand: product.brand || '',
+                    color: product.color || '',
                     category: product.category,
                     price: Number(product.price) || 0,
                     offerPrice: Number(product.offerPrice),
