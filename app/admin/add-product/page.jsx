@@ -121,7 +121,7 @@ const AddProduct = () => {
         image: imageFiles,
         stock: stock,
         sizes: hasSizes ? productSizes : {},
-        flashSaleEndDate: flashSaleEndDate || null,
+        flashSaleEndDate: flashSaleEndDate ? new Date(flashSaleEndDate).toISOString() : null,
     }
 
     await addProduct(productData);
