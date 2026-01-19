@@ -11,7 +11,7 @@ import FlashSales from "@/components/FlashSales";
 
 const Home = () => {
   return (
-    <>
+    <main>
       <Navbar/>
       <div className="px-6 md:px-16 lg:px-32 pt-20">
         <HeaderSlider />
@@ -22,7 +22,7 @@ const Home = () => {
         {/* <NewsLetter /> */}
       </div>
       <Footer />
-    </>
+    </main>
   );
 };
 

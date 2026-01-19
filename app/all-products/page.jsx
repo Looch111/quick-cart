@@ -51,6 +51,13 @@ const AllProducts = () => {
     const [sortBy, setSortBy] = useState('newest');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const searchInputRef = useRef(null);
+    const [currentTime, setCurrentTime] = useState(null);
+
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const debouncedPriceRange = useDebounce(priceRange, 500);
@@ -72,7 +79,7 @@ const AllProducts = () => {
     };
 
     const filteredAndSortedProducts = useMemo(() => {
-        if (!products) return [];
+        if (!products || !currentTime) return [];
         let filtered = [...products];
 
         if (debouncedSearchTerm) {
@@ -86,7 +93,8 @@ const AllProducts = () => {
         }
 
         filtered = filtered.filter(p => {
-            const price = p.flashSalePrice > 0 && new Date(p.flashSaleEndDate) > new Date() ? p.flashSalePrice : p.offerPrice;
+            const isFlashSaleActive = p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > currentTime;
+            const price = isFlashSaleActive ? p.flashSalePrice : p.offerPrice;
             const minPrice = debouncedPriceRange.min !== '' ? parseFloat(debouncedPriceRange.min) : 0;
             const maxPrice = debouncedPriceRange.max !== '' ? parseFloat(debouncedPriceRange.max) : Infinity;
             return price >= minPrice && price <= maxPrice;
@@ -112,7 +120,7 @@ const AllProducts = () => {
         }
 
         return filtered;
-    }, [products, debouncedSearchTerm, categoryFilter, debouncedPriceRange, sortBy]);
+    }, [products, debouncedSearchTerm, categoryFilter, debouncedPriceRange, sortBy, currentTime]);
     
     const resetFilters = () => {
         setSearchTerm('');

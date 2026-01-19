@@ -1631,7 +1631,7 @@ export const AppContextProvider = (props) => {
     const getCartCount = () => {
         if (!cartItems) return 0;
         return Object.values(cartItems).reduce((sum, quantity) => sum + quantity, 0);
-    }
+    };
 
     const getCartAmount = () => {
         let totalAmount = 0;
@@ -1694,7 +1694,7 @@ export const AppContextProvider = (props) => {
     const getWishlistCount = () => {
         if (!wishlistItems) return 0;
         return Object.keys(wishlistItems).length;
-    }
+    };
 
     const handleLogout = async () => {
         await signOut();

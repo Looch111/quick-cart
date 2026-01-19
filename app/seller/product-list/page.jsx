@@ -112,8 +112,8 @@ const ProductList = () => {
               </tr>
             </thead>
             <tbody className="text-gray-600">
-              {filteredProducts.map((product, index) => (
-                <tr key={index} className="border-t border-gray-200">
+              {filteredProducts.map((product) => (
+                <tr key={product._id} className="border-t border-gray-200">
                   <td className="px-4 py-3 flex items-center gap-3">
                     <div className="bg-gray-100 rounded p-1 flex-shrink-0">
                       <Image

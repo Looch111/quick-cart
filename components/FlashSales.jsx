@@ -1,6 +1,5 @@
-
 'use client'
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ProductCard from "./ProductCard";
 import { useAppContext } from "@/context/AppContext";
 import { useCollection } from "@/src/firebase";
@@ -10,12 +9,22 @@ const FlashSales = () => {
     const { data: allRawProducts, loading } = useCollection('products', {
         where: ['status', '==', 'approved'],
     });
+    const [currentTime, setCurrentTime] = useState(null);
 
-    const flashSaleProducts = (allRawProducts || [])
-        .filter(p => p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > new Date())
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5)
-        .map(p => ({ ...p, _id: p.id }));
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const flashSaleProducts = useMemo(() => {
+        if (!allRawProducts || !currentTime) return [];
+        return allRawProducts
+            .filter(p => p.flashSalePrice > 0 && p.flashSaleEndDate && new Date(p.flashSaleEndDate) > currentTime)
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5)
+            .map(p => ({ ...p, _id: p.id }));
+    }, [allRawProducts, currentTime]);
 
     if (loading) {
         return (
@@ -46,7 +55,7 @@ const FlashSales = () => {
                 </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-start gap-6 pb-14 w-full">
-                {flashSaleProducts.map((product, index) => <ProductCard key={index} product={product} />)}
+                {flashSaleProducts.map((product) => <ProductCard key={product._id} product={product} />)}
             </div>
             <div className="flex items-center gap-4">
                 <button onClick={() => { router.push('/all-products') }} className="px-6 md:px-12 py-2.5 border rounded text-gray-500/70 hover:bg-slate-50/90 transition">

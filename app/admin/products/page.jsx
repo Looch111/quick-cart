@@ -38,7 +38,7 @@ const ProductList = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState(null);
 
     useEffect(() => {
         if (markNotificationsAsReadByLink) {
@@ -47,6 +47,7 @@ const ProductList = () => {
     }, [markNotificationsAsReadByLink]);
 
     useEffect(() => {
+        setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
@@ -125,7 +126,7 @@ const ProductList = () => {
                 {/* Mobile View: Cards */}
                 <div className="md:hidden space-y-4">
                     {filteredProducts.map(product => {
-                        const isFlashSaleActive = product.flashSalePrice && new Date(product.flashSaleEndDate) > currentTime;
+                        const isFlashSaleActive = currentTime && product.flashSalePrice && new Date(product.flashSaleEndDate) > currentTime;
                         return (
                             <div key={product._id} className="bg-white border rounded-lg p-4 shadow-sm">
                                 <div className="flex gap-4">
@@ -199,7 +200,7 @@ const ProductList = () => {
                         </thead>
                         <tbody className="text-sm text-gray-500">
                             {filteredProducts.map((product) => {
-                                const isFlashSaleActive = product.flashSalePrice && new Date(product.flashSaleEndDate) > currentTime;
+                                const isFlashSaleActive = currentTime && product.flashSalePrice && new Date(product.flashSaleEndDate) > currentTime;
                                 return (
                                     <tr key={product._id} className="border-t border-gray-500/20">
                                         <td className="px-4 py-3">

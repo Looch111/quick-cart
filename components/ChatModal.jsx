@@ -142,6 +142,7 @@ const ChatModal = () => {
 
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(false);
 
     // Effect for users to set their own conversation ID
     useEffect(() => {
@@ -169,6 +170,14 @@ const ChatModal = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // Effect to check for mobile view
+    useEffect(() => {
+        const checkIsMobile = () => setIsMobile(window.innerWidth < 768);
+        checkIsMobile();
+        window.addEventListener('resize', checkIsMobile);
+        return () => window.removeEventListener('resize', checkIsMobile);
+    }, []);
+
     if (!isChatModalOpen) return null;
 
     const handleSendMessage = (e) => {
@@ -185,7 +194,6 @@ const ChatModal = () => {
         setNewMessage('');
     };
     
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     const showConversations = isAdmin && (!isMobile || (isMobile && !activeConversationId));
     const showChatWindow = !isMobile || (isMobile && activeConversationId);
 
