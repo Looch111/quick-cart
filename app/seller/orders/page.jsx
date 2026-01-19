@@ -67,7 +67,7 @@ const Orders = () => {
                             </thead>
                             <tbody className="text-sm text-gray-700">
                                {sellerItems.length > 0 ? sellerItems.map((item) => (
-                                    <tr key={`${item.orderId}-${item._id}`} className="border-b border-gray-200 hover:bg-gray-50">
+                                    <tr key={`${item.orderId}-${item.itemId}`} className="border-b border-gray-200 hover:bg-gray-50">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <Image src={item.image[0]} alt={item.name} width={40} height={40} className="w-10 h-10 object-contain rounded bg-gray-100" />
@@ -90,7 +90,7 @@ const Orders = () => {
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <select 
-                                                onChange={(e) => handleStatusChange(item.orderId, item._id, item.status, e.target.value)} 
+                                                onChange={(e) => handleStatusChange(item.orderId, item.itemId, item.status, e.target.value)} 
                                                 value={item.status}
                                                 className="border border-gray-300 p-2 rounded-md outline-none focus:ring-2 focus:ring-orange-300 text-xs"
                                                 disabled={item.status === 'Shipped' || item.status === 'Delivered' || item.status === 'Completed' || item.status === 'Disputed'}

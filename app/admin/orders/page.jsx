@@ -104,7 +104,7 @@ const Orders = () => {
                                 </div>
                                 <div className="text-sm text-gray-600 space-y-2 my-4">
                                     {order.items.map(item => (
-                                        <div key={item._id} className="flex justify-between items-center text-xs">
+                                        <div key={item.itemId} className="flex justify-between items-center text-xs">
                                             <p className="truncate pr-2">{item.name} x{item.quantity}</p>
                                             <span className={`px-2 py-0.5 rounded-full ${getItemStatusClass(item.status)}`}>{item.status}</span>
                                         </div>
@@ -167,7 +167,7 @@ const Orders = () => {
                                          <td className="px-6 py-4">
                                             <div className="flex flex-col gap-2">
                                                 {order.items.map(item => (
-                                                     <div key={item._id} className="flex items-center justify-between text-xs">
+                                                     <div key={item.itemId} className="flex items-center justify-between text-xs">
                                                         <div className="flex items-center gap-2">
                                                             <Image src={item.image[0]} alt={item.name} width={24} height={24} className="w-6 h-6 object-contain rounded bg-gray-100" />
                                                             <p className="truncate pr-2">{item.name} x{item.quantity}</p>

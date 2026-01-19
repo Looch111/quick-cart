@@ -1050,6 +1050,7 @@ export const AppContextProvider = (props) => {
                 orderItems.push({ 
                     ...product,
                     _id: product.id, 
+                    itemId: itemId,
                     size: size || null,
                     quantity: itemsToOrder[itemId], 
                     status: 'Processing',
@@ -1073,7 +1074,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size, itemId}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size, itemId})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
@@ -1128,7 +1129,8 @@ export const AppContextProvider = (props) => {
                 
                 orderItems.push({ 
                     ...product, 
-                    _id: product.id, 
+                    _id: product.id,
+                    itemId: itemId,
                     size: size || null,
                     quantity: itemsToOrder[itemId],
                     status: 'Processing',
@@ -1152,7 +1154,7 @@ export const AppContextProvider = (props) => {
             const newOrderRef = doc(collection(firestore, 'orders'));
             const newOrderData = {
                 userId: userData._id,
-                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size})),
+                items: orderItems.map(({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size, itemId}) => ({_id, name, offerPrice, image, quantity, sellerId, status, price, flashSalePrice, size, itemId})),
                 amount: totalAmount,
                 address: address,
                 status: "Order Placed", // Overall order status
@@ -1276,7 +1278,7 @@ export const AppContextProvider = (props) => {
                 if (!orderDoc.exists()) throw new Error("Order not found.");
 
                 const orderData = orderDoc.data();
-                const itemIndex = orderData.items.findIndex(item => item._id === itemId);
+                const itemIndex = orderData.items.findIndex(item => item.itemId === itemId);
                 if (itemIndex === -1) throw new Error("Item not found in order.");
 
                 const updatedItems = [...orderData.items];
